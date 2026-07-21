@@ -2,25 +2,53 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --surface: #fff7f0;
+  --foreground: #1c1c1c;
+  --muted: #6b6b6b;
+  --border: #f0dcc8;
+
+  --orange-50: #fff4e8;
+  --orange-100: #ffe4c7;
+  --orange-200: #ffc98f;
+  --orange-300: #ffab52;
+  --orange-400: #ff8f24;
+  --orange-500: #f5730a;
+  --orange-600: #d95c05;
+  --orange-700: #b34705;
+  --orange-800: #8c380a;
+  --orange-900: #6b2c09;
 }
 
 @theme inline {
   --color-background: var(--background);
+  --color-surface: var(--surface);
   --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+
+  --color-primary: var(--orange-500);
+  --color-primary-hover: var(--orange-600);
+  --color-primary-active: var(--orange-700);
+
+  --color-orange-50: var(--orange-50);
+  --color-orange-100: var(--orange-100);
+  --color-orange-200: var(--orange-200);
+  --color-orange-300: var(--orange-300);
+  --color-orange-400: var(--orange-400);
+  --color-orange-500: var(--orange-500);
+  --color-orange-600: var(--orange-600);
+  --color-orange-700: var(--orange-700);
+  --color-orange-800: var(--orange-800);
+  --color-orange-900: var(--orange-900);
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+/* Palette is intentionally white + orange only (product brand constraint) —
+   no dark-mode media query override, so the two-color system is never diluted. */
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
 }
