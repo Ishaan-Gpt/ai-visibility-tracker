@@ -24,6 +24,7 @@ async function runForBrand(brand: BrandDoc, prompts: PromptDoc[]) {
   for (const c of brand.competitors) competitorMentionCounts[c.domain] = 0;
 
   const activePrompts = prompts.filter((p) => p.active);
+  let succeeded = 0;
 
   for (const prompt of activePrompts) {
     for (const provider of ACTIVE_PROVIDERS) {
@@ -49,20 +50,29 @@ async function runForBrand(brand: BrandDoc, prompts: PromptDoc[]) {
           citedUrls: result.citedUrls,
           competitorMentions: result.competitorMentions,
           rawExcerpt: result.rawExcerpt,
+          grounded: result.grounded,
         });
+        succeeded += 1;
       } catch (err) {
         console.error(`[cron] check failed for brand=${brand.id} prompt=${prompt.id}`, err);
       }
     }
   }
 
-  const total = activePrompts.length;
+  // If every single check failed (e.g. a provider outage or bad API key), don't write a
+  // misleading "0% visibility" rollup and don't mark the brand as checked — leave it due
+  // so the next cron tick retries instead of silently reporting a fake score for a week.
+  if (activePrompts.length > 0 && succeeded === 0) {
+    console.error(`[cron] all checks failed for brand=${brand.id}, skipping rollup`);
+    return;
+  }
+
   const rollup: RollupDoc = {
     brandId: brand.id,
     date: todayKey(),
-    totalPrompts: total,
+    totalPrompts: succeeded,
     mentionedCount,
-    score: total > 0 ? Math.round((mentionedCount / total) * 100) : 0,
+    score: succeeded > 0 ? Math.round((mentionedCount / succeeded) * 100) : 0,
     competitorMentionCounts,
   };
   await db

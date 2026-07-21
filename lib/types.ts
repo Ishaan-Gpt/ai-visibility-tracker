@@ -46,6 +46,7 @@ export interface RunDoc {
   citedUrls: string[];
   competitorMentions: Record<string, boolean>;
   rawExcerpt: string;
+  grounded: boolean;
 }
 
 export interface RollupDoc {

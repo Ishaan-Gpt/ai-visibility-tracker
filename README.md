@@ -1,12 +1,22 @@
 # AI Visibility Tracker
 
 Self-serve SaaS that tracks whether your brand gets mentioned/cited when people ask
-Gemini (Google Search-grounded) the questions your customers actually ask — and how
-you compare to one tracked competitor. Stage 1 build: Gemini only, single brand per
-account, free (3 prompts/weekly) and paid (10 prompts/daily) tiers.
+an AI search assistant the questions your customers actually ask — and how you
+compare to one tracked competitor. Stage 1 build: single brand per account, free
+(3 prompts/weekly) and paid (10 prompts/daily) tiers.
 
-Stack: Next.js 15 (App Router, SSR) + Tailwind v4 + Firebase Auth/Firestore + Gemini API
-(`@google/genai`, Google Search grounding) + Vercel Cron.
+Stack: Next.js 15 (App Router, SSR) + Tailwind v4 + Firebase Auth/Firestore + Vercel Cron.
+
+**On billing:** the whole product depends on real, current web results informing the
+AI's answer ("grounding") — without that, we're not measuring AI search visibility at
+all, just chatting with a model. Gemini's own Google Search grounding tool requires a
+billing account linked to the Google Cloud project behind the API key. We looked for a
+genuinely free/no-card alternative (Google Custom Search, Brave Search) — both closed
+their no-card free tiers in early 2026, and Google additionally capped new Custom
+Search engines to 50 pre-named domains (no more open-web search), which isn't usable
+for this product's open-ended queries anyway. Billing is unavoidable industry-wide as
+of 2026; at Stage 1's actual usage volume (a handful of prompts, checked weekly/daily
+for a small number of brands), real charges should be $0–negligible.
 
 ## 1. Create a Firebase project
 
@@ -22,17 +32,20 @@ Stack: Next.js 15 (App Router, SSR) + Tailwind v4 + Firebase Auth/Firestore + Ge
 6. Deploy the security rules once you have the Firebase CLI set up:
    `npx firebase-tools deploy --only firestore:rules --project <your-project-id>`
 
-## 2. Get a Gemini API key
+## 2. Get a Gemini API key and link billing
 
 1. https://aistudio.google.com/apikey → create a key.
-2. Enable billing on the underlying Google Cloud project — grounding with Google
-   Search is not available on the free quota.
-3. Put it in `.env.local` as `GEMINI_API_KEY`.
+2. Note which Google Cloud project the key belongs to, then in
+   https://console.cloud.google.com → that project → Billing → link a billing
+   account/card. Grounding (the Google Search tool) returns `429 RESOURCE_EXHAUSTED`
+   on every grounded call until this is done, even though normal usage stays
+   $0–negligible.
+3. Put the key in `.env.local` as `GEMINI_API_KEY`.
 
 ## 3. Local setup
 
 ```bash
-cp .env.example .env.local   # fill in the values from steps 1 & 2
+cp .env.example .env.local   # fill in the values from steps 1-2
 npm install
 npm run dev
 ```

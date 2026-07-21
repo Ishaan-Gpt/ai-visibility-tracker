@@ -33,6 +33,11 @@ export default function PromptList({
                       ? "✅ Mentioned in last check"
                       : "⚠️ Not mentioned in last check"
                     : "Not checked yet"}
+                  {latest && !latest.grounded && (
+                    <span className="ml-1 text-orange-500">
+                      · approximate, no live web search yet
+                    </span>
+                  )}
                 </p>
               </div>
               <form action={togglePrompt}>
