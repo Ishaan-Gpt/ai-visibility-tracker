@@ -1,74 +1,40 @@
-import Link from "next/link";
+import type { Metadata } from "next";
+import { ToolsHeader } from "@/components/tools/shared/layout/ToolsHeader";
+import { ToolsFooter } from "@/components/tools/shared/layout/ToolsFooter";
+import { ScrollProgress } from "@/components/tools/shared/motion/ScrollProgress";
+import { Hero } from "@/components/hub/sections/Hero";
+import { TheFragmentation } from "@/components/hub/sections/TheFragmentation";
+import { OnePlatform } from "@/components/hub/sections/OnePlatform";
+import { WhyNow } from "@/components/hub/sections/WhyNow";
+import { HowWeBuild } from "@/components/hub/sections/HowWeBuild";
+import { ToolsGrid } from "@/components/hub/sections/ToolsGrid";
+import { UnderTheHood } from "@/components/hub/sections/UnderTheHood";
+import { GetOpenGeo } from "@/components/hub/sections/GetOpenGeo";
+import { StartExploring } from "@/components/hub/sections/StartExploring";
 
-export default function Home() {
+export const metadata: Metadata = {
+  title: "OpenSeo — The SEO suite for the AI search era",
+  description:
+    "Structured data, sitemaps, content quality, and AI answer-engine visibility — one suite, starting free.",
+};
+
+export default function OpenSeoHubPage() {
   return (
-    <div className="flex flex-1 flex-col bg-white">
-      <header className="border-b border-border">
-        <div className="mx-auto flex w-full max-w-5xl items-center justify-between px-4 py-4">
-          <span className="text-lg font-bold text-foreground">
-            AI Visibility <span className="text-primary">Tracker</span>
-          </span>
-          <nav className="flex items-center gap-3">
-            <Link href="/login" className="text-sm font-medium text-foreground hover:text-primary">
-              Log in
-            </Link>
-            <Link
-              href="/signup"
-              className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white transition hover:bg-primary-hover"
-            >
-              Get started free
-            </Link>
-          </nav>
-        </div>
-      </header>
-
-      <main className="flex-1 bg-surface">
-        <section className="mx-auto flex w-full max-w-3xl flex-col items-center px-4 py-24 text-center">
-          <h1 className="text-4xl font-bold leading-tight text-foreground sm:text-5xl">
-            Does your brand show up when people ask <span className="text-primary">ChatGPT and Gemini</span>?
-          </h1>
-          <p className="mt-6 max-w-xl text-lg text-muted">
-            Track whether your brand gets mentioned and cited in AI search answers — and see exactly
-            where your competitors are beating you. Self-serve, no retainer, no account manager required.
-          </p>
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <Link
-              href="/signup"
-              className="rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-white transition hover:bg-primary-hover"
-            >
-              Start tracking for free
-            </Link>
-            <Link
-              href="/login"
-              className="rounded-lg border border-border bg-white px-6 py-3 text-sm font-semibold text-foreground transition hover:bg-surface"
-            >
-              I already have an account
-            </Link>
-          </div>
-        </section>
-
-        <section className="mx-auto grid w-full max-w-4xl grid-cols-1 gap-6 px-4 pb-24 sm:grid-cols-3">
-          {[
-            {
-              title: "AI visibility score",
-              body: "See what percentage of your key prompts actually mention your brand.",
-            },
-            {
-              title: "Competitor comparison",
-              body: "Know exactly which prompts your competitor wins that you don't.",
-            },
-            {
-              title: "Weekly checks, free",
-              body: "Free tier tracks 3 prompts weekly. Upgrade for daily checks and more prompts.",
-            },
-          ].map((f) => (
-            <div key={f.title} className="rounded-xl border border-border bg-white p-6">
-              <h3 className="mb-2 text-sm font-semibold text-foreground">{f.title}</h3>
-              <p className="text-sm text-muted">{f.body}</p>
-            </div>
-          ))}
-        </section>
+    <>
+      <ScrollProgress />
+      <ToolsHeader />
+      <main>
+        <Hero />
+        <TheFragmentation />
+        <OnePlatform />
+        <WhyNow />
+        <HowWeBuild />
+        <ToolsGrid />
+        <UnderTheHood />
+        <GetOpenGeo />
+        <StartExploring />
       </main>
-    </div>
+      <ToolsFooter />
+    </>
   );
 }

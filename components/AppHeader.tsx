@@ -11,15 +11,15 @@ export default function AppHeader({ email }: { email: string }) {
   async function handleLogout() {
     await signOut(auth);
     await fetch("/api/session", { method: "DELETE" });
-    router.push("/login");
+    router.push("/tools/ai-visibility-tracker/login");
     router.refresh();
   }
 
   return (
     <header className="border-b border-border bg-white">
       <div className="mx-auto flex w-full max-w-5xl items-center justify-between px-4 py-4">
-        <Link href="/dashboard" className="text-lg font-bold text-foreground">
-          AI Visibility <span className="text-primary">Tracker</span>
+        <Link href="/tools/ai-visibility-tracker/dashboard" className="text-lg font-bold text-foreground">
+          Open<span className="text-primary">Geo</span>
         </Link>
         <div className="flex items-center gap-4">
           <span className="hidden text-sm text-muted sm:inline">{email}</span>

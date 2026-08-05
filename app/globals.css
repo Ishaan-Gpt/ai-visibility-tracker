@@ -1,27 +1,29 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --surface: #fff7f0;
-  --foreground: #1c1c1c;
-  --muted: #6b6b6b;
-  --border: #f0dcc8;
+  --background: #fffef8;
+  --surface: #f5f3ee;
+  --surface-deep: #eae7e0;
+  --foreground: #000000;
+  --muted: #6b6259;
+  --border: #eae7e0;
 
-  --orange-50: #fff4e8;
-  --orange-100: #ffe4c7;
-  --orange-200: #ffc98f;
-  --orange-300: #ffab52;
-  --orange-400: #ff8f24;
-  --orange-500: #f5730a;
-  --orange-600: #d95c05;
-  --orange-700: #b34705;
-  --orange-800: #8c380a;
-  --orange-900: #6b2c09;
+  --orange-50: #fff4ec;
+  --orange-100: #ffe3d1;
+  --orange-200: #ffc7a3;
+  --orange-300: #ffa875;
+  --orange-400: #ff8340;
+  --orange-500: #ff6105;
+  --orange-600: #e86a00;
+  --orange-700: #c25400;
+  --orange-800: #8c3d00;
+  --orange-900: #5c2800;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-surface: var(--surface);
+  --color-surface-deep: var(--surface-deep);
   --color-foreground: var(--foreground);
   --color-muted: var(--muted);
   --color-border: var(--border);
@@ -43,10 +45,14 @@
 
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-fraunces);
+  --font-body: var(--font-instrument-sans);
 }
 
-/* Palette is intentionally white + orange only (product brand constraint) —
-   no dark-mode media query override, so the two-color system is never diluted. */
+/* Palette is intentionally white/cream/black + orange only (canonical brand system
+   per .agents/AGENTS.md) — no dark-mode media query override, so the two-color
+   system is never diluted. --surface is used sparingly (glass cards, not large
+   section backgrounds) per the no-grey-background design rule. */
 
 body {
   background: var(--background);

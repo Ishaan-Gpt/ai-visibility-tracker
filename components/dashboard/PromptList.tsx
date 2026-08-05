@@ -1,5 +1,5 @@
 import type { PromptDoc, RunDoc } from "@/lib/types";
-import { addPrompt, togglePrompt } from "@/app/(app)/onboarding/actions";
+import { addPrompt, togglePrompt } from "@/app/tools/ai-visibility-tracker/(app)/onboarding/actions";
 
 function latestRunFor(promptId: string, runs: RunDoc[]): RunDoc | undefined {
   return runs.find((r) => r.promptId === promptId);

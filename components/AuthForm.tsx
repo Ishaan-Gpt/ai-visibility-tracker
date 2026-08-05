@@ -37,7 +37,7 @@ export default function AuthForm({ mode }: { mode: "login" | "signup" }) {
           : await createUserWithEmailAndPassword(auth, email, password);
       const idToken = await cred.user.getIdToken();
       await establishServerSession(idToken);
-      router.push("/dashboard");
+      router.push("/tools/ai-visibility-tracker/dashboard");
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
@@ -54,7 +54,7 @@ export default function AuthForm({ mode }: { mode: "login" | "signup" }) {
       const cred = await signInWithPopup(auth, provider);
       const idToken = await cred.user.getIdToken();
       await establishServerSession(idToken);
-      router.push("/dashboard");
+      router.push("/tools/ai-visibility-tracker/dashboard");
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");

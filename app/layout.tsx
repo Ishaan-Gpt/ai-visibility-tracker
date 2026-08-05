@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Fraunces, Instrument_Sans } from "next/font/google";
+import { LenisProvider } from "@/components/tools/shared/providers/LenisProvider";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -12,9 +13,24 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const fraunces = Fraunces({
+  variable: "--font-fraunces",
+  subsets: ["latin"],
+  axes: ["opsz", "SOFT", "WONK"],
+});
+
+const instrumentSans = Instrument_Sans({
+  variable: "--font-instrument-sans",
+  subsets: ["latin"],
+});
+
 export const metadata: Metadata = {
-  title: "AI Visibility Tracker",
-  description: "Track whether your brand shows up in ChatGPT, Gemini, and AI search answers.",
+  title: {
+    template: "%s — OpenSeo",
+    default: "OpenSeo — The SEO suite for the AI search era",
+  },
+  description:
+    "OpenSeo is a suite of SEO tools covering structured data, discoverability, content quality, and AI answer-engine visibility.",
 };
 
 export default function RootLayout({
@@ -25,9 +41,11 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${fraunces.variable} ${instrumentSans.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <LenisProvider>{children}</LenisProvider>
+      </body>
     </html>
   );
 }
