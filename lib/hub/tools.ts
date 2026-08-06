@@ -46,6 +46,6 @@ export const HUB_TOOLS: HubTool[] = [
     tagline: "Content balance",
     description: "Spot over-optimization and topical gaps before search engines do.",
     href: "/tools/keyword-density-checker",
-    status: "coming-soon",
+    status: "live",
   },
 ];
