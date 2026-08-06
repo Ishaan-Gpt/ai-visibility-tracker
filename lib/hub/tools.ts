@@ -38,7 +38,7 @@ export const HUB_TOOLS: HubTool[] = [
     tagline: "Human navigation",
     description: "A readable HTML sitemap page for the visitors who never see your XML.",
     href: "/tools/sitemap-html-generator",
-    status: "coming-soon",
+    status: "live",
   },
   {
     slug: "keyword-density-checker",
