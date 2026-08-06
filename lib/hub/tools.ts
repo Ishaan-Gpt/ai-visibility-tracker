@@ -30,7 +30,7 @@ export const HUB_TOOLS: HubTool[] = [
     tagline: "Crawler discovery",
     description: "Clean, prioritized sitemap.xml files, ready to submit to Search Console.",
     href: "/tools/sitemap-xml-generator",
-    status: "coming-soon",
+    status: "live",
   },
   {
     slug: "sitemap-html-generator",
