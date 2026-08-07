@@ -14,13 +14,13 @@ export default async function SignupPage({
         <div className="mb-6 flex flex-col items-center text-center">
           <div
             className="mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-[#FFD209] text-lg font-bold text-black"
-            style={{ fontFamily: "'Inter Tight', sans-serif" }}
+            style={{ fontFamily: "var(--font-inter-tight), sans-serif" }}
           >
             O
           </div>
           <h1
             className="text-2xl font-bold tracking-tight text-neutral-900"
-            style={{ fontFamily: "'Inter Tight', sans-serif" }}
+            style={{ fontFamily: "var(--font-inter-tight), sans-serif" }}
           >
             Create your OMNI SEO account
           </h1>

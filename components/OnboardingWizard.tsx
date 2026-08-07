@@ -29,7 +29,7 @@ export default function OnboardingWizard({ maxPrompts }: { maxPrompts: number })
           </span>
           <h2
             className="mt-3 text-2xl font-bold tracking-tight text-neutral-900 md:text-3xl"
-            style={{ fontFamily: "'Inter Tight', sans-serif" }}
+            style={{ fontFamily: "var(--font-inter-tight), sans-serif" }}
           >
             What site are you working on?
           </h2>
@@ -79,7 +79,7 @@ export default function OnboardingWizard({ maxPrompts }: { maxPrompts: number })
           </span>
           <h2
             className="mt-3 text-2xl font-bold tracking-tight text-neutral-900 md:text-3xl"
-            style={{ fontFamily: "'Inter Tight', sans-serif" }}
+            style={{ fontFamily: "var(--font-inter-tight), sans-serif" }}
           >
             Track competitors &amp; prompts
           </h2>

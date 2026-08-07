@@ -67,7 +67,7 @@ export function StudioLayout({
             <Logomark className="w-8 h-8 text-[#E86A00]" />
             <span
               className="text-xl font-bold text-neutral-900 tracking-tight"
-              style={{ fontFamily: "'Inter Tight', sans-serif" }}
+              style={{ fontFamily: "var(--font-inter-tight), sans-serif" }}
             >
               OMNI SEO
             </span>
@@ -178,7 +178,7 @@ export function StudioLayout({
           <div>
             <h1
               className="text-2xl md:text-3xl font-bold text-neutral-900 tracking-tight"
-              style={{ fontFamily: "'Inter Tight', sans-serif" }}
+              style={{ fontFamily: "var(--font-inter-tight), sans-serif" }}
             >
               {activeTab === 'dashboard'
                 ? 'OMNI SEO Studio'

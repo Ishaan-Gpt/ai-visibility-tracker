@@ -50,13 +50,13 @@ export function StudioShell({ userEmail, brandName, brandDomain, initialTab, das
           <div className="mb-4 flex items-center gap-2.5 px-2 py-3">
             <div
               className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[#FFD209] text-sm font-bold text-black"
-              style={{ fontFamily: "'Inter Tight', sans-serif" }}
+              style={{ fontFamily: "var(--font-inter-tight), sans-serif" }}
             >
               O
             </div>
             <span
               className="text-xl font-bold tracking-tight text-neutral-900"
-              style={{ fontFamily: "'Inter Tight', sans-serif" }}
+              style={{ fontFamily: "var(--font-inter-tight), sans-serif" }}
             >
               OMNI SEO
             </span>
@@ -154,7 +154,7 @@ export function StudioShell({ userEmail, brandName, brandDomain, initialTab, das
           <div>
             <h1
               className="text-2xl font-bold tracking-tight text-neutral-900 md:text-3xl"
-              style={{ fontFamily: "'Inter Tight', sans-serif" }}
+              style={{ fontFamily: "var(--font-inter-tight), sans-serif" }}
             >
               {activeTab === "dashboard" ? "OMNI SEO Studio" : activeToolMeta?.name ?? "Workspace"}
             </h1>

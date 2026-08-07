@@ -2,6 +2,8 @@
 
 import React, { useState } from 'react'
 import { Logomark } from '@/components/tools/shared/icons/Logomark'
+import { emailPasswordSignIn, googleSignIn } from '@/lib/authClient'
+import { createBrand } from '@/app/tools/ai-visibility-tracker/(app)/onboarding/actions'
 
 interface AuthFlowModalProps {
   isOpen: boolean
@@ -12,29 +14,49 @@ interface AuthFlowModalProps {
 export function AuthFlowModal({ isOpen, onClose, onComplete }: AuthFlowModalProps) {
   const [step, setStep] = useState<'auth' | 1 | 2 | 3>('auth')
   const [mode, setMode] = useState<'login' | 'signup'>('login')
-  const [email, setEmail] = useState('ishaan@omniseo.ai')
-  const [password, setPassword] = useState('password123')
-  const [domain, setDomain] = useState('acme.com')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [brandName, setBrandName] = useState('')
+  const [domain, setDomain] = useState('')
   const [selectedTools, setSelectedTools] = useState<string[]>([
     'AI Search Visibility',
     'Schema Markup',
   ])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   if (!isOpen) return null
 
-  function handleAuthSuccess(userEmail: string) {
-    setEmail(userEmail)
-    setStep(1)
+  async function handleSubmitForm(e: React.FormEvent) {
+    e.preventDefault()
+    setError(null)
+    setLoading(true)
+    try {
+      const user = await emailPasswordSignIn(mode, email, password)
+      setEmail(user.email ?? email)
+      setStep(1)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Something went wrong')
+    } finally {
+      setLoading(false)
+    }
   }
 
-  function handleSubmitForm(e: React.FormEvent) {
+  async function handleGoogleClick(e: React.MouseEvent) {
     e.preventDefault()
-    handleAuthSuccess(email || 'ishaan@omniseo.ai')
-  }
-
-  function handleGoogleClick(e: React.MouseEvent) {
-    e.preventDefault()
-    handleAuthSuccess('ishaan@gmail.com')
+    setError(null)
+    setLoading(true)
+    try {
+      const user = await googleSignIn()
+      setEmail(user.email ?? '')
+      setStep(1)
+    } catch {
+      setError(
+        "Google sign-in didn't work here — try the full login page at /tools/ai-visibility-tracker/login instead."
+      )
+    } finally {
+      setLoading(false)
+    }
   }
 
   function toggleTool(t: string) {
@@ -45,10 +67,34 @@ export function AuthFlowModal({ isOpen, onClose, onComplete }: AuthFlowModalProp
     }
   }
 
-  function handleNextStep() {
-    if (step === 1) setStep(2)
-    else if (step === 2) setStep(3)
-    else if (step === 3) onComplete(domain || 'acme.com', email)
+  async function handleNextStep() {
+    if (step === 1) {
+      if (!brandName.trim() || !domain.trim()) {
+        setError('Brand name and domain are required.')
+        return
+      }
+      setError(null)
+      setStep(2)
+    } else if (step === 2) {
+      setStep(3)
+    } else if (step === 3) {
+      setError(null)
+      setLoading(true)
+      const formData = new FormData()
+      formData.set('name', brandName)
+      formData.set('domain', domain)
+      try {
+        await createBrand(formData)
+        // createBrand redirects on success — this line only runs if it didn't.
+        onComplete(domain, email)
+      } catch (err) {
+        const digest = (err as { digest?: string })?.digest
+        if (digest?.startsWith('NEXT_REDIRECT')) throw err
+        setError(err instanceof Error ? err.message : 'Could not create your brand')
+      } finally {
+        setLoading(false)
+      }
+    }
   }
 
   return (
@@ -70,7 +116,7 @@ export function AuthFlowModal({ isOpen, onClose, onComplete }: AuthFlowModalProp
               <Logomark className="w-12 h-12 mb-3 text-[#E86A00]" />
               <h2
                 className="text-2xl font-bold text-neutral-900 tracking-tight"
-                style={{ fontFamily: "'Inter Tight', sans-serif" }}
+                style={{ fontFamily: "var(--font-inter-tight), sans-serif" }}
               >
                 {mode === 'login' ? 'Log in to OMNI SEO' : 'Create your OMNI SEO Account'}
               </h2>
@@ -108,11 +154,14 @@ export function AuthFlowModal({ isOpen, onClose, onComplete }: AuthFlowModalProp
                 />
               </div>
 
+              {error && <p className="text-xs text-rose-600">{error}</p>}
+
               <button
                 type="submit"
-                className="w-full py-3.5 rounded-xl bg-[#FFD209] text-black font-semibold text-sm hover:bg-[#e0b800] transition shadow-md cursor-pointer"
+                disabled={loading}
+                className="w-full py-3.5 rounded-xl bg-[#FFD209] text-black font-semibold text-sm hover:bg-[#e0b800] transition shadow-md cursor-pointer disabled:cursor-default disabled:opacity-60"
               >
-                {mode === 'login' ? 'Log In ↗' : 'Sign Up Free ↗'}
+                {loading ? 'Please wait…' : mode === 'login' ? 'Log In ↗' : 'Sign Up Free ↗'}
               </button>
             </form>
 
@@ -125,7 +174,8 @@ export function AuthFlowModal({ isOpen, onClose, onComplete }: AuthFlowModalProp
             <button
               type="button"
               onClick={handleGoogleClick}
-              className="w-full py-3 rounded-xl border border-neutral-300 bg-white text-neutral-800 text-sm font-semibold hover:bg-neutral-50 transition flex items-center justify-center gap-2 shadow-sm cursor-pointer"
+              disabled={loading}
+              className="w-full py-3 rounded-xl border border-neutral-300 bg-white text-neutral-800 text-sm font-semibold hover:bg-neutral-50 transition flex items-center justify-center gap-2 shadow-sm cursor-pointer disabled:cursor-default disabled:opacity-60"
             >
               <svg className="w-4 h-4" viewBox="0 0 24 24">
                 <path
@@ -218,6 +268,19 @@ export function AuthFlowModal({ isOpen, onClose, onComplete }: AuthFlowModalProp
 
                 <div>
                   <label className="block text-xs font-semibold text-neutral-700 mb-2">
+                    Brand Name
+                  </label>
+                  <input
+                    type="text"
+                    value={brandName}
+                    onChange={(e) => setBrandName(e.target.value)}
+                    placeholder="Acme Inc"
+                    className="w-full px-4 py-3 rounded-xl border border-neutral-300 bg-neutral-50 text-base text-neutral-900 outline-none focus:border-black focus:ring-2 focus:ring-black/10 transition"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-neutral-700 mb-2">
                     Target Domain Name
                   </label>
                   <input
@@ -228,6 +291,8 @@ export function AuthFlowModal({ isOpen, onClose, onComplete }: AuthFlowModalProp
                     className="w-full px-4 py-3 rounded-xl border border-neutral-300 bg-neutral-50 text-base font-mono text-neutral-900 outline-none focus:border-black focus:ring-2 focus:ring-black/10 transition"
                   />
                 </div>
+
+                {error && <p className="text-xs text-rose-600">{error}</p>}
               </div>
             )}
 
@@ -316,6 +381,8 @@ export function AuthFlowModal({ isOpen, onClose, onComplete }: AuthFlowModalProp
                     )
                   })}
                 </div>
+
+                {error && <p className="text-xs text-rose-600">{error}</p>}
               </div>
             )}
 
@@ -335,9 +402,10 @@ export function AuthFlowModal({ isOpen, onClose, onComplete }: AuthFlowModalProp
               <button
                 type="button"
                 onClick={handleNextStep}
-                className="px-8 py-3 rounded-xl bg-black text-white font-semibold text-sm hover:bg-neutral-800 transition shadow-md"
+                disabled={loading}
+                className="px-8 py-3 rounded-xl bg-black text-white font-semibold text-sm hover:bg-neutral-800 transition shadow-md disabled:cursor-default disabled:opacity-60"
               >
-                {step === 3 ? 'Launch OMNI SEO Studio 🚀' : 'Continue →'}
+                {loading ? 'Please wait…' : step === 3 ? 'Launch OMNI SEO Studio 🚀' : 'Continue →'}
               </button>
             </div>
           </div>

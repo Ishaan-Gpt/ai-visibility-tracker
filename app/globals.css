@@ -26,6 +26,7 @@
   --color-surface-deep: var(--surface-deep);
   --color-foreground: var(--foreground);
   --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted);
   --color-border: var(--border);
 
   --color-primary: var(--orange-500);
@@ -58,4 +59,106 @@
 body {
   background: var(--background);
   color: var(--foreground);
+}
+
+/* --- OMNI SEO hero showcase system --- */
+
+.mesh-showcase {
+  position: relative;
+  background-color: #0c0a09;
+  background-image:
+    radial-gradient(55% 95% at 100% 50%, rgba(255, 210, 9, 0.5) 0%, rgba(255, 210, 9, 0) 70%),
+    radial-gradient(45% 75% at 88% 50%, rgba(255, 225, 120, 0.35) 0%, rgba(255, 225, 120, 0) 70%),
+    radial-gradient(60% 75% at 60% 50%, rgba(255, 180, 40, 0.55) 0%, rgba(255, 180, 40, 0) 70%),
+    radial-gradient(75% 80% at 50% 55%, rgba(230, 120, 20, 0.4) 0%, rgba(230, 120, 20, 0) 65%),
+    radial-gradient(80% 80% at 30% 60%, rgba(150, 90, 20, 0.35) 0%, rgba(150, 90, 20, 0) 60%),
+    radial-gradient(60% 70% at 12% 95%, rgba(90, 60, 20, 0.4) 0%, rgba(90, 60, 20, 0) 65%),
+    radial-gradient(55% 75% at 0% 0%, rgba(40, 35, 20, 0.5) 0%, rgba(40, 35, 20, 0) 60%),
+    linear-gradient(180deg, #1a1710 0%, #111114 100%);
+  background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 200% 200%;
+  animation: meshFlow 14s ease-in-out infinite, meshDrift 18s ease-in-out infinite;
+}
+.mesh-showcase::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: repeating-linear-gradient(
+    -30deg,
+    rgba(255, 255, 255, 0) 0px,
+    rgba(255, 255, 255, 0) 240px,
+    rgba(255, 255, 255, 0.1) 340px,
+    rgba(255, 255, 255, 0.22) 380px,
+    rgba(255, 255, 255, 0.1) 420px,
+    rgba(255, 255, 255, 0) 520px,
+    rgba(255, 255, 255, 0) 820px
+  );
+  background-size: 200% 200%;
+  mix-blend-mode: screen;
+  animation: shimmerSweep 9s linear infinite;
+  border-radius: inherit;
+}
+.mesh-showcase > * {
+  position: relative;
+  z-index: 1;
+}
+
+@keyframes meshFlow {
+  0%,
+  100% {
+    filter: hue-rotate(0deg) saturate(1) brightness(1);
+  }
+  50% {
+    filter: hue-rotate(-6deg) saturate(1.08) brightness(1.05);
+  }
+}
+@keyframes meshDrift {
+  0%,
+  100% {
+    background-position: 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%;
+  }
+  50% {
+    background-position: 0% 0%, 0% 0%, 2% -3%, -3% 2%, 3% 3%, -2% -2%, 0% 0%, 30% 70%;
+  }
+}
+@keyframes shimmerSweep {
+  0% {
+    background-position: 0% 100%;
+  }
+  100% {
+    background-position: 100% 0%;
+  }
+}
+
+.star {
+  color: #ffd209;
+}
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+.animate-marquee {
+  animation: marquee 28s linear infinite;
+}
+
+@keyframes dotPop {
+  from {
+    opacity: 0;
+    transform: scale(0.2);
+  }
+  to {
+    opacity: 0.36;
+    transform: scale(1);
+  }
+}
+.dot-pop {
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: dotPop 0.35s ease-out forwards;
 }

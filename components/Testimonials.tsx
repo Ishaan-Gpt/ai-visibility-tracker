@@ -4,30 +4,144 @@ import React from 'react'
 import { motion } from 'framer-motion'
 
 export function Testimonials() {
+  const quoteText =
+    'OMNI SEO completely changed how I approached ranking our product. Instead of feeling overwhelmed with choices, it felt like having a search engineer by my side 24/7.'
+
+  const fadeUp = {
+    hidden: { opacity: 0, y: 24 },
+    visible: { opacity: 1, y: 0 },
+  }
+
   return (
-    <section className="py-24 bg-[#FAF9F6] px-6 md:px-12 border-b border-black/5">
-      <div className="max-w-[1200px] mx-auto text-center">
-        <span className="px-3.5 py-1 rounded-full bg-white border border-black/10 text-xs font-semibold uppercase tracking-wider text-black">
-          Client Success
-        </span>
-
-        <blockquote
-          className="text-3xl md:text-5xl font-medium leading-[1.15] tracking-tight text-neutral-900 mt-8 max-w-4xl mx-auto"
-          style={{ fontFamily: "'Inter Tight', sans-serif" }}
+    <section className="bg-white border-b border-black/5">
+      <div className="max-w-[1360px] mx-auto px-6 md:px-10 py-20">
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.25 }}
+          transition={{ staggerChildren: 0.18 }}
+          className="flex flex-col lg:flex-row justify-between items-stretch gap-8 lg:gap-[25px]"
         >
-          "OMNI SEO replaced 5 separate subscriptions and increased our organic search traffic by{' '}
-          <span className="text-[#E86A00] font-bold">340%</span> in less than 90 days."
-        </blockquote>
+          {/* Left Column Wrapper */}
+          <div className="flex flex-col lg:flex-row gap-[25px] items-stretch">
+            {/* Block A */}
+            <motion.div
+              variants={fadeUp}
+              transition={{ duration: 0.6, ease: 'easeOut' }}
+              className="flex flex-row lg:flex-col justify-between lg:h-full lg:min-h-[447px] gap-4 lg:gap-8 items-center lg:items-start p-6 rounded-2xl bg-[#FAF9F6] border border-black/5"
+            >
+              <div className="flex flex-col gap-6 flex-1 lg:flex-none">
+                <h3
+                  className="text-3xl text-black leading-tight max-w-[260px] font-medium"
+                  style={{ fontFamily: "var(--font-inter-tight), sans-serif" }}
+                >
+                  OMNI SEO{' '}
+                  <span style={{ fontFamily: "'Playfair Display', serif", fontStyle: 'italic' }}>
+                    changed my approach
+                  </span>
+                </h3>
 
-        <div className="mt-8 flex items-center justify-center gap-4">
-          <div className="w-12 h-12 rounded-full bg-[#FFD209] text-black font-bold text-lg flex items-center justify-center">
-            S
+                {/* Desktop Dot Indicator */}
+                <div className="hidden lg:flex items-center gap-2">
+                  <div className="w-8 h-2 bg-black rounded-full" />
+                  <div className="w-2 h-2 bg-stone-300 rounded-full" />
+                  <div className="w-2 h-2 bg-stone-300 rounded-full" />
+                </div>
+              </div>
+
+              <motion.button
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.4 }}
+                transition={{ delay: 0.3, duration: 0.5, ease: 'easeOut' }}
+                className="self-start bg-black text-white px-7 py-3 rounded-2xl text-xl font-medium hover:bg-neutral-800 transition-colors whitespace-nowrap shadow-md cursor-pointer"
+                style={{ fontFamily: "var(--font-inter-tight), sans-serif" }}
+              >
+                Read Case Study
+              </motion.button>
+            </motion.div>
+
+            {/* Block B */}
+            <div className="flex flex-col gap-3 w-full lg:w-[282px]">
+              <motion.div
+                variants={fadeUp}
+                transition={{ duration: 0.6, ease: 'easeOut' }}
+                className="w-full h-[280px] lg:h-[351px] rounded-2xl overflow-hidden shadow-md"
+              >
+                <img
+                  src="/images/ai_expert_1_1786114890114.png"
+                  alt="Sophia Martinez"
+                  className="w-full h-full object-cover"
+                />
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.4, duration: 0.55, ease: 'easeOut' }}
+                className="w-full h-24 rounded-2xl flex items-center justify-center gap-3 bg-[#F1F0EF]"
+              >
+                <div className="w-8 h-8 rounded-full bg-[#FFD209] text-black font-bold text-sm flex items-center justify-center">
+                  ⚡
+                </div>
+                <span
+                  className="text-2xl font-bold text-black"
+                  style={{ fontFamily: "var(--font-inter-tight), sans-serif" }}
+                >
+                  Nutanix Tech
+                </span>
+              </motion.div>
+            </div>
           </div>
-          <div className="text-left">
-            <h4 className="text-base font-bold text-neutral-900">Sarah Jenkins</h4>
-            <p className="text-xs text-muted-foreground">VP of Growth, Nutanix Tech</p>
-          </div>
-        </div>
+
+          {/* Right Column Quote Card */}
+          <motion.div
+            variants={fadeUp}
+            transition={{ duration: 0.6, ease: 'easeOut' }}
+            className="max-w-[748px] flex-1 p-8 md:p-10 rounded-2xl flex flex-col justify-between gap-10 bg-[#7D756E1C] border border-black/5"
+          >
+            <p
+              className="text-2xl md:text-3xl leading-relaxed text-black font-medium"
+              style={{ fontFamily: "var(--font-inter-tight), sans-serif" }}
+            >
+              {quoteText.split(' ').map((word, i) => (
+                <motion.span
+                  key={i}
+                  initial={{ opacity: 0, y: 6 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{
+                    duration: 0.35,
+                    delay: 0.4 + i * 0.04,
+                    ease: 'easeOut',
+                  }}
+                  className="inline-block mr-[0.25em]"
+                >
+                  {word}
+                </motion.span>
+              ))}
+            </p>
+
+            <motion.div
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.6, duration: 0.6, ease: 'easeOut' }}
+              className="flex flex-col gap-1 border-t border-black/10 pt-6"
+            >
+              <span
+                className="text-xl font-bold text-black"
+                style={{ fontFamily: "'Playfair Display', serif", fontStyle: 'italic' }}
+              >
+                Sophia Martinez,
+              </span>
+              <span className="text-sm md:text-base text-black/60 font-sans">
+                VP of Growth &amp; Organic Search, Nutanix
+              </span>
+            </motion.div>
+          </motion.div>
+        </motion.div>
       </div>
     </section>
   )

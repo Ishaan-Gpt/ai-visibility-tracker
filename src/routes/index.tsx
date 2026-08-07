@@ -66,66 +66,6 @@ export function AnimatedWords({
   )
 }
 
-// --- Animated Dotted Frame ---
-interface AnimatedDottedFrameProps {
-  className?: string
-  style?: React.CSSProperties
-  startDelay?: number
-}
-
-export function AnimatedDottedFrame({
-  className,
-  style,
-  startDelay = 0,
-}: AnimatedDottedFrameProps) {
-  const pathRef = useRef<SVGPathElement | null>(null)
-  const [points, setPoints] = useState<{ x: number; y: number }[]>([])
-
-  useEffect(() => {
-    if (pathRef.current) {
-      const total = pathRef.current.getTotalLength()
-      const pts: { x: number; y: number }[] = []
-      for (let d = 2; d <= total; d += 4) {
-        const pt = pathRef.current.getPointAtLength(d)
-        pts.push({ x: pt.x, y: pt.y })
-      }
-      setPoints(pts)
-    }
-  }, [])
-
-  return (
-    <svg
-      className={className}
-      style={style}
-      width="141"
-      height="107"
-      viewBox="0 0 141 107"
-      fill="none"
-      aria-hidden="true"
-    >
-      <path
-        ref={pathRef}
-        d="M140.75 3.75H5.75C2.98857 3.75 0.75 5.98858 0.75 8.75V95.75C0.75 98.5114 2.98858 100.75 5.75 100.75H40"
-        fill="none"
-        stroke="none"
-      />
-      <g>
-        {points.map((p, i) => (
-          <circle
-            key={i}
-            cx={p.x}
-            cy={p.y}
-            r="1"
-            fill="white"
-            className="dot-pop"
-            style={{ animationDelay: `${startDelay + i * 40}ms` }}
-          />
-        ))}
-      </g>
-    </svg>
-  )
-}
-
 function ChevronDown(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
@@ -153,14 +93,6 @@ function HeroSection({ onStart }: { onStart: () => void }) {
     { name: 'How it works', href: '#' },
     { name: 'Company', href: '#', hasDropdown: true },
     { name: 'Case Studies', href: '#' },
-  ]
-
-  const omniTools = [
-    'AI Search Agent',
-    'Rank Tracking & Audits',
-    'Automated Content Engine',
-    'Schema & Technical SEO',
-    'Real-Time SERP Analytics',
   ]
 
   return (
@@ -463,10 +395,10 @@ export default function LandingPage() {
       {/* 4) TESTIMONIALS SECTION */}
       <Testimonials />
 
-      {/* 5) TEAM SECTION */}
+      {/* 5) TEAM SECTION (with TeamCarousel & 126px hover puck) */}
       <TeamSection />
 
-      {/* 6) BENEFITS SECTION */}
+      {/* 6) BENEFITS SECTION (3-card grid with custom interior gradient divider lines) */}
       <BenefitsSection />
 
       {/* 7) CONSULTANTS BENTO SECTION */}

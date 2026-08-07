@@ -13,6 +13,7 @@ import { BenefitsSection } from '@/components/BenefitsSection'
 import { ConsultantsSection } from '@/components/ConsultantsSection'
 import { DeFiArchitectureSection } from '@/components/DeFiArchitectureSection'
 import { FAQFooterSection } from '@/components/FAQFooterSection'
+import { Logomark } from '@/components/tools/shared/icons/Logomark'
 
 // --- Animated Words Component ---
 interface AnimatedWordsProps {
@@ -40,7 +41,7 @@ export function AnimatedWords({
       {words.map((word, i) => (
         <span
           key={i}
-          className="inline-block overflow-hidden pb-[0.16em] align-bottom"
+          className="inline-block overflow-hidden pb-[0.2em] align-bottom"
         >
           <motion.span
             className="inline-block"
@@ -65,67 +66,6 @@ export function AnimatedWords({
   )
 }
 
-// --- Animated Dotted Frame ---
-interface AnimatedDottedFrameProps {
-  className?: string
-  style?: React.CSSProperties
-  startDelay?: number
-}
-
-export function AnimatedDottedFrame({
-  className,
-  style,
-  startDelay = 0,
-}: AnimatedDottedFrameProps) {
-  const pathRef = useRef<SVGPathElement | null>(null)
-  const [points, setPoints] = useState<{ x: number; y: number }[]>([])
-
-  useEffect(() => {
-    if (pathRef.current) {
-      const total = pathRef.current.getTotalLength()
-      const pts: { x: number; y: number }[] = []
-      for (let d = 2; d <= total; d += 4) {
-        const pt = pathRef.current.getPointAtLength(d)
-        pts.push({ x: pt.x, y: pt.y })
-      }
-      setPoints(pts)
-    }
-  }, [])
-
-  return (
-    <svg
-      className={className}
-      style={style}
-      width="141"
-      height="107"
-      viewBox="0 0 141 107"
-      fill="none"
-      aria-hidden="true"
-    >
-      <path
-        ref={pathRef}
-        d="M140.75 3.75H5.75C2.98857 3.75 0.75 5.98858 0.75 8.75V95.75C0.75 98.5114 2.98858 100.75 5.75 100.75H40"
-        fill="none"
-        stroke="none"
-      />
-      <g>
-        {points.map((p, i) => (
-          <circle
-            key={i}
-            cx={p.x}
-            cy={p.y}
-            r="1"
-            fill="white"
-            className="dot-pop"
-            style={{ animationDelay: `${startDelay + i * 40}ms` }}
-          />
-        ))}
-      </g>
-    </svg>
-  )
-}
-
-// --- Brand SVGs ---
 function ChevronDown(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
@@ -144,22 +84,58 @@ function ChevronDown(props: React.SVGProps<SVGSVGElement>) {
   )
 }
 
-function MainLogomark(props: React.SVGProps<SVGSVGElement>) {
+function StarIcon({ half, className }: { half?: boolean; className?: string }) {
   return (
-    <svg viewBox="0 0 24 24" fill="none" {...props}>
+    <svg width="16" height="16" viewBox="0 0 24 24" className={className}>
+      {half && (
+        <defs>
+          <linearGradient id="half-star">
+            <stop offset="50%" stopColor="currentColor" />
+            <stop offset="50%" stopColor="rgba(0,0,0,0.15)" />
+          </linearGradient>
+        </defs>
+      )}
       <path
-        d="M9 4H6a2 2 0 0 0-2 2v3M15 4h3a2 2 0 0 1 2 2v3M9 20H6a2 2 0 0 1-2-2v-3M15 20h3a2 2 0 0 0 2-2v-3"
-        stroke="currentColor"
-        strokeWidth="1.7"
-        strokeLinecap="round"
-        strokeLinejoin="round"
+        d="M12 2.5l2.95 6.2 6.8.78-5.05 4.66 1.4 6.66L12 17.6l-6.1 3.2 1.4-6.66L2.25 9.48l6.8-.78L12 2.5z"
+        fill={half ? 'url(#half-star)' : 'currentColor'}
       />
-      <circle cx="12" cy="12" r="2.1" fill="currentColor" />
     </svg>
   )
 }
 
-// --- Hero Section Component ---
+const MARQUEE_BRANDS = ['Oracle', 'GoFundMe', 'Nutanix', 'Upside']
+
+function TrustedByStrip() {
+  return (
+    <div className="mt-6 px-2 pb-1 flex items-center justify-center">
+      <div
+        className="w-full max-w-2xl overflow-hidden"
+        style={{
+          maskImage:
+            'linear-gradient(to right, transparent 0, #000 60px, #000 calc(100% - 60px), transparent 100%)',
+        }}
+      >
+        <div className="flex w-max gap-12 animate-marquee justify-center">
+          {[0, 1].map((groupIndex) => (
+            <div key={groupIndex} className="flex items-center gap-12 shrink-0 pr-12">
+              {MARQUEE_BRANDS.map((brand) => (
+                <span
+                  key={brand}
+                  className="text-white/60 text-base font-semibold tracking-tight whitespace-nowrap"
+                  style={{ fontFamily: "var(--font-inter-tight), sans-serif" }}
+                >
+                  {brand}
+                </span>
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// --- Main Hero Component ---
 function HeroSection({ onStart }: { onStart: () => void }) {
   const brandName = 'OMNI SEO'
   const brandLetters = brandName.split('')
@@ -189,9 +165,12 @@ function HeroSection({ onStart }: { onStart: () => void }) {
               animate={{ scale: 1 }}
               transition={{ duration: 0.5, ease: 'backOut' }}
             >
-              <MainLogomark className="w-[38px] h-[38px] text-[#E86A00]" />
+              <Logomark className="w-[38px] h-[38px] text-[#E86A00]" />
             </motion.div>
-            <span className="text-[26px] font-bold text-black tracking-tight leading-none flex">
+            <span
+              className="text-[28px] font-semibold text-black tracking-tight leading-none flex"
+              style={{ fontFamily: "var(--font-inter-tight), sans-serif" }}
+            >
               {brandLetters.map((char, index) => (
                 <span
                   key={index}
@@ -204,7 +183,7 @@ function HeroSection({ onStart }: { onStart: () => void }) {
                     transition={{
                       duration: 0.6,
                       ease: [0.25, 1, 0.5, 1],
-                      delay: 0.5 + index * 0.05,
+                      delay: 0.5 + index * 0.06,
                     }}
                   >
                     {char === ' ' ? '\u00A0' : char}
@@ -246,7 +225,7 @@ function HeroSection({ onStart }: { onStart: () => void }) {
           </motion.button>
         </header>
 
-        {/* 2) HERO TEXT & CTAs */}
+        {/* 2) HERO */}
         <section className="pt-14 md:pt-20 text-center">
           <motion.div
             className="inline-flex items-center p-[4px] pr-[11px] gap-[10px] rounded-[8px] bg-[rgba(192,192,192,0.17)]"
@@ -324,7 +303,7 @@ function HeroSection({ onStart }: { onStart: () => void }) {
             <motion.button
               type="button"
               onClick={onStart}
-              className="rounded-full px-6 py-3 text-[15px] font-semibold text-foreground bg-[#FFD209] hover:scale-[1.02] transition-transform cursor-pointer"
+              className="rounded-full px-6 py-3 text-[15px] font-semibold text-white bg-black hover:bg-neutral-800 hover:scale-[1.02] transition-transform cursor-pointer"
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ duration: 0.5, ease: 'backOut', delay: 2.8 }}
@@ -336,22 +315,22 @@ function HeroSection({ onStart }: { onStart: () => void }) {
 
         {/* 3) SHOWCASE CARD */}
         <motion.div
-          className="mt-14 w-full rounded-[28px] overflow-hidden p-5 md:p-7 bg-[#111114] text-white shadow-2xl"
+          className="mt-14 w-full rounded-[28px] overflow-hidden p-3 md:p-4 bg-[#0a0a0a] text-white shadow-2xl"
           initial={{ opacity: 0, y: 60 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1.0, ease: [0.25, 1, 0.5, 1], delay: 3.0 }}
         >
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            {/* LEFT INNER CARD */}
+          <div className="grid grid-cols-1 md:grid-cols-[1.35fr_1fr] gap-4 items-start">
+            {/* LEFT INNER CARD — warm mesh gradient */}
             <motion.div
-              className="min-h-[360px] rounded-[22px] bg-[#1E1D19] p-6 md:p-7 text-white relative flex flex-col justify-between"
+              className="mesh-showcase min-h-[300px] md:min-h-[380px] rounded-[22px] p-6 md:p-8 text-white relative flex flex-col justify-between overflow-hidden"
               initial={{ opacity: 0, y: 40 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, ease: 'easeOut', delay: 3.2 }}
             >
               <div>
                 <motion.div
-                  className="w-[36px] h-[22px] rounded-[6px] bg-[#FFD209] text-black text-[12px] font-bold flex items-center justify-center mb-4"
+                  className="w-[36px] h-[22px] rounded-[6px] bg-white text-black text-[12px] font-bold flex items-center justify-center mb-5"
                   initial={{ scale: 2.4, opacity: 0.2 }}
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{
@@ -363,7 +342,7 @@ function HeroSection({ onStart }: { onStart: () => void }) {
                   Pro
                 </motion.div>
 
-                <h3 className="text-[28px] font-medium leading-[1.15] tracking-tight text-white">
+                <h3 className="text-[26px] md:text-[30px] font-medium leading-[1.15] tracking-tight text-white">
                   <div>
                     <AnimatedWords text="All-in-One" delayStart={3.6} />
                   </div>
@@ -371,59 +350,68 @@ function HeroSection({ onStart }: { onStart: () => void }) {
                     <AnimatedWords text="AI Search Platform" delayStart={3.75} />
                   </div>
                 </h3>
+
+                <p className="text-[14px] font-normal text-white/50 leading-relaxed mt-4 max-w-[260px]">
+                  From keyword intelligence to automated SERP ranking, all 5 AI tools powered by OMNI SEO.
+                </p>
               </div>
 
-              <p className="text-[15px] font-normal text-white/60 leading-relaxed mt-6">
-                From keyword intelligence to automated SERP ranking,
-                <br />
-                All 5 AI tools powered by OMNI SEO.
-              </p>
+              {/* Soft abstract graphic, bottom-right */}
+              <div
+                className="hidden md:block absolute -bottom-10 -right-10 w-[240px] h-[240px] rounded-full opacity-70 pointer-events-none"
+                style={{
+                  background:
+                    'radial-gradient(circle at 35% 35%, rgba(191, 219, 254, 0.55), rgba(147, 197, 253, 0.15) 55%, transparent 75%)',
+                  filter: 'blur(2px)',
+                }}
+              />
+              <div className="hidden md:block absolute bottom-8 right-10 w-24 h-24 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20" />
             </motion.div>
 
-            {/* RIGHT INNER CARD */}
+            {/* RIGHT INNER CARD — white testimonial, shorter than left */}
             <motion.div
-              className="min-h-[360px] rounded-[22px] bg-white p-6 md:p-7 text-neutral-900 relative flex flex-col justify-between"
+              className="rounded-[22px] bg-white p-6 text-neutral-900 relative flex flex-col gap-5"
               initial={{ opacity: 0, y: 40 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, ease: 'easeOut', delay: 3.3 }}
             >
-              <div>
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-black bg-[#FFD209] px-3 py-1 rounded-full">
-                    Nutanix Success Story
-                  </span>
-                  <span className="text-xs text-muted-foreground font-mono">
-                    Feb 02, 2026
-                  </span>
-                </div>
-
-                <blockquote className="mt-6 text-[22px] font-medium leading-[1.3] tracking-tight text-foreground">
-                  <AnimatedWords
-                    text="They increased our organic traffic by 340%"
-                    delayStart={3.6}
-                  />
-                  {'\u00A0'}
-                  <AnimatedWords
-                    text="across all 5 search tools — and we rank #1 for our primary keywords."
-                    className="text-muted-foreground"
-                    delayStart={3.75}
-                    stagger={0.04}
-                  />
-                </blockquote>
+              <div className="flex items-center gap-2.5">
+                <img
+                  src="/images/ai_expert_2_1786114910389.png"
+                  alt="Customer"
+                  className="w-9 h-9 rounded-full object-cover border-2 border-white shadow-sm"
+                />
+                <span className="text-[14px] font-medium text-foreground">What our customers say</span>
               </div>
 
-              <div className="pt-6 border-t border-black/10 flex items-center justify-between">
+              <blockquote className="text-[18px] font-medium leading-[1.35] tracking-tight text-foreground">
+                <AnimatedWords text="They converted 40% more leads" delayStart={3.6} />
+                {' '}
+                <AnimatedWords
+                  text="than our old SEO agency — and never missed a follow-up."
+                  className="text-muted-foreground"
+                  delayStart={3.75}
+                  stagger={0.04}
+                />
+              </blockquote>
+
+              <div className="pt-4 border-t border-black/10 flex items-center justify-between">
                 <div>
                   <h4 className="text-sm font-bold text-neutral-900">Nutanix Tech</h4>
-                  <p className="text-xs text-muted-foreground">Enterprise Growth Team</p>
+                  <p className="text-xs text-muted-foreground">Growth Team</p>
                 </div>
 
-                <div className="flex items-center gap-1 text-[#FFD209]">
-                  ★★★★★
+                <div className="flex items-center gap-1">
+                  {[0, 1, 2, 3].map((i) => (
+                    <StarIcon key={i} className="star" />
+                  ))}
+                  <StarIcon half className="star" />
                 </div>
               </div>
             </motion.div>
           </div>
+
+          <TrustedByStrip />
         </motion.div>
       </div>
     </div>
@@ -478,10 +466,10 @@ export default function LandingPage() {
       {/* 4) TESTIMONIALS SECTION */}
       <Testimonials />
 
-      {/* 5) TEAM SECTION */}
+      {/* 5) TEAM SECTION (with TeamCarousel & 126px hover puck) */}
       <TeamSection />
 
-      {/* 6) BENEFITS SECTION */}
+      {/* 6) BENEFITS SECTION (3-card grid with custom interior gradient divider lines) */}
       <BenefitsSection />
 
       {/* 7) CONSULTANTS BENTO SECTION */}

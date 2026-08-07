@@ -1,78 +1,143 @@
 'use client'
 
 import React from 'react'
-import { motion } from 'framer-motion'
+import { AnimatedHeading, AnimatedText, MaskedImage } from './AnimatedHeading'
 
 export function BenefitsSection() {
-  const benefits = [
+  const items = [
     {
-      title: 'Manual Audits are Dead',
-      desc: 'Real-time automated crawls detect broken schemas, sitemap errors, and indexation bottlenecks in seconds.',
+      num: '01',
+      title: 'Manual Audits',
+      desc: 'We understand that relying on manual SEO audits leaves your site vulnerable to hidden indexation bottlenecks.',
       img: '/images/manual_audit_concept_1786114952122.png',
-      badge: 'Automated Audits',
+      reversed: false,
     },
     {
-      title: 'Ethical & Penalty-Proof',
-      desc: 'No black-hat tricks or link farms. OMNI SEO builds clean, structured data Google and LLMs trust.',
+      num: '02',
+      title: 'Penalty-Proof Strategy',
+      desc: 'When SEO lacks integrity, low-quality link farms damage domain authority. OMNI SEO builds clean, structured data Google and LLMs trust.',
       img: '/images/unethical_seo_concept_1786114969669.png',
-      badge: 'Penalty Proof',
+      reversed: true,
     },
     {
-      title: 'Instant Rank Visibility',
-      desc: 'No more waiting weeks for rank reports. See your position across Google & ChatGPT in real-time.',
+      num: '03',
+      title: 'Instant SERP Visibility',
+      desc: 'Brands experience long waiting times before traditional tools update rankings. OMNI SEO delivers instant visibility across Google & ChatGPT.',
       img: '/images/rank_waitlist_concept_1786114985986.png',
-      badge: 'Real-Time SERP',
+      reversed: false,
     },
   ]
 
   return (
-    <section className="py-24 bg-[#FAF9F6] px-6 md:px-12 border-b border-black/5">
-      <div className="max-w-[1400px] mx-auto">
-        <div className="text-center max-w-2xl mx-auto mb-16">
-          <span className="px-3.5 py-1 rounded-full bg-white border border-black/10 text-black text-xs font-semibold uppercase tracking-wider">
-            Why OMNI SEO
-          </span>
-          <h2
-            className="text-4xl md:text-5xl font-medium leading-tight text-neutral-900 mt-4"
-            style={{ fontFamily: "'Inter Tight', sans-serif" }}
-          >
-            Engineered for predictable organic growth
-          </h2>
-          <p className="text-sm text-muted-foreground mt-3">
-            Stop relying on guesswork. Our platform replaces manual audits and legacy tools with automated intelligence.
-          </p>
+    <section className="py-32 px-8 md:px-12 bg-[#FAF9F6] border-b border-black/5">
+      <div className="max-w-[1728px] mx-auto">
+        {/* Top Intro Grid */}
+        <div className="grid grid-cols-12 gap-12 mb-24 items-start">
+          <div className="col-span-12 md:col-span-7">
+            <AnimatedHeading className="text-5xl md:text-6xl font-medium leading-[1.05] text-neutral-900">
+              Explore the Benefits of
+              <br />
+              Our AI Search Platform
+            </AnimatedHeading>
+          </div>
+
+          <div className="col-span-12 md:col-span-4 md:col-start-9 md:pt-4">
+            <AnimatedText className="text-base text-muted-foreground leading-relaxed">
+              By choosing an automated AI search platform over legacy offline tools, modern brands reach global search audiences easily, connect with high-intent buyers, and shape the future of organic discovery.
+            </AnimatedText>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {benefits.map((b) => (
-            <motion.div
-              key={b.title}
-              whileHover={{ y: -6 }}
-              className="rounded-[28px] bg-white border border-black/8 overflow-hidden p-7 shadow-sm flex flex-col justify-between"
-            >
-              <div>
-                <div className="w-full h-52 rounded-2xl bg-[#FAF9F6] overflow-hidden mb-6 flex items-center justify-center p-4">
-                  <img
-                    src={b.img}
-                    alt={b.title}
-                    className="w-full h-full object-contain"
+        {/* 3-Card Grid with Custom Divider Lines */}
+        <div
+          className="relative grid grid-cols-1 md:grid-cols-3"
+          style={{
+            backgroundImage:
+              'linear-gradient(to right, rgba(0,0,0,0.12) 1px, transparent 1px), linear-gradient(to right, rgba(0,0,0,0.12) 1px, transparent 1px)',
+            backgroundSize: '1px 100%, 1px 100%',
+            backgroundPosition: '33.3333% 0, 66.6666% 0',
+            backgroundRepeat: 'no-repeat',
+          }}
+        >
+          {/* Top Horizontal Line */}
+          <span
+            aria-hidden
+            className="pointer-events-none absolute left-0 right-0 top-0 h-px"
+            style={{
+              background:
+                'linear-gradient(to right, transparent 0%, rgba(0,0,0,0.15) 15%, rgba(0,0,0,0.15) 85%, transparent 100%)',
+            }}
+          />
+
+          {/* Bottom Horizontal Line */}
+          <span
+            aria-hidden
+            className="pointer-events-none absolute left-0 right-0 bottom-0 h-px"
+            style={{
+              background:
+                'linear-gradient(to right, transparent 0%, rgba(0,0,0,0.15) 15%, rgba(0,0,0,0.15) 85%, transparent 100%)',
+            }}
+          />
+
+          {items.map((card, i) => {
+            if (card.reversed) {
+              // CARD 02: REVERSED (Image on top, Content on bottom)
+              return (
+                <div key={card.num} className="p-10 flex flex-col gap-8 justify-between">
+                  <div className="aspect-square overflow-hidden rounded-2xl bg-white p-4 shadow-sm border border-black/5">
+                    <MaskedImage
+                      src={card.img}
+                      alt={card.title}
+                      className="w-full h-full"
+                      delay={i * 0.12}
+                    />
+                  </div>
+
+                  <div className="mt-auto">
+                    <div className="flex items-start gap-3 mb-4">
+                      <span className="text-xs text-muted-foreground font-mono mt-2">
+                        ({card.num})
+                      </span>
+                      <AnimatedHeading as="h3" className="text-3xl font-medium text-neutral-900" delay={i * 0.1}>
+                        {card.title}
+                      </AnimatedHeading>
+                    </div>
+                    <AnimatedText className="text-sm text-muted-foreground leading-relaxed max-w-sm" delay={0.2 + i * 0.1}>
+                      {card.desc}
+                    </AnimatedText>
+                  </div>
+                </div>
+              )
+            }
+
+            // CARD 01 & 03: STANDARD (Content on top, Image on bottom)
+            return (
+              <div key={card.num} className="p-10 flex flex-col gap-8 justify-between">
+                <div>
+                  <div className="flex items-start gap-3 mb-4">
+                    <span className="text-xs text-muted-foreground font-mono mt-2">
+                      ({card.num})
+                    </span>
+                    <AnimatedHeading as="h3" className="text-3xl font-medium text-neutral-900" delay={i * 0.1}>
+                      {card.title}
+                    </AnimatedHeading>
+                  </div>
+                  <AnimatedText className="text-sm text-muted-foreground leading-relaxed max-w-sm" delay={0.2 + i * 0.1}>
+                    {card.desc}
+                  </AnimatedText>
+                </div>
+
+                <div className="aspect-square overflow-hidden rounded-2xl bg-white p-4 shadow-sm border border-black/5 mt-auto">
+                  <MaskedImage
+                    src={card.img}
+                    alt={card.title}
+                    className="w-full h-full"
+                    delay={i * 0.12}
                   />
                 </div>
-                <span className="text-xs font-bold bg-[#FFD209] text-black px-3 py-1 rounded-full inline-block mb-3">
-                  {b.badge}
-                </span>
-                <h3 className="text-2xl font-bold text-neutral-900">{b.title}</h3>
-                <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
-                  {b.desc}
-                </p>
               </div>
-
-              <div className="mt-8 pt-4 border-t border-black/5 flex items-center justify-between text-xs font-semibold text-neutral-900">
-                <span>Learn More</span>
-                <span>→</span>
-              </div>
-            </motion.div>
-          ))}
+            )
+          })}
         </div>
       </div>
     </section>
