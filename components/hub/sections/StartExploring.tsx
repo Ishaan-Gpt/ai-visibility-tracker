@@ -32,7 +32,7 @@ export function StartExploring() {
             <RevealText text="Start with the one tool that's live." />
           </h2>
           <div className="mt-10">
-            <MagneticButton href="/tools/schema-generator">Try Schema Markup Generator</MagneticButton>
+            <MagneticButton href="/tools/ai-visibility-tracker/signup">Start OMNI SEO</MagneticButton>
           </div>
         </div>
 

@@ -1,10 +1,15 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Fraunces, Instrument_Sans } from "next/font/google";
+import { Geist, Geist_Mono, Fraunces, Instrument_Sans, Inter_Tight } from "next/font/google";
 import { LenisProvider } from "@/components/tools/shared/providers/LenisProvider";
 import "./globals.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
+  subsets: ["latin"],
+});
+
+const interTight = Inter_Tight({
+  variable: "--font-inter-tight",
   subsets: ["latin"],
 });
 
@@ -26,11 +31,11 @@ const instrumentSans = Instrument_Sans({
 
 export const metadata: Metadata = {
   title: {
-    template: "%s — OpenSeo",
-    default: "OpenSeo — The SEO suite for the AI search era",
+    template: "%s — OMNI SEO",
+    default: "OMNI SEO — The AI Search & Visibility Studio",
   },
   description:
-    "OpenSeo is a suite of SEO tools covering structured data, discoverability, content quality, and AI answer-engine visibility.",
+    "OMNI SEO unites AI search visibility tracking, structured data, sitemaps, and content audits in one login — one studio for the AI search era.",
 };
 
 export default function RootLayout({
@@ -41,7 +46,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} ${fraunces.variable} ${instrumentSans.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${fraunces.variable} ${instrumentSans.variable} ${interTight.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         <LenisProvider>{children}</LenisProvider>

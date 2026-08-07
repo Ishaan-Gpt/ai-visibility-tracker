@@ -47,6 +47,7 @@
   --font-mono: var(--font-geist-mono);
   --font-display: var(--font-fraunces);
   --font-body: var(--font-instrument-sans);
+  --font-inter-tight: var(--font-inter-tight);
 }
 
 /* Palette is intentionally white/cream/black + orange only (canonical brand system

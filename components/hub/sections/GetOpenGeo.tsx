@@ -20,8 +20,8 @@ export function GetOpenGeo() {
           Gemini, ChatGPT, and Perplexity actually mention your brand.
         </p>
         <div className="mt-10">
-          <MagneticButton href="/tools/opengeo" tone="primary">
-            Get early access to OpenGeo
+          <MagneticButton href="/tools/ai-visibility-tracker/signup" tone="primary">
+            Start OMNI SEO
           </MagneticButton>
         </div>
       </div>

@@ -13,6 +13,7 @@ import { BenefitsSection } from '@/components/BenefitsSection'
 import { ConsultantsSection } from '@/components/ConsultantsSection'
 import { DeFiArchitectureSection } from '@/components/DeFiArchitectureSection'
 import { FAQFooterSection } from '@/components/FAQFooterSection'
+import { Logomark } from '@/components/tools/shared/icons/Logomark'
 
 // --- Animated Words Component ---
 interface AnimatedWordsProps {
@@ -125,7 +126,6 @@ export function AnimatedDottedFrame({
   )
 }
 
-// --- Brand SVGs ---
 function ChevronDown(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
@@ -144,22 +144,7 @@ function ChevronDown(props: React.SVGProps<SVGSVGElement>) {
   )
 }
 
-function MainLogomark(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" {...props}>
-      <path
-        d="M9 4H6a2 2 0 0 0-2 2v3M15 4h3a2 2 0 0 1 2 2v3M9 20H6a2 2 0 0 1-2-2v-3M15 20h3a2 2 0 0 0 2-2v-3"
-        stroke="currentColor"
-        strokeWidth="1.7"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <circle cx="12" cy="12" r="2.1" fill="currentColor" />
-    </svg>
-  )
-}
-
-// --- Hero Section Component ---
+// --- Main Hero Component ---
 function HeroSection({ onStart }: { onStart: () => void }) {
   const brandName = 'OMNI SEO'
   const brandLetters = brandName.split('')
@@ -189,7 +174,7 @@ function HeroSection({ onStart }: { onStart: () => void }) {
               animate={{ scale: 1 }}
               transition={{ duration: 0.5, ease: 'backOut' }}
             >
-              <MainLogomark className="w-[38px] h-[38px] text-[#E86A00]" />
+              <Logomark className="w-[38px] h-[38px] text-[#E86A00]" />
             </motion.div>
             <span className="text-[26px] font-bold text-black tracking-tight leading-none flex">
               {brandLetters.map((char, index) => (
@@ -246,7 +231,7 @@ function HeroSection({ onStart }: { onStart: () => void }) {
           </motion.button>
         </header>
 
-        {/* 2) HERO TEXT & CTAs */}
+        {/* 2) HERO */}
         <section className="pt-14 md:pt-20 text-center">
           <motion.div
             className="inline-flex items-center p-[4px] pr-[11px] gap-[10px] rounded-[8px] bg-[rgba(192,192,192,0.17)]"
