@@ -8,7 +8,7 @@ type Product = {
   description: string
   href: string
   icon: typeof Search
-  status?: 'Beta' | 'Soon'
+  status?: 'Beta' | 'Soon' | 'New'
 }
 
 const PRODUCTS: Product[] = [
@@ -51,10 +51,10 @@ const PRODUCTS: Product[] = [
   {
     name: 'Keyword Research',
     tagline: 'Find what to rank for',
-    description: 'Discover keywords, intent and difficulty for your niche.',
-    href: '/tools/ai-visibility-tracker/signup',
+    description: 'Expand any seed into hundreds of real search suggestions, grouped by topic and intent.',
+    href: '/tools/ai-visibility-tracker/dashboard?tool=keyword-research',
     icon: Search,
-    status: 'Soon',
+    status: 'New',
   },
 ]
 

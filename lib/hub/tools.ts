@@ -48,4 +48,12 @@ export const HUB_TOOLS: HubTool[] = [
     href: "/tools/keyword-density-checker",
     status: "live",
   },
+  {
+    slug: "keyword-research",
+    name: "Keyword Research",
+    tagline: "Find what to rank for",
+    description: "Expand any seed into real search suggestions grouped by topic and intent.",
+    href: "/tools/ai-visibility-tracker/dashboard?tool=keyword-research",
+    status: "live",
+  },
 ];

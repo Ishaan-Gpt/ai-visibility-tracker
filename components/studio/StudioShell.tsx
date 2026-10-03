@@ -23,6 +23,7 @@ import { Card, Pill } from "@/components/ds/primitives";
 import { SchemaWorkspace } from "@/components/tools/schema-generator/workspace/SchemaWorkspace";
 import { SitemapWorkspace } from "@/components/tools/sitemap-xml-generator/workspace/SitemapWorkspace";
 import { HtmlSitemapWorkspace } from "@/components/tools/sitemap-html-generator/workspace/HtmlSitemapWorkspace";
+import { KeywordResearchWorkspace } from "@/components/tools/keyword-research/KeywordResearchWorkspace";
 import { KeywordDensityWorkspace } from "@/components/tools/keyword-density-checker/workspace/KeywordDensityWorkspace";
 
 type ToolId =
@@ -30,12 +31,14 @@ type ToolId =
   | "schema-generator"
   | "sitemap-xml-generator"
   | "sitemap-html-generator"
-  | "keyword-density-checker";
+  | "keyword-density-checker"
+  | "keyword-research";
 type Tab = "overview" | ToolId;
 
 type Tool = { id: ToolId; name: string; description: string; icon: LucideIcon };
 
 const TOOLS: Tool[] = [
+  { id: "keyword-research", name: "Keyword Research", description: "Discover keywords, topics and intent for any seed.", icon: Search },
   { id: "opengeo", name: "AI Visibility", description: "Track whether AI answers mention your brand.", icon: Sparkles },
   { id: "schema-generator", name: "Schema Generator", description: "Google-eligible JSON-LD with live scoring.", icon: Code2 },
   { id: "sitemap-xml-generator", name: "Sitemap.xml", description: "Spec-conformant sitemaps for crawlers.", icon: Network },
@@ -140,7 +143,6 @@ export function StudioShell({
             {TOOLS.map((t) => (
               <NavItem key={t.id} icon={t.icon} label={t.name} active={activeTab === t.id} onClick={() => go(t.id)} />
             ))}
-            <NavItem icon={Search} label="Keywords" soon />
           </div>
         </div>
       </div>
@@ -238,6 +240,8 @@ export function StudioShell({
           )}
 
           {activeTab === "opengeo" && trackerContent}
+
+          {activeTab === "keyword-research" && <KeywordResearchWorkspace />}
 
           {activeTab === "schema-generator" && (
             <Card className="p-4 sm:p-6">
