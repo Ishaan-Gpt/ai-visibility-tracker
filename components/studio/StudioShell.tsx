@@ -11,9 +11,13 @@ import {
   LayoutGrid,
   LogOut,
   Menu,
+  Bot,
+  FileText,
   Network,
+  ScanSearch,
   Search,
   Sparkles,
+  TextCursorInput,
   X,
   type LucideIcon,
 } from "lucide-react";
@@ -24,6 +28,10 @@ import { SchemaWorkspace } from "@/components/tools/schema-generator/workspace/S
 import { SitemapWorkspace } from "@/components/tools/sitemap-xml-generator/workspace/SitemapWorkspace";
 import { HtmlSitemapWorkspace } from "@/components/tools/sitemap-html-generator/workspace/HtmlSitemapWorkspace";
 import { KeywordResearchWorkspace } from "@/components/tools/keyword-research/KeywordResearchWorkspace";
+import { AiCrawlerWorkspace } from "@/components/tools/ai-crawlers/AiCrawlerWorkspace";
+import { PageAuditWorkspace } from "@/components/tools/page-audit/PageAuditWorkspace";
+import { AiFilesWorkspace } from "@/components/tools/ai-files/AiFilesWorkspace";
+import { SerpPreviewWorkspace } from "@/components/tools/serp-preview/SerpPreviewWorkspace";
 import { KeywordDensityWorkspace } from "@/components/tools/keyword-density-checker/workspace/KeywordDensityWorkspace";
 
 type ToolId =
@@ -32,19 +40,29 @@ type ToolId =
   | "sitemap-xml-generator"
   | "sitemap-html-generator"
   | "keyword-density-checker"
-  | "keyword-research";
+  | "keyword-research"
+  | "page-audit"
+  | "serp-preview"
+  | "ai-crawlers"
+  | "ai-files";
 type Tab = "overview" | ToolId;
 
-type Tool = { id: ToolId; name: string; description: string; icon: LucideIcon };
+type Group = "Research" | "Optimize" | "Technical" | "Monitor";
+type Tool = { id: ToolId; name: string; description: string; icon: LucideIcon; group: Group };
 
 const TOOLS: Tool[] = [
-  { id: "keyword-research", name: "Keyword Research", description: "Discover keywords, topics and intent for any seed.", icon: Search },
-  { id: "opengeo", name: "AI Visibility", description: "Track whether AI answers mention your brand.", icon: Sparkles },
-  { id: "schema-generator", name: "Schema Generator", description: "Google-eligible JSON-LD with live scoring.", icon: Code2 },
-  { id: "sitemap-xml-generator", name: "Sitemap.xml", description: "Spec-conformant sitemaps for crawlers.", icon: Network },
-  { id: "sitemap-html-generator", name: "Sitemap.html", description: "A readable sitemap page for visitors.", icon: FileCode2 },
-  { id: "keyword-density-checker", name: "Keyword Density", description: "Spot over-optimization and topical gaps.", icon: Gauge },
+  { id: "keyword-research", name: "Keyword Research", description: "Discover keywords, topics and intent for any seed.", icon: Search, group: "Research" },
+  { id: "keyword-density-checker", name: "Keyword Density", description: "Spot over-optimization and topical gaps.", icon: Gauge, group: "Research" },
+  { id: "page-audit", name: "Page Audit", description: "Check 15+ on-page SEO signals on any live URL.", icon: ScanSearch, group: "Optimize" },
+  { id: "serp-preview", name: "SERP & Meta Preview", description: "Preview titles, snippets and social cards.", icon: TextCursorInput, group: "Optimize" },
+  { id: "schema-generator", name: "Schema Generator", description: "Google-eligible JSON-LD with live scoring.", icon: Code2, group: "Optimize" },
+  { id: "sitemap-xml-generator", name: "Sitemap.xml", description: "Spec-conformant sitemaps for crawlers.", icon: Network, group: "Technical" },
+  { id: "sitemap-html-generator", name: "Sitemap.html", description: "A readable sitemap page for visitors.", icon: FileCode2, group: "Technical" },
+  { id: "ai-files", name: "robots.txt & llms.txt", description: "Control AI crawlers and guide AI assistants.", icon: FileText, group: "Technical" },
+  { id: "ai-crawlers", name: "AI Crawler Check", description: "See which AI bots can reach your site.", icon: Bot, group: "Technical" },
+  { id: "opengeo", name: "AI Visibility", description: "Track whether AI answers mention your brand.", icon: Sparkles, group: "Monitor" },
 ];
+const GROUPS: Group[] = ["Research", "Optimize", "Technical", "Monitor"];
 
 interface StudioShellProps {
   userEmail: string;
@@ -124,7 +142,7 @@ export function StudioShell({
 
   const sidebar = (
     <div className="flex h-full flex-col justify-between">
-      <div>
+      <div className="min-h-0 flex-1 overflow-y-auto pb-4">
         <div className="flex h-16 items-center gap-2 px-5">
           <Logomark className="h-6 w-6 text-ds-accent" />
           <span className="text-[18px] font-medium tracking-[-0.02em] text-ds-ink">OMNI SEO</span>
@@ -138,12 +156,16 @@ export function StudioShell({
 
           <NavItem icon={LayoutGrid} label="Overview" active={activeTab === "overview"} onClick={() => go("overview")} />
 
-          <div className="mb-2 mt-6 px-3 text-[11px] font-medium uppercase tracking-wider text-ds-ink-3">Tools</div>
-          <div className="space-y-0.5">
-            {TOOLS.map((t) => (
-              <NavItem key={t.id} icon={t.icon} label={t.name} active={activeTab === t.id} onClick={() => go(t.id)} />
-            ))}
-          </div>
+          {GROUPS.map((g) => (
+            <div key={g}>
+              <div className="mb-1.5 mt-5 px-3 text-[11px] font-medium uppercase tracking-wider text-ds-ink-3">{g}</div>
+              <div className="space-y-0.5">
+                {TOOLS.filter((t) => t.group === g).map((t) => (
+                  <NavItem key={t.id} icon={t.icon} label={t.name} active={activeTab === t.id} onClick={() => go(t.id)} />
+                ))}
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 
@@ -242,6 +264,14 @@ export function StudioShell({
           {activeTab === "opengeo" && trackerContent}
 
           {activeTab === "keyword-research" && <KeywordResearchWorkspace />}
+
+          {activeTab === "page-audit" && <PageAuditWorkspace initialUrl={`https://${brandDomain}`} />}
+
+          {activeTab === "ai-crawlers" && <AiCrawlerWorkspace initialDomain={brandDomain} />}
+
+          {activeTab === "ai-files" && <AiFilesWorkspace brandName={brandName} domain={brandDomain} />}
+
+          {activeTab === "serp-preview" && <SerpPreviewWorkspace brandName={brandName} domain={brandDomain} />}
 
           {activeTab === "schema-generator" && (
             <Card className="p-4 sm:p-6">
