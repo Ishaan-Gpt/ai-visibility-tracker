@@ -23,25 +23,45 @@ type SchemaWorkspaceProps = {
   withReviews?: boolean;
   restoredSession?: PersistedSession | null;
   onBack?: () => void;
+  brand?: { name: string; domain: string };
 };
 
-function seedData(initialTypes: SchemaType[], withReviews?: boolean): SchemaFormData {
-  if (!withReviews || !initialTypes.includes("product")) return initialFormData;
+function seedData(initialTypes: SchemaType[], withReviews?: boolean, brand?: { name: string; domain: string }): SchemaFormData {
+  let base: SchemaFormData = initialFormData;
+  if (brand) {
+    const url = `https://${brand.domain}`;
+    base = {
+      ...base,
+      organization: {
+        ...base.organization,
+        name: brand.name,
+        url,
+        logo: `${url}/logo.png`,
+        description: "",
+        sameAs: [],
+        email: "",
+        telephone: "",
+      },
+      website: { ...base.website, name: brand.name, url, description: "" },
+      breadcrumb: { items: [{ name: "Home", url }] },
+    };
+  }
+  if (!withReviews || !initialTypes.includes("product")) return base;
   return {
-    ...initialFormData,
+    ...base,
     product: {
-      ...initialFormData.product,
+      ...base.product,
       reviews: [{ authorName: "", reviewBody: "", ratingValue: "" }],
     },
   };
 }
 
-export function SchemaWorkspace({ initialTypes = ["organization"], withReviews, restoredSession, onBack = () => {} }: SchemaWorkspaceProps) {
+export function SchemaWorkspace({ initialTypes = ["organization"], withReviews, restoredSession, onBack = () => {}, brand }: SchemaWorkspaceProps) {
   const typesToUse = restoredSession?.types ?? initialTypes;
   const [types, setTypes] = useState<SchemaType[]>(typesToUse);
   const [activeType, setActiveType] = useState<SchemaType>(restoredSession?.activeType ?? (typesToUse[0] || "organization"));
   const [formData, setFormData] = useState<SchemaFormData>(
-    () => restoredSession?.formData ?? seedData(initialTypes, withReviews),
+    () => restoredSession?.formData ?? seedData(initialTypes, withReviews, brand),
   );
   const [showRestoredToast, setShowRestoredToast] = useState(!!restoredSession);
 
@@ -81,7 +101,7 @@ export function SchemaWorkspace({ initialTypes = ["organization"], withReviews, 
   return (
     <motion.div
       layoutId={`type-card-${initialTypes.length > 1 ? "foundation" : initialTypes[0]}`}
-      className="mx-auto min-h-dvh max-w-7xl px-6 py-24 md:px-10"
+      className="w-full"
     >
       <AnimatePresence>
         {showRestoredToast ? (
@@ -97,12 +117,7 @@ export function SchemaWorkspace({ initialTypes = ["organization"], withReviews, 
         ) : null}
       </AnimatePresence>
 
-      <div className="mb-10">
-        <p className="mb-2 font-body text-xs uppercase tracking-[0.2em] text-primary">Step 2 of 2</p>
-        <h1 className="font-display text-3xl text-foreground md:text-4xl">Build your schema</h1>
-      </div>
-
-      <div className="grid gap-10 md:grid-cols-[200px_1fr_340px]">
+      <div className="grid gap-6 xl:grid-cols-[190px_1fr_340px]">
         <WorkspaceSidebar
           types={types}
           activeType={activeType}
@@ -120,7 +135,7 @@ export function SchemaWorkspace({ initialTypes = ["organization"], withReviews, 
           />
         </div>
 
-        <div className="space-y-6 md:sticky md:top-24 md:h-fit">
+        <div className="space-y-6 xl:sticky xl:top-6 xl:h-fit">
           <RichResultPreview type={activeType} data={formData[activeType]} />
           <CompletenessScore score={activeScore} />
           <CodePreviewPanel json={output} />

@@ -7,5 +7,5 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     redirect("/tools/ai-visibility-tracker/login");
   }
 
-  return <div className="min-h-screen bg-[#FAF9F6]">{children}</div>;
+  return <div className="min-h-screen bg-ds-canvas">{children}</div>;
 }

@@ -1,11 +1,17 @@
+import { Card } from "@/components/ds/primitives";
+
 export default function ScoreCard({ score, checkedPrompts }: { score: number | null; checkedPrompts: number }) {
   return (
-    <div className="rounded-xl border border-border bg-white p-6">
-      <p className="mb-1 text-sm font-medium text-muted">Visibility score</p>
-      <p className="text-4xl font-bold text-primary">{score === null ? "—" : `${score}%`}</p>
-      <p className="mt-1 text-xs text-muted">
-        {score === null ? "Waiting on first check" : `Based on the latest check across ${checkedPrompts} prompt${checkedPrompts === 1 ? "" : "s"}`}
+    <Card>
+      <p className="text-[14px] text-ds-ink-2">Visibility score</p>
+      <p className="mt-2 text-[44px] font-normal leading-[48px] tracking-[-0.03em] text-ds-ink">
+        {score === null ? "—" : `${score}%`}
       </p>
-    </div>
+      <p className="mt-2 text-[14px] text-ds-ink-2">
+        {score === null
+          ? "Waiting on first check"
+          : `Latest check across ${checkedPrompts} prompt${checkedPrompts === 1 ? "" : "s"}`}
+      </p>
+    </Card>
   );
 }

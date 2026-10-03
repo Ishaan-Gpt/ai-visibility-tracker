@@ -36,7 +36,7 @@ export function SitemapWorkspace({ initialEntries = [], restoredEntries, onBack 
   const generated = useMemo(() => generateSitemap(entries), [entries]);
 
   return (
-    <motion.div className="mx-auto min-h-dvh max-w-7xl px-6 py-24 md:px-10">
+    <motion.div className="w-full">
       <AnimatePresence>
         {showRestoredToast ? (
           <motion.div
@@ -51,22 +51,18 @@ export function SitemapWorkspace({ initialEntries = [], restoredEntries, onBack 
         ) : null}
       </AnimatePresence>
 
-      <div className="mb-10 flex items-center justify-between">
-        <div>
-          <p className="mb-2 font-body text-xs uppercase tracking-[0.2em] text-primary">Step 2 of 2</p>
-          <h1 className="font-display text-3xl text-foreground md:text-4xl">Build your sitemap</h1>
-        </div>
-        <button type="button" onClick={onBack} className="font-body text-xs text-foreground/40 hover:text-foreground">
-          ← Start fresh
+      <div className="mb-6 flex justify-end">
+        <button type="button" onClick={onBack} className="rounded-ds-md px-3 py-1.5 text-[14px] text-ds-ink-2 transition-colors hover:bg-ds-muted hover:text-ds-ink">
+          Start fresh
         </button>
       </div>
 
-      <div className="grid gap-10 md:grid-cols-[1fr_340px]">
+      <div className="grid gap-6 xl:grid-cols-[1fr_340px]">
         <div>
           <UrlTable entries={entries} onChange={setEntries} />
         </div>
 
-        <div className="space-y-6 md:sticky md:top-24 md:h-fit">
+        <div className="space-y-6 xl:sticky xl:top-6 xl:h-fit">
           <SitemapHealthScore score={score} />
           <XmlPreviewPanel generated={generated} />
         </div>

@@ -6,8 +6,8 @@ import type { RollupDoc } from "@/lib/types";
 export default function TrendChart({ rollups }: { rollups: RollupDoc[] }) {
   if (rollups.length === 0) {
     return (
-      <div className="flex h-48 items-center justify-center text-sm text-muted">
-        No checks have run yet — your first score will appear after the next scheduled check.
+      <div className="flex h-48 items-center justify-center text-center text-[14px] text-ds-ink-2">
+        No checks have run yet. Your first score appears after the next scheduled check.
       </div>
     );
   }
@@ -18,14 +18,14 @@ export default function TrendChart({ rollups }: { rollups: RollupDoc[] }) {
     <div className="h-48 w-full">
       <ResponsiveContainer width="100%" height="100%">
         <LineChart data={data} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
-          <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" />
-          <XAxis dataKey="date" tick={{ fontSize: 12, fill: "var(--muted)" }} axisLine={{ stroke: "var(--border)" }} tickLine={false} />
-          <YAxis domain={[0, 100]} tick={{ fontSize: 12, fill: "var(--muted)" }} axisLine={false} tickLine={false} />
+          <CartesianGrid stroke="var(--ds-line)" vertical={false} />
+          <XAxis dataKey="date" tick={{ fontSize: 12, fill: "var(--ds-ink-2)" }} axisLine={false} tickLine={false} />
+          <YAxis domain={[0, 100]} tick={{ fontSize: 12, fill: "var(--ds-ink-2)" }} axisLine={false} tickLine={false} />
           <Tooltip
-            contentStyle={{ borderColor: "var(--border)", borderRadius: 8, fontSize: 12 }}
+            contentStyle={{ border: "1px solid var(--ds-line)", borderRadius: 10, fontSize: 12, boxShadow: "none" }}
             formatter={(value) => [`${value}%`, "Visibility score"]}
           />
-          <Line type="monotone" dataKey="score" stroke="var(--orange-500)" strokeWidth={2} dot={{ r: 3 }} />
+          <Line type="monotone" dataKey="score" stroke="var(--ds-accent)" strokeWidth={2} dot={{ r: 3, fill: "var(--ds-accent)" }} />
         </LineChart>
       </ResponsiveContainer>
     </div>

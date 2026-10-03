@@ -6,6 +6,17 @@ import ScoreCard from "@/components/dashboard/ScoreCard";
 import TrendChart from "@/components/dashboard/TrendChart";
 import PromptList from "@/components/dashboard/PromptList";
 import CompetitorCompare from "@/components/dashboard/CompetitorCompare";
+import { Card } from "@/components/ds/primitives";
+
+function MiniStat({ label, value, hint }: { label: string; value: string; hint?: string }) {
+  return (
+    <Card>
+      <p className="text-[14px] text-ds-ink-2">{label}</p>
+      <p className="mt-2 text-[28px] font-normal leading-8 tracking-[-0.02em] text-ds-ink">{value}</p>
+      {hint && <p className="mt-2 text-[14px] text-ds-ink-2">{hint}</p>}
+    </Card>
+  );
+}
 
 export default async function DashboardPage({
   searchParams,
@@ -28,29 +39,52 @@ export default async function DashboardPage({
 
   const limits = planLimits(userDoc?.plan);
   const latestRollup = rollups.length > 0 ? rollups[rollups.length - 1] : null;
+  const planLabel = userDoc?.plan === "paid" ? "Pro plan" : "Free plan";
+  const refresh = limits.refreshDays === 1 ? "daily" : `every ${limits.refreshDays} days`;
+
+  const overviewContent = (
+    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <ScoreCard score={latestRollup?.score ?? null} checkedPrompts={latestRollup?.totalPrompts ?? 0} />
+      <MiniStat label="Tracked prompts" value={`${prompts.length} / ${limits.maxPrompts}`} hint="On your current plan" />
+      <MiniStat
+        label="Competitors"
+        value={`${brand.competitors.length} / ${limits.maxCompetitors}`}
+        hint={brand.competitors.map((c) => c.name).join(", ") || "None added yet"}
+      />
+      <MiniStat
+        label="Last check"
+        value={latestRollup?.date ?? "—"}
+        hint={`Refreshes ${refresh} on ${planLabel}`}
+      />
+    </div>
+  );
+
+  const trackerContent = (
+    <div className="space-y-4">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+        <ScoreCard score={latestRollup?.score ?? null} checkedPrompts={latestRollup?.totalPrompts ?? 0} />
+        <Card className="lg:col-span-2">
+          <p className="mb-2 text-[14px] text-ds-ink-2">Visibility trend</p>
+          <TrendChart rollups={rollups} />
+        </Card>
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <PromptList prompts={prompts} runs={runs} maxPrompts={limits.maxPrompts} />
+        <CompetitorCompare brand={brand} latestRollup={latestRollup} />
+      </div>
+    </div>
+  );
 
   return (
     <StudioShell
       userEmail={user.email ?? ""}
       brandName={brand.name}
       brandDomain={brand.domain}
+      planLabel={planLabel}
       initialTab={tool}
-      dashboardContent={
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
-            <ScoreCard score={latestRollup?.score ?? null} checkedPrompts={latestRollup?.totalPrompts ?? 0} />
-            <div className="rounded-xl border border-border bg-white p-6 sm:col-span-2">
-              <p className="mb-2 text-sm font-medium text-muted">Trend</p>
-              <TrendChart rollups={rollups} />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-            <PromptList prompts={prompts} runs={runs} maxPrompts={limits.maxPrompts} />
-            <CompetitorCompare brand={brand} latestRollup={latestRollup} />
-          </div>
-        </div>
-      }
+      overviewContent={overviewContent}
+      trackerContent={trackerContent}
     />
   );
 }

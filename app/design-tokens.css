@@ -43,3 +43,31 @@
   --radius-ds-md: var(--ds-r-md);
   --radius-ds-lg: var(--ds-r-lg);
 }
+
+/* Studio scope: remaps legacy theme variables (used by the tool workspaces) to design-system values,
+   so the tool UIs inherit the new look until each is rebuilt natively on --ds-* tokens. */
+.studio-scope {
+  --background: var(--ds-surface);
+  --surface: var(--ds-canvas);
+  --surface-deep: #eceae6;
+  --foreground: var(--ds-ink);
+  --muted: var(--ds-ink-2);
+  --border: var(--ds-line);
+  --orange-50: var(--ds-accent-soft);
+  --orange-500: var(--ds-accent);
+  --orange-600: var(--ds-accent-hover);
+  --font-fraunces: var(--font-geist-sans);
+  --font-instrument-sans: var(--font-geist-sans);
+  --font-inter-tight: var(--font-geist-sans);
+}
+.studio-scope .font-display {
+  font-weight: 400;
+  letter-spacing: -0.02em;
+}
+.studio-scope .grid > * {
+  min-width: 0;
+}
+.studio-scope pre,
+.studio-scope code {
+  overflow-wrap: anywhere;
+}
