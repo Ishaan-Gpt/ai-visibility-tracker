@@ -11,6 +11,24 @@ interface AuthFlowModalProps {
   onComplete: (domain: string, userEmail: string) => void
 }
 
+function ArrowUpRightIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <line x1="7" y1="17" x2="17" y2="7" />
+      <polyline points="7 7 17 7 17 17" />
+    </svg>
+  )
+}
+
+function CloseIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <line x1="18" y1="6" x2="6" y2="18" />
+      <line x1="6" y1="6" x2="18" y2="18" />
+    </svg>
+  )
+}
+
 export function AuthFlowModal({ isOpen, onClose, onComplete }: AuthFlowModalProps) {
   const [step, setStep] = useState<'auth' | 1 | 2 | 3>('auth')
   const [mode, setMode] = useState<'login' | 'signup'>('login')
@@ -85,7 +103,6 @@ export function AuthFlowModal({ isOpen, onClose, onComplete }: AuthFlowModalProp
       formData.set('domain', domain)
       try {
         await createBrand(formData)
-        // createBrand redirects on success — this line only runs if it didn't.
         onComplete(domain, email)
       } catch (err) {
         const digest = (err as { digest?: string })?.digest
@@ -98,15 +115,15 @@ export function AuthFlowModal({ isOpen, onClose, onComplete }: AuthFlowModalProp
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60">
-      <div className="w-full max-w-xl bg-white rounded-[28px] p-8 md:p-10 shadow-2xl border border-black/10 relative overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+      <div className="w-full max-w-xl bg-white rounded-[32px] p-8 md:p-10 shadow-2xl border border-black/10 relative overflow-hidden">
         {/* Close Button */}
         <button
           type="button"
           onClick={onClose}
-          className="absolute top-6 right-6 w-8 h-8 rounded-full bg-neutral-100 flex items-center justify-center text-neutral-500 hover:text-black transition"
+          className="absolute top-6 right-6 w-9 h-9 rounded-full bg-neutral-100 flex items-center justify-center text-neutral-500 hover:text-black hover:bg-neutral-200 transition cursor-pointer"
         >
-          ✕
+          <CloseIcon />
         </button>
 
         {/* STEP 0: AUTHENTICATION */}
@@ -116,7 +133,7 @@ export function AuthFlowModal({ isOpen, onClose, onComplete }: AuthFlowModalProp
               <Logomark className="w-12 h-12 mb-3 text-[#E86A00]" />
               <h2
                 className="text-2xl font-bold text-neutral-900 tracking-tight"
-                style={{ fontFamily: "var(--font-inter-tight), sans-serif" }}
+                style={{ fontFamily: "'Inter Tight', sans-serif" }}
               >
                 {mode === 'login' ? 'Log in to OMNI SEO' : 'Create your OMNI SEO Account'}
               </h2>
@@ -154,14 +171,15 @@ export function AuthFlowModal({ isOpen, onClose, onComplete }: AuthFlowModalProp
                 />
               </div>
 
-              {error && <p className="text-xs text-rose-600">{error}</p>}
+              {error && <p className="text-xs text-rose-600 font-medium">{error}</p>}
 
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3.5 rounded-xl bg-[#FFD209] text-black font-semibold text-sm hover:bg-[#e0b800] transition shadow-md cursor-pointer disabled:cursor-default disabled:opacity-60"
+                className="w-full py-3.5 rounded-xl bg-[#FFD209] text-black font-semibold text-sm hover:bg-[#e0b800] transition shadow-md cursor-pointer flex items-center justify-center gap-1.5 disabled:cursor-default disabled:opacity-60"
               >
-                {loading ? 'Please wait…' : mode === 'login' ? 'Log In ↗' : 'Sign Up Free ↗'}
+                <span>{loading ? 'Please wait…' : mode === 'login' ? 'Log In' : 'Sign Up Free'}</span>
+                {!loading && <ArrowUpRightIcon />}
               </button>
             </form>
 
@@ -201,13 +219,13 @@ export function AuthFlowModal({ isOpen, onClose, onComplete }: AuthFlowModalProp
             <div className="mt-6 text-center text-xs text-muted-foreground">
               {mode === 'login' ? (
                 <>
-                  Don't have an account?{' '}
+                  Don&apos;t have an account?{' '}
                   <button
                     type="button"
                     onClick={() => setMode('signup')}
-                    className="font-semibold text-black underline"
+                    className="font-bold text-black hover:underline cursor-pointer"
                   >
-                    Sign up
+                    Sign up free
                   </button>
                 </>
               ) : (
@@ -216,7 +234,7 @@ export function AuthFlowModal({ isOpen, onClose, onComplete }: AuthFlowModalProp
                   <button
                     type="button"
                     onClick={() => setMode('login')}
-                    className="font-semibold text-black underline"
+                    className="font-bold text-black hover:underline cursor-pointer"
                   >
                     Log in
                   </button>
@@ -226,188 +244,158 @@ export function AuthFlowModal({ isOpen, onClose, onComplete }: AuthFlowModalProp
           </div>
         )}
 
-        {/* ONBOARDING STEPS 1, 2, 3 */}
-        {step !== 'auth' && (
+        {/* STEP 1: BRAND SETUP */}
+        {step === 1 && (
           <div>
-            <div className="flex items-center justify-between mb-8 pb-4 border-b border-neutral-100">
-              <div className="flex items-center gap-2.5">
-                <Logomark className="w-7 h-7 text-[#E86A00]" />
-                <span className="text-sm font-bold text-neutral-900 tracking-tight">
-                  OMNI SEO Onboarding
-                </span>
-              </div>
-
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium">
-                <span>Step {step} of 3</span>
-                <div className="flex items-center gap-1 ml-2">
-                  {[1, 2, 3].map((s) => (
-                    <div
-                      key={s}
-                      className={`h-1.5 rounded-full transition-all ${
-                        s === step ? 'w-6 bg-black' : 'w-2 bg-neutral-200'
-                      }`}
-                    />
-                  ))}
-                </div>
-              </div>
+            <div className="flex items-center gap-2 mb-4">
+              <span className="text-xs font-bold text-black bg-[#FFD209] px-2.5 py-0.5 rounded-full">
+                Step 1 of 3
+              </span>
+              <span className="text-xs text-muted-foreground font-mono">Workspace Setup</span>
             </div>
 
-            {step === 1 && (
-              <div className="space-y-6">
-                <div>
-                  <span className="px-3 py-1 rounded-full bg-[#FFD209]/20 text-black text-xs font-semibold uppercase tracking-wider">
-                    Onboarding Checklist 1/3
-                  </span>
-                  <h3 className="text-2xl md:text-3xl font-bold text-neutral-900 mt-3 tracking-tight">
-                    What site are you working on?
-                  </h3>
-                  <p className="text-sm text-muted-foreground mt-1.5 leading-relaxed">
-                    Set your project's domain and every card in your OMNI SEO studio starts working for it — backlinks, schema, and search audits.
-                  </p>
-                </div>
+            <h2
+              className="text-2xl font-bold text-neutral-900 tracking-tight mb-1"
+              style={{ fontFamily: "'Inter Tight', sans-serif" }}
+            >
+              Set up your Brand &amp; Domain
+            </h2>
+            <p className="text-xs text-muted-foreground mb-6">
+              Enter your domain so OMNI SEO can crawl schemas, sitemaps, and AI search visibility.
+            </p>
 
-                <div>
-                  <label className="block text-xs font-semibold text-neutral-700 mb-2">
-                    Brand Name
-                  </label>
-                  <input
-                    type="text"
-                    value={brandName}
-                    onChange={(e) => setBrandName(e.target.value)}
-                    placeholder="Acme Inc"
-                    className="w-full px-4 py-3 rounded-xl border border-neutral-300 bg-neutral-50 text-base text-neutral-900 outline-none focus:border-black focus:ring-2 focus:ring-black/10 transition"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-neutral-700 mb-2">
-                    Target Domain Name
-                  </label>
-                  <input
-                    type="text"
-                    value={domain}
-                    onChange={(e) => setDomain(e.target.value)}
-                    placeholder="acme.com"
-                    className="w-full px-4 py-3 rounded-xl border border-neutral-300 bg-neutral-50 text-base font-mono text-neutral-900 outline-none focus:border-black focus:ring-2 focus:ring-black/10 transition"
-                  />
-                </div>
-
-                {error && <p className="text-xs text-rose-600">{error}</p>}
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-neutral-700 mb-1">
+                  Brand / Company Name
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={brandName}
+                  onChange={(e) => setBrandName(e.target.value)}
+                  placeholder="Acme Corp"
+                  className="w-full px-4 py-3 rounded-xl border border-neutral-300 bg-neutral-50 text-sm text-neutral-900 outline-none focus:border-black focus:ring-2 focus:ring-black/10 transition"
+                />
               </div>
-            )}
 
-            {step === 2 && (
-              <div className="space-y-6">
-                <div>
-                  <span className="px-3 py-1 rounded-full bg-[#FFD209]/20 text-black text-xs font-semibold uppercase tracking-wider">
-                    Onboarding Checklist 2/3
-                  </span>
-                  <h3 className="text-2xl md:text-3xl font-bold text-neutral-900 mt-3 tracking-tight">
-                    Connect your AI Agent &amp; Search Console
-                  </h3>
-                  <p className="text-sm text-muted-foreground mt-1.5 leading-relaxed">
-                    OMNI SEO is designed to give your AI agent the data it needs to build a great SEO strategy and execute it seamlessly.
-                  </p>
-                </div>
-
-                <div className="space-y-3">
-                  <div className="p-4 rounded-xl border border-neutral-200 bg-neutral-50 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <span className="text-xl">🤖</span>
-                      <div>
-                        <h4 className="text-sm font-semibold text-neutral-900">AI &amp; MCP Integration</h4>
-                        <p className="text-xs text-muted-foreground">Connected to primary workspace</p>
-                      </div>
-                    </div>
-                    <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full">
-                      Active
-                    </span>
-                  </div>
-
-                  <div className="p-4 rounded-xl border border-neutral-200 bg-white flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <span className="text-xl">🔍</span>
-                      <div>
-                        <h4 className="text-sm font-semibold text-neutral-900">Google Search Console</h4>
-                        <p className="text-xs text-muted-foreground">Import live clicks and impressions</p>
-                      </div>
-                    </div>
-                    <button type="button" className="text-xs font-semibold text-black bg-neutral-100 hover:bg-neutral-200 px-3 py-1.5 rounded-lg transition">
-                      Connect
-                    </button>
-                  </div>
-                </div>
+              <div>
+                <label className="block text-xs font-semibold text-neutral-700 mb-1">
+                  Website Domain
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={domain}
+                  onChange={(e) => setDomain(e.target.value)}
+                  placeholder="acme.com"
+                  className="w-full px-4 py-3 rounded-xl border border-neutral-300 bg-neutral-50 text-sm font-mono text-neutral-900 outline-none focus:border-black focus:ring-2 focus:ring-black/10 transition"
+                />
               </div>
-            )}
 
-            {step === 3 && (
-              <div className="space-y-6">
-                <div>
-                  <span className="px-3 py-1 rounded-full bg-[#FFD209]/20 text-black text-xs font-semibold uppercase tracking-wider">
-                    Onboarding Checklist 3/3
-                  </span>
-                  <h3 className="text-2xl md:text-3xl font-bold text-neutral-900 mt-3 tracking-tight">
-                    Choose your primary search tools
-                  </h3>
-                  <p className="text-sm text-muted-foreground mt-1.5 leading-relaxed">
-                    All 5 tools are unlocked in your OMNI SEO studio. Select which ones you want to pin on your main dashboard.
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  {[
-                    'AI Search Visibility',
-                    'Schema Markup',
-                    'Sitemap.xml Generator',
-                    'Sitemap.html Generator',
-                    'Keyword Density Checker',
-                    'SERP Analytics',
-                  ].map((tool) => {
-                    const isSelected = selectedTools.includes(tool)
-                    return (
-                      <button
-                        key={tool}
-                        type="button"
-                        onClick={() => toggleTool(tool)}
-                        className={`p-3 rounded-xl border text-left text-xs font-semibold transition ${
-                          isSelected
-                            ? 'bg-[#FFD209] border-black text-black shadow-sm'
-                            : 'bg-neutral-50 border-neutral-200 text-neutral-700 hover:bg-white'
-                        }`}
-                      >
-                        {isSelected ? '✓ ' : '+ '}
-                        {tool}
-                      </button>
-                    )
-                  })}
-                </div>
-
-                {error && <p className="text-xs text-rose-600">{error}</p>}
-              </div>
-            )}
-
-            <div className="mt-8 pt-6 border-t border-neutral-100 flex items-center justify-between">
-              {step > 1 ? (
-                <button
-                  type="button"
-                  onClick={() => setStep((step - 1) as 1 | 2)}
-                  className="text-xs font-semibold text-neutral-600 hover:text-black transition"
-                >
-                  ← Back
-                </button>
-              ) : (
-                <div />
-              )}
+              {error && <p className="text-xs text-rose-600 font-medium">{error}</p>}
 
               <button
                 type="button"
                 onClick={handleNextStep}
-                disabled={loading}
-                className="px-8 py-3 rounded-xl bg-black text-white font-semibold text-sm hover:bg-neutral-800 transition shadow-md disabled:cursor-default disabled:opacity-60"
+                className="w-full py-3.5 rounded-xl bg-black text-white font-semibold text-sm hover:bg-neutral-800 transition shadow-md cursor-pointer flex items-center justify-center gap-1.5"
               >
-                {loading ? 'Please wait…' : step === 3 ? 'Launch OMNI SEO Studio 🚀' : 'Continue →'}
+                <span>Continue to Tool Selection</span>
+                <ArrowUpRightIcon />
               </button>
             </div>
+          </div>
+        )}
+
+        {/* STEP 2: TOOL SELECTION */}
+        {step === 2 && (
+          <div>
+            <div className="flex items-center gap-2 mb-4">
+              <span className="text-xs font-bold text-black bg-[#FFD209] px-2.5 py-0.5 rounded-full">
+                Step 2 of 3
+              </span>
+              <span className="text-xs text-muted-foreground font-mono">Tool Customization</span>
+            </div>
+
+            <h2
+              className="text-2xl font-bold text-neutral-900 tracking-tight mb-1"
+              style={{ fontFamily: "'Inter Tight', sans-serif" }}
+            >
+              Select your initial AI Tools
+            </h2>
+            <p className="text-xs text-muted-foreground mb-6">
+              Choose which tools to pin to your studio dashboard for quick access.
+            </p>
+
+            <div className="space-y-2.5 mb-6">
+              {[
+                'AI Search Visibility',
+                'Schema Markup Generator',
+                'Sitemap.xml Generator',
+                'Sitemap.html Generator',
+                'Keyword Density Checker',
+              ].map((tool) => {
+                const isSelected = selectedTools.includes(tool)
+                return (
+                  <button
+                    key={tool}
+                    type="button"
+                    onClick={() => toggleTool(tool)}
+                    className={`w-full p-3.5 rounded-xl border text-left flex items-center justify-between text-xs font-semibold transition cursor-pointer ${
+                      isSelected
+                        ? 'border-black bg-neutral-900 text-white shadow-sm'
+                        : 'border-neutral-200 bg-neutral-50 text-neutral-700 hover:bg-neutral-100'
+                    }`}
+                  >
+                    <span>{tool}</span>
+                    <div
+                      className={`w-5 h-5 rounded-md flex items-center justify-center text-xs ${
+                        isSelected ? 'bg-[#FFD209] text-black font-bold' : 'border border-neutral-300 bg-white'
+                      }`}
+                    >
+                      {isSelected && '✓'}
+                    </div>
+                  </button>
+                )
+              })}
+            </div>
+
+            <button
+              type="button"
+              onClick={handleNextStep}
+              className="w-full py-3.5 rounded-xl bg-black text-white font-semibold text-sm hover:bg-neutral-800 transition shadow-md cursor-pointer flex items-center justify-center gap-1.5"
+            >
+              <span>Launch Studio App</span>
+              <ArrowUpRightIcon />
+            </button>
+          </div>
+        )}
+
+        {/* STEP 3: FINALIZATION */}
+        {step === 3 && (
+          <div className="text-center py-4">
+            <Logomark className="w-14 h-14 mx-auto mb-4 text-[#E86A00] animate-bounce" />
+            <h2
+              className="text-2xl font-bold text-neutral-900 tracking-tight mb-2"
+              style={{ fontFamily: "'Inter Tight', sans-serif" }}
+            >
+              Initializing OMNI SEO Studio…
+            </h2>
+            <p className="text-xs text-muted-foreground max-w-sm mx-auto mb-6">
+              Configuring your workspace project for <span className="font-mono font-bold text-neutral-900">{domain || 'acme.com'}</span>.
+            </p>
+
+            {error && <p className="text-xs text-rose-600 mb-4 font-medium">{error}</p>}
+
+            <button
+              type="button"
+              onClick={handleNextStep}
+              disabled={loading}
+              className="w-full py-3.5 rounded-xl bg-[#FFD209] text-black font-bold text-sm hover:bg-[#e0b800] transition shadow-md cursor-pointer flex items-center justify-center gap-1.5 disabled:opacity-60"
+            >
+              <span>{loading ? 'Entering Studio…' : 'Open Studio Dashboard'}</span>
+              <ArrowUpRightIcon />
+            </button>
           </div>
         )}
       </div>

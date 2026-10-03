@@ -19,10 +19,10 @@ import { RichResultPreview } from "@/components/tools/schema-generator/workspace
 import { CheckRingIcon } from "@/components/tools/shared/icons/SchemaIcons";
 
 type SchemaWorkspaceProps = {
-  initialTypes: SchemaType[];
+  initialTypes?: SchemaType[];
   withReviews?: boolean;
   restoredSession?: PersistedSession | null;
-  onBack: () => void;
+  onBack?: () => void;
 };
 
 function seedData(initialTypes: SchemaType[], withReviews?: boolean): SchemaFormData {
@@ -36,9 +36,10 @@ function seedData(initialTypes: SchemaType[], withReviews?: boolean): SchemaForm
   };
 }
 
-export function SchemaWorkspace({ initialTypes, withReviews, restoredSession, onBack }: SchemaWorkspaceProps) {
-  const [types, setTypes] = useState<SchemaType[]>(restoredSession?.types ?? initialTypes);
-  const [activeType, setActiveType] = useState<SchemaType>(restoredSession?.activeType ?? initialTypes[0]);
+export function SchemaWorkspace({ initialTypes = ["organization"], withReviews, restoredSession, onBack = () => {} }: SchemaWorkspaceProps) {
+  const typesToUse = restoredSession?.types ?? initialTypes;
+  const [types, setTypes] = useState<SchemaType[]>(typesToUse);
+  const [activeType, setActiveType] = useState<SchemaType>(restoredSession?.activeType ?? (typesToUse[0] || "organization"));
   const [formData, setFormData] = useState<SchemaFormData>(
     () => restoredSession?.formData ?? seedData(initialTypes, withReviews),
   );

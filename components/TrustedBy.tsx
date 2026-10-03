@@ -2,6 +2,14 @@
 
 import React from 'react'
 
+function LightningIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" {...props}>
+      <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+    </svg>
+  )
+}
+
 export function TrustedBy() {
   const brands = [
     { name: 'Intel', tag: 'A.Intel' },
@@ -19,7 +27,7 @@ export function TrustedBy() {
     <section className="bg-white pt-16 pb-14 px-[40px] border-b border-black/5">
       <h2
         className="text-center text-3xl md:text-4xl font-medium text-neutral-900 mb-12"
-        style={{ fontFamily: "var(--font-inter-tight), sans-serif" }}
+        style={{ fontFamily: "'Inter Tight', sans-serif" }}
       >
         Trusted by the{' '}
         <span style={{ fontFamily: "'Playfair Display', serif", fontStyle: 'italic' }}>
@@ -36,13 +44,13 @@ export function TrustedBy() {
           {marqueeList.map((item, idx) => (
             <div key={idx} className="flex items-center gap-3 shrink-0 opacity-50 hover:opacity-100 transition-opacity">
               {item.tag && (
-                <div className="w-6 h-6 rounded-full bg-neutral-900 text-white font-bold text-[10px] flex items-center justify-center">
-                  ⚡
+                <div className="w-6 h-6 rounded-full bg-neutral-900 text-[#FFD209] flex items-center justify-center">
+                  <LightningIcon />
                 </div>
               )}
               <span
                 className="text-3xl font-bold text-black whitespace-nowrap"
-                style={{ fontFamily: "var(--font-inter-tight), sans-serif" }}
+                style={{ fontFamily: "'Inter Tight', sans-serif" }}
               >
                 {item.name}
               </span>

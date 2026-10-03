@@ -17,7 +17,7 @@ type SitemapWorkspaceProps = {
   onBack: () => void;
 };
 
-export function SitemapWorkspace({ initialEntries, restoredEntries, onBack }: SitemapWorkspaceProps) {
+export function SitemapWorkspace({ initialEntries = [], restoredEntries, onBack = () => {} }: Partial<SitemapWorkspaceProps>) {
   const [entries, setEntries] = useState<SitemapUrlEntry[]>(restoredEntries ?? initialEntries);
   const [showRestoredToast, setShowRestoredToast] = useState(!!restoredEntries);
 

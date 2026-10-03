@@ -19,7 +19,7 @@ type KeywordDensityWorkspaceProps = {
   onBack: () => void;
 };
 
-export function KeywordDensityWorkspace({ initialContent, initialKeywordsRaw, restored, onBack }: KeywordDensityWorkspaceProps) {
+export function KeywordDensityWorkspace({ initialContent = "", initialKeywordsRaw = "", restored, onBack = () => {} }: Partial<KeywordDensityWorkspaceProps>) {
   const [content, setContent] = useState(initialContent);
   const [keywordsRaw, setKeywordsRaw] = useState(initialKeywordsRaw);
   const [debouncedContent, setDebouncedContent] = useState(initialContent);

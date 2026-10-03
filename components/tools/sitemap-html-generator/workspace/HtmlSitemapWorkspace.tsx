@@ -18,7 +18,7 @@ type HtmlSitemapWorkspaceProps = {
   onBack: () => void;
 };
 
-export function HtmlSitemapWorkspace({ initialEntries, restoredEntries, onBack }: HtmlSitemapWorkspaceProps) {
+export function HtmlSitemapWorkspace({ initialEntries = [], restoredEntries, onBack = () => {} }: Partial<HtmlSitemapWorkspaceProps>) {
   const [entries, setEntries] = useState<HtmlSitemapEntry[]>(restoredEntries ?? initialEntries);
   const [mode, setMode] = useState<"standalone" | "embed">("standalone");
   const [showRestoredToast, setShowRestoredToast] = useState(!!restoredEntries);

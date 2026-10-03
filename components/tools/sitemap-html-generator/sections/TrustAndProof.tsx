@@ -21,10 +21,10 @@ export function TrustAndProof() {
             <RevealText text="You might not need this page." />
           </h2>
           <p className="mt-6 max-w-md font-body text-sm text-foreground/60">
-            Google's own John Mueller has said HTML sitemaps aren't essential for every site — if your
-            navigation already surfaces everything, that's the better fix. They're still genuinely useful for
-            large, complex, or ecommerce sites where pages can otherwise go unlinked. We'd rather tell you that
-            than oversell a page you don't need.
+            Google&apos;s own John Mueller has said HTML sitemaps aren&apos;t essential for every site — if your
+            navigation already surfaces everything, that&apos;s the better fix. They&apos;re still genuinely useful for
+            large, complex, or ecommerce sites where pages can otherwise go unlinked. We&apos;d rather tell you that
+            than oversell a page you don&apos;t need.
           </p>
         </div>
 

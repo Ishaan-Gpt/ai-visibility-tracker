@@ -47,7 +47,7 @@ export function TheMythSection() {
             <RevealText text="is a number nobody can justify." delay={0.1} className="block text-primary" />
           </h2>
           <p className="mt-6 max-w-md font-body text-foreground/60">
-            Matt Cutts said it himself: there's no ideal keyword density. Scroll to see what we check instead.
+            Matt Cutts said it himself: there&apos;s no ideal keyword density. Scroll to see what we check instead.
           </p>
         </div>
 

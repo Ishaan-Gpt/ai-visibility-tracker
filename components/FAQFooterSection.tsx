@@ -1,8 +1,18 @@
 'use client'
 
 import React, { useState } from 'react'
+import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { Logomark } from '@/components/tools/shared/icons/Logomark'
+
+function ArrowUpRightIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <line x1="7" y1="17" x2="17" y2="7" />
+      <polyline points="7 7 17 7 17 17" />
+    </svg>
+  )
+}
 
 export function FAQFooterSection() {
   const [openFaq, setOpenFaq] = useState<number | null>(0)
@@ -45,7 +55,7 @@ export function FAQFooterSection() {
             <div>
               <h3
                 className="text-4xl md:text-5xl font-extrabold tracking-tight text-neutral-950 leading-[1.1]"
-                style={{ fontFamily: "var(--font-inter-tight), sans-serif" }}
+                style={{ fontFamily: "'Inter Tight', sans-serif" }}
               >
                 Ready to Dominate Search &amp; AI Visibility?
               </h3>
@@ -57,9 +67,9 @@ export function FAQFooterSection() {
             <div className="mt-10">
               <button
                 type="button"
-                className="px-8 py-4 rounded-2xl bg-black text-white text-sm font-bold shadow-xl hover:bg-neutral-900 transition cursor-pointer"
+                className="px-8 py-4 rounded-2xl bg-black text-white text-sm font-bold shadow-xl hover:bg-neutral-900 transition cursor-pointer flex items-center gap-2"
               >
-                Get Started Today ↗
+                Get Started Today <ArrowUpRightIcon />
               </button>
             </div>
           </div>
@@ -123,7 +133,7 @@ export function FAQFooterSection() {
           <div className="md:col-span-2 space-y-3">
             <h4 className="text-xs font-bold text-neutral-900 uppercase tracking-wider">Pages</h4>
             <ul className="space-y-2 text-xs text-neutral-600">
-              <li><a href="/" className="hover:text-black">Home</a></li>
+              <li><Link href="/" className="hover:text-black">Home</Link></li>
               <li><a href="#contact" className="hover:text-black">Contact</a></li>
               <li><a href="#faq" className="hover:text-black">FAQ</a></li>
             </ul>

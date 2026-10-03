@@ -31,7 +31,7 @@ export function OpeningMark() {
         <div className="grid items-center gap-16 md:grid-cols-[1.15fr_0.85fr]">
           <div>
             <p className="mb-6 font-body text-xs uppercase tracking-[0.25em] text-primary md:whitespace-nowrap">
-              Crawlers shouldn't be the only way in
+              Crawlers shouldn&apos;t be the only way in
             </p>
             <h1 className="font-display text-5xl leading-[1.05] text-foreground md:text-7xl">
               <RevealText as="span" text="You already know" className="block" />

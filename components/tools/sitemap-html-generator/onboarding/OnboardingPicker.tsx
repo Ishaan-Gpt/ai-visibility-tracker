@@ -36,6 +36,7 @@ export function OnboardingPicker({ onSelect, onImportXml }: OnboardingPickerProp
   useEffect(() => {
     const session = loadSitemapSession();
     if (session && session.entries.length > 0) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time read of localStorage on mount
       setDetectedCount(session.entries.length);
     }
   }, []);

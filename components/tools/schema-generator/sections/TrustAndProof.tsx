@@ -23,7 +23,7 @@ export function TrustAndProof() {
           </h2>
           <p className="mt-6 max-w-md font-body text-sm text-foreground/60">
             Schema.org vocabulary v{RULES_SOURCE_VERSION.schemaOrgVersion}, cross-checked against Google Search
-            Central's structured data guidelines — last audited {RULES_SOURCE_VERSION.googleDocsCheckedOn}.
+            Central&apos;s structured data guidelines — last audited {RULES_SOURCE_VERSION.googleDocsCheckedOn}.
           </p>
         </div>
 

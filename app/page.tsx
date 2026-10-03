@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useEffect, useRef, useState } from 'react'
+import Link from 'next/link'
 import { motion, useInView } from 'framer-motion'
 
 import { AuthFlowModal } from '@/components/AuthFlowModal'
@@ -41,7 +42,7 @@ export function AnimatedWords({
       {words.map((word, i) => (
         <span
           key={i}
-          className="inline-block overflow-hidden pb-[0.2em] align-bottom"
+          className="inline-block overflow-hidden pb-[0.16em] align-bottom"
         >
           <motion.span
             className="inline-block"
@@ -66,6 +67,63 @@ export function AnimatedWords({
   )
 }
 
+// --- Animated Dotted Frame Connector Component ---
+function AnimatedDottedFrame({
+  className = '',
+  style = {},
+  startDelay = 4200,
+}: {
+  className?: string
+  style?: React.CSSProperties
+  startDelay?: number
+}) {
+  const pathRef = useRef<SVGPathElement>(null)
+  const [points, setPoints] = useState<{ x: number; y: number }[]>([])
+
+  useEffect(() => {
+    if (pathRef.current) {
+      const path = pathRef.current
+      const total = path.getTotalLength()
+      const pts: { x: number; y: number }[] = []
+      for (let d = 2; d <= total; d += 4) {
+        const p = path.getPointAtLength(d)
+        pts.push({ x: p.x, y: p.y })
+      }
+      setPoints(pts)
+    }
+  }, [])
+
+  return (
+    <svg
+      className={className}
+      style={style}
+      width="141"
+      height="107"
+      viewBox="0 0 141 107"
+      fill="none"
+      aria-hidden="true"
+    >
+      <path
+        ref={pathRef}
+        d="M140.75 3.75H5.75C2.98857 3.75 0.75 5.98858 0.75 8.75V95.75C0.75 98.5114 2.98858 100.75 5.75 100.75H40"
+      />
+      <g>
+        {points.map((pt, i) => (
+          <circle
+            key={i}
+            cx={pt.x}
+            cy={pt.y}
+            r="1"
+            fill="#FFFFFF"
+            className="dot-pop"
+            style={{ animationDelay: `${startDelay + i * 40}ms` }}
+          />
+        ))}
+      </g>
+    </svg>
+  )
+}
+
 function ChevronDown(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
@@ -84,57 +142,6 @@ function ChevronDown(props: React.SVGProps<SVGSVGElement>) {
   )
 }
 
-function StarIcon({ half, className }: { half?: boolean; className?: string }) {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" className={className}>
-      {half && (
-        <defs>
-          <linearGradient id="half-star">
-            <stop offset="50%" stopColor="currentColor" />
-            <stop offset="50%" stopColor="rgba(0,0,0,0.15)" />
-          </linearGradient>
-        </defs>
-      )}
-      <path
-        d="M12 2.5l2.95 6.2 6.8.78-5.05 4.66 1.4 6.66L12 17.6l-6.1 3.2 1.4-6.66L2.25 9.48l6.8-.78L12 2.5z"
-        fill={half ? 'url(#half-star)' : 'currentColor'}
-      />
-    </svg>
-  )
-}
-
-const MARQUEE_BRANDS = ['Oracle', 'GoFundMe', 'Nutanix', 'Upside']
-
-function TrustedByStrip() {
-  return (
-    <div className="mt-6 px-2 pb-1 flex items-center justify-center">
-      <div
-        className="w-full max-w-2xl overflow-hidden"
-        style={{
-          maskImage:
-            'linear-gradient(to right, transparent 0, #000 60px, #000 calc(100% - 60px), transparent 100%)',
-        }}
-      >
-        <div className="flex w-max gap-12 animate-marquee justify-center">
-          {[0, 1].map((groupIndex) => (
-            <div key={groupIndex} className="flex items-center gap-12 shrink-0 pr-12">
-              {MARQUEE_BRANDS.map((brand) => (
-                <span
-                  key={brand}
-                  className="text-white/60 text-base font-semibold tracking-tight whitespace-nowrap"
-                  style={{ fontFamily: "var(--font-inter-tight), sans-serif" }}
-                >
-                  {brand}
-                </span>
-              ))}
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  )
-}
-
 // --- Main Hero Component ---
 function HeroSection({ onStart }: { onStart: () => void }) {
   const brandName = 'OMNI SEO'
@@ -146,12 +153,12 @@ function HeroSection({ onStart }: { onStart: () => void }) {
     { name: 'Case Studies', href: '#' },
   ]
 
-  const omniTools = [
-    'AI Search Agent',
-    'Rank Tracking & Audits',
-    'Automated Content Engine',
-    'Schema & Technical SEO',
-    'Real-Time SERP Analytics',
+  const keyFeatures = [
+    { name: 'AI Search Agent', active: false },
+    { name: 'Lead Capture & SERP', active: false },
+    { name: 'Automated Sitemaps & Schema', active: true },
+    { name: 'Keyword Density', active: false },
+    { name: 'Rank Tracking', active: false },
   ]
 
   return (
@@ -159,7 +166,7 @@ function HeroSection({ onStart }: { onStart: () => void }) {
       <div className="mx-auto max-w-[1400px] px-6 md:px-10 w-full">
         {/* 1) HEADER */}
         <header className="flex items-center justify-between pt-6 md:pt-8">
-          <a href="/" className="flex items-center gap-[9.23px]">
+          <Link href="/" className="flex items-center gap-[9.23px]">
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
@@ -167,10 +174,7 @@ function HeroSection({ onStart }: { onStart: () => void }) {
             >
               <Logomark className="w-[38px] h-[38px] text-[#E86A00]" />
             </motion.div>
-            <span
-              className="text-[28px] font-semibold text-black tracking-tight leading-none flex"
-              style={{ fontFamily: "var(--font-inter-tight), sans-serif" }}
-            >
+            <span className="text-[28px] font-semibold text-black tracking-tight leading-none flex">
               {brandLetters.map((char, index) => (
                 <span
                   key={index}
@@ -191,7 +195,7 @@ function HeroSection({ onStart }: { onStart: () => void }) {
                 </span>
               ))}
             </span>
-          </a>
+          </Link>
 
           <nav className="hidden md:flex items-center gap-[36px]">
             {navLinks.map((link, index) => (
@@ -216,7 +220,7 @@ function HeroSection({ onStart }: { onStart: () => void }) {
           <motion.button
             type="button"
             onClick={onStart}
-            className="rounded-full border border-border bg-white px-[20px] py-[10px] text-[14px] font-semibold text-foreground shadow-[0_1px_0_rgba(0,0,0,0.05)] hover:bg-neutral-100 transition-colors cursor-pointer"
+            className="rounded-full border border-border bg-white px-[20px] py-[10px] text-[14px] font-medium text-foreground shadow-[0_1px_0_rgba(0,0,0,0.05)] hover:bg-muted transition-colors cursor-pointer"
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ duration: 0.5, ease: 'backOut', delay: 1.3 }}
@@ -226,9 +230,10 @@ function HeroSection({ onStart }: { onStart: () => void }) {
         </header>
 
         {/* 2) HERO */}
-        <section className="pt-14 md:pt-20 text-center">
+        <section className="pt-12 md:pt-16 text-center mx-auto max-w-[1000px]">
+          {/* Eyebrow Pill */}
           <motion.div
-            className="inline-flex items-center p-[4px] pr-[11px] gap-[10px] rounded-[8px] bg-[rgba(192,192,192,0.17)]"
+            className="inline-flex items-center p-[4px] pr-[11px] pl-[4px] gap-[10px] rounded-[8px] bg-[rgba(192,192,192,0.17)] mb-4"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: 'easeOut', delay: 1.5 }}
@@ -247,52 +252,56 @@ function HeroSection({ onStart }: { onStart: () => void }) {
             </span>
           </motion.div>
 
-          <h1 className="max-w-[1050px] mt-5 text-[48px] md:text-[76px] font-medium leading-[1.0] tracking-[-0.035em] text-center mx-auto">
-            <div className="md:whitespace-nowrap">
+          {/* H1 Heading (2-Line Wrapper, Smaller Font, Tight Line Spacing) */}
+          <h1 className="max-w-[950px] text-[40px] sm:text-[54px] md:text-[64px] lg:text-[70px] font-medium leading-[0.98] md:leading-[0.98] tracking-[-0.035em] text-center mx-auto">
+            <div className="whitespace-nowrap">
               <AnimatedWords
                 text="AI that ranks & converts search traffic"
                 delayStart={1.7}
                 stagger={0.04}
               />
             </div>
-            <div className="mt-1 flex items-center justify-center flex-wrap">
-              <AnimatedWords
-                text="for your"
-                delayStart={1.95}
-                stagger={0.04}
-              />
-              <div className="inline-block w-[76px] h-[76px] md:w-[96px] md:h-[96px] rounded-full overflow-hidden border-2 border-white shadow-md mx-2 align-middle">
+            <div className="mt-1 flex items-center justify-center flex-wrap gap-2 whitespace-nowrap">
+              <AnimatedWords text="for your" delayStart={1.95} stagger={0.04} />
+              <motion.div
+                className="inline-block w-[64px] h-[64px] md:w-[76px] md:h-[76px] rounded-full overflow-hidden border-2 border-white shadow-md align-middle"
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ duration: 0.6, ease: 'backOut', delay: 2.15 }}
+              >
                 <img
-                  src="/images/ai_expert_1_1786114890114.png"
+                  src="/images/hero_ai_strategist_1786133434717.png"
                   alt="AI Search Specialist"
                   className="w-full h-full object-cover"
                 />
-              </div>
+              </motion.div>
               <AnimatedWords
                 text="modern brand"
                 className="text-foreground/25"
-                delayStart={2.10}
+                delayStart={2.1}
                 stagger={0.04}
               />
             </div>
           </h1>
 
+          {/* Subheading Paragraph */}
           <motion.p
-            className="mt-6 max-w-[760px] text-[17px] md:text-[18px] leading-[1.5] text-muted-foreground text-center mx-auto"
+            className="mt-[24px] max-w-[720px] text-[16px] md:text-[17px] leading-[1.45] text-muted-foreground text-center mx-auto"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: 'easeOut', delay: 2.5 }}
           >
             Built for how customers actually search. They Google. They compare. They convert.
-            <br className="hidden md:inline" />
-            OMNI SEO unifies all 5 search tools — AI Agent, Rank Tracking, Content Engine, Schema &amp; SERP Analytics — to dominate page 1.
+            <br />
+            Our AI handles every search touchpoint — AI Overviews, Schema, SERP tracking — until they convert.
           </motion.p>
 
-          <div className="mt-8 flex items-center justify-center gap-3">
+          {/* CTA Row */}
+          <div className="mt-[32px] flex items-center justify-center gap-[12px]">
             <motion.button
               type="button"
               onClick={onStart}
-              className="rounded-full border border-border bg-white px-6 py-3 text-[15px] font-semibold text-foreground shadow-[0_1px_0_rgba(0,0,0,0.05)] hover:bg-neutral-100 transition-colors cursor-pointer"
+              className="rounded-full border border-border bg-white px-6 py-3 text-[15px] font-medium text-foreground shadow-[0_1px_0_rgba(0,0,0,0.05)] hover:bg-muted transition-colors cursor-pointer"
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ duration: 0.5, ease: 'backOut', delay: 2.7 }}
@@ -303,7 +312,7 @@ function HeroSection({ onStart }: { onStart: () => void }) {
             <motion.button
               type="button"
               onClick={onStart}
-              className="rounded-full px-6 py-3 text-[15px] font-semibold text-white bg-black hover:bg-neutral-800 hover:scale-[1.02] transition-transform cursor-pointer"
+              className="rounded-full px-6 py-3 text-[15px] font-semibold text-foreground bg-[#FFD209] hover:scale-[1.02] transition-transform cursor-pointer"
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ duration: 0.5, ease: 'backOut', delay: 2.8 }}
@@ -313,24 +322,25 @@ function HeroSection({ onStart }: { onStart: () => void }) {
           </div>
         </section>
 
-        {/* 3) SHOWCASE CARD */}
+        {/* 3) SHOWCASE CARD (mesh-showcase with NEW AI generated dashboard mockup) */}
         <motion.div
-          className="mt-14 w-full rounded-[28px] overflow-hidden p-3 md:p-4 bg-[#0a0a0a] text-white shadow-2xl"
+          className="mesh-showcase mt-[48px] w-full rounded-[28px] overflow-hidden p-5 md:p-7 text-white shadow-2xl"
           initial={{ opacity: 0, y: 60 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1.0, ease: [0.25, 1, 0.5, 1], delay: 3.0 }}
         >
-          <div className="grid grid-cols-1 md:grid-cols-[1.35fr_1fr] gap-4 items-start">
-            {/* LEFT INNER CARD — warm mesh gradient */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            {/* LEFT INNER CARD */}
             <motion.div
-              className="mesh-showcase min-h-[300px] md:min-h-[380px] rounded-[22px] p-6 md:p-8 text-white relative flex flex-col justify-between overflow-hidden"
+              className="min-h-[360px] rounded-[22px] bg-[#1E1D19] p-6 md:p-7 text-white relative flex flex-col justify-between overflow-hidden"
               initial={{ opacity: 0, y: 40 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, ease: 'easeOut', delay: 3.2 }}
             >
               <div>
+                {/* Pro Pill */}
                 <motion.div
-                  className="w-[36px] h-[22px] rounded-[6px] bg-white text-black text-[12px] font-bold flex items-center justify-center mb-5"
+                  className="w-[36px] h-[22px] rounded-[6px] bg-[#FFD209] text-[#111114] text-[12px] font-medium flex items-center justify-center mb-4"
                   initial={{ scale: 2.4, opacity: 0.2 }}
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{
@@ -342,7 +352,7 @@ function HeroSection({ onStart }: { onStart: () => void }) {
                   Pro
                 </motion.div>
 
-                <h3 className="text-[26px] md:text-[30px] font-medium leading-[1.15] tracking-tight text-white">
+                <h3 className="text-[28px] font-medium leading-[1.15] tracking-tight text-white mt-5">
                   <div>
                     <AnimatedWords text="All-in-One" delayStart={3.6} />
                   </div>
@@ -350,68 +360,176 @@ function HeroSection({ onStart }: { onStart: () => void }) {
                     <AnimatedWords text="AI Search Platform" delayStart={3.75} />
                   </div>
                 </h3>
+              </div>
 
-                <p className="text-[14px] font-normal text-white/50 leading-relaxed mt-4 max-w-[260px]">
-                  From keyword intelligence to automated SERP ranking, all 5 AI tools powered by OMNI SEO.
+              <div className="mt-auto pt-6">
+                <p className="text-[16px] font-normal text-white/40 leading-[19px]">
+                  From lead capture to recurring SERP rankings,
+                  <br />
+                  We run your search visibility with AI.
                 </p>
               </div>
 
-              {/* Soft abstract graphic, bottom-right */}
-              <div
-                className="hidden md:block absolute -bottom-10 -right-10 w-[240px] h-[240px] rounded-full opacity-70 pointer-events-none"
-                style={{
-                  background:
-                    'radial-gradient(circle at 35% 35%, rgba(191, 219, 254, 0.55), rgba(147, 197, 253, 0.15) 55%, transparent 75%)',
-                  filter: 'blur(2px)',
-                }}
-              />
-              <div className="hidden md:block absolute bottom-8 right-10 w-24 h-24 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20" />
+              {/* Floating Browser Mockup & Key Features Popover (md+ only) */}
+              <div className="hidden md:block absolute bottom-0 right-0 w-[330px] drop-shadow-[0_20px_40px_rgba(0,0,0,0.45)] pointer-events-none">
+                {/* Browser Dot Seam */}
+                <div className="absolute top-[40px] left-[1px] w-[8px] h-[8px] bg-white rounded-full border-2 border-white/25 box-content z-20" />
+
+                {/* Dashed Connector SVG */}
+                <AnimatedDottedFrame
+                  className="absolute left-[-135.75px] top-[43.25px] z-10"
+                  startDelay={4200}
+                />
+
+                {/* Key Features Popover */}
+                <motion.div
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.8, ease: 'easeOut', delay: 3.95 }}
+                  className="absolute bottom-[-24px] right-[214px] z-20 w-[210px] h-[222px] rounded-[13.654px] border border-white/35 bg-gradient-to-br from-white/5 to-white/40 backdrop-blur-[214.5px] p-3 flex flex-col pointer-events-auto"
+                >
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-white text-xs">↗</span>
+                    <span className="text-white text-[13px] font-medium">Key Features</span>
+                  </div>
+
+                  <div className="relative h-px bg-white/20 -mx-3 mb-2">
+                    <div className="absolute -left-1 -top-1 w-[8px] h-[8px] bg-white rounded-full border-2 border-white/25 box-content" />
+                  </div>
+
+                  <div className="space-y-1">
+                    {keyFeatures.map((feat) => (
+                      <div
+                        key={feat.name}
+                        className={`px-2 py-1.5 rounded-[4.312px] flex items-center gap-2 text-xs font-medium ${
+                          feat.active
+                            ? 'bg-[#F4F4F4] text-[#111114]'
+                            : 'text-white/90'
+                        }`}
+                      >
+                        <div
+                          className={`w-3 h-3 rounded-[1px] flex items-center justify-center shrink-0 ${
+                            feat.active ? 'bg-[#FFD209]' : 'bg-white/15 rounded-[3px]'
+                          }`}
+                        >
+                          {feat.active && (
+                            <svg className="w-2 h-2 text-white stroke-current stroke-[4]" viewBox="0 0 24 24">
+                              <polyline points="20 6 9 17 4 12" />
+                            </svg>
+                          )}
+                        </div>
+                        <span className="truncate">{feat.name}</span>
+                      </div>
+                    ))}
+                  </div>
+                </motion.div>
+
+                {/* New AI Generated Browser Dashboard Image */}
+                <img
+                  src="/images/hero_browser_dashboard_1786133451507.png"
+                  alt="Browser Mockup"
+                  className="w-full h-auto rounded-tl-xl border border-white/10"
+                />
+              </div>
             </motion.div>
 
-            {/* RIGHT INNER CARD — white testimonial, shorter than left */}
+            {/* RIGHT INNER CARD */}
             <motion.div
-              className="rounded-[22px] bg-white p-6 text-neutral-900 relative flex flex-col gap-5"
+              className="min-h-[360px] rounded-[22px] bg-white p-6 md:p-7 text-neutral-900 relative flex flex-col justify-between shadow-sm"
               initial={{ opacity: 0, y: 40 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, ease: 'easeOut', delay: 3.3 }}
             >
-              <div className="flex items-center gap-2.5">
-                <img
-                  src="/images/ai_expert_2_1786114910389.png"
-                  alt="Customer"
-                  className="w-9 h-9 rounded-full object-cover border-2 border-white shadow-sm"
-                />
-                <span className="text-[14px] font-medium text-foreground">What our customers say</span>
-              </div>
+              <div>
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="flex -space-x-2">
+                      <img src="/images/ai_expert_1_1786114890114.png" className="w-8 h-8 rounded-full border-2 border-white object-cover" />
+                      <img src="/images/ai_expert_2_1786114890114.png" className="w-8 h-8 rounded-full border-2 border-white object-cover" />
+                      <img src="/images/ai_expert_3_1786114929317.png" className="w-8 h-8 rounded-full border-2 border-white object-cover" />
+                    </div>
+                    <span className="text-[15px] font-medium text-foreground">What our customers say</span>
+                  </div>
 
-              <blockquote className="text-[18px] font-medium leading-[1.35] tracking-tight text-foreground">
-                <AnimatedWords text="They converted 40% more leads" delayStart={3.6} />
-                {' '}
-                <AnimatedWords
-                  text="than our old SEO agency — and never missed a follow-up."
-                  className="text-muted-foreground"
-                  delayStart={3.75}
-                  stagger={0.04}
-                />
-              </blockquote>
-
-              <div className="pt-4 border-t border-black/10 flex items-center justify-between">
-                <div>
-                  <h4 className="text-sm font-bold text-neutral-900">Nutanix Tech</h4>
-                  <p className="text-xs text-muted-foreground">Growth Team</p>
+                  <div className="flex flex-col gap-[4.34px]">
+                    <div className="w-[32.569px] h-[4.343px] rounded-[5.428px] bg-[#131318]" />
+                    <div className="w-[16.285px] h-[4.343px] rounded-[5.428px] bg-[#DCDCDC]" />
+                  </div>
                 </div>
 
-                <div className="flex items-center gap-1">
-                  {[0, 1, 2, 3].map((i) => (
-                    <StarIcon key={i} className="star" />
-                  ))}
-                  <StarIcon half className="star" />
+                <div className="mt-12 text-[13px] text-muted-foreground font-mono">Feb 02, 2026</div>
+
+                <blockquote className="mt-2 max-w-[420px] text-[22px] font-medium leading-[1.3] tracking-tight">
+                  <AnimatedWords
+                    text="They converted 340% more search traffic"
+                    delayStart={3.6}
+                  />
+                  {'\u00A0'}
+                  <AnimatedWords
+                    text="than our previous agency — and never missed an AI overview ranking."
+                    className="text-muted-foreground"
+                    delayStart={3.75}
+                    stagger={0.04}
+                  />
+                </blockquote>
+              </div>
+
+              <div className="pt-6 border-t border-black/10 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-full bg-black text-white font-bold text-xs flex items-center justify-center">
+                    ⚡
+                  </div>
+                  <span className="text-sm font-bold text-neutral-900">Nutanix Tech</span>
+                </div>
+
+                {/* 4.5 Stars */}
+                <div className="flex items-center gap-1 text-[#FFD209]">
+                  <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                    <path d="M12 2.5l2.95 6.2 6.8.78-5.05 4.66 1.4 6.66L12 17.6l-6.1 3.2 1.4-6.66L2.25 9.48l6.8-.78L12 2.5z" />
+                  </svg>
+                  <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                    <path d="M12 2.5l2.95 6.2 6.8.78-5.05 4.66 1.4 6.66L12 17.6l-6.1 3.2 1.4-6.66L2.25 9.48l6.8-.78L12 2.5z" />
+                  </svg>
+                  <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                    <path d="M12 2.5l2.95 6.2 6.8.78-5.05 4.66 1.4 6.66L12 17.6l-6.1 3.2 1.4-6.66L2.25 9.48l6.8-.78L12 2.5z" />
+                  </svg>
+                  <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                    <path d="M12 2.5l2.95 6.2 6.8.78-5.05 4.66 1.4 6.66L12 17.6l-6.1 3.2 1.4-6.66L2.25 9.48l6.8-.78L12 2.5z" />
+                  </svg>
+                  <svg className="w-4 h-4" viewBox="0 0 24 24">
+                    <defs>
+                      <linearGradient id="half-star">
+                        <stop offset="50%" stopColor="#FFD209" />
+                        <stop offset="50%" stopColor="rgba(0,0,0,0.15)" />
+                      </linearGradient>
+                    </defs>
+                    <path fill="url(#half-star)" d="M12 2.5l2.95 6.2 6.8.78-5.05 4.66 1.4 6.66L12 17.6l-6.1 3.2 1.4-6.66L2.25 9.48l6.8-.78L12 2.5z" />
+                  </svg>
                 </div>
               </div>
             </motion.div>
           </div>
 
-          <TrustedByStrip />
+          {/* TRUSTED-BY MARQUEE ROW (Inside Mesh Card) */}
+          <div className="mt-[28px] px-1 pt-6 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-6 text-white">
+            <p className="text-[13px] leading-[1.5] text-white/75 max-w-md">
+              Trusted by industry leaders in search who don&apos;t just follow trends, but define how organic discovery moves forward.
+            </p>
+
+            <div className="w-full md:max-w-[60%] overflow-hidden relative [mask-image:linear-gradient(to_right,transparent_0,#000_80px,#000_calc(100%-80px),transparent_100%)]">
+              <div className="flex w-max animate-marquee gap-10">
+                {[...Array(2)].map((_, groupIdx) => (
+                  <div key={groupIdx} className="flex items-center gap-10 shrink-0 opacity-70">
+                    <span className="text-xl font-bold text-white tracking-wider">INTEL</span>
+                    <span className="text-xl font-bold text-white tracking-wider">ORACLE</span>
+                    <span className="text-xl font-bold text-white tracking-wider">GOFUNDME</span>
+                    <span className="text-xl font-bold text-white tracking-wider">NUTANIX</span>
+                    <span className="text-xl font-bold text-white tracking-wider">UPSIDE</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
         </motion.div>
       </div>
     </div>
@@ -466,10 +584,10 @@ export default function LandingPage() {
       {/* 4) TESTIMONIALS SECTION */}
       <Testimonials />
 
-      {/* 5) TEAM SECTION (with TeamCarousel & 126px hover puck) */}
+      {/* 5) TEAM SECTION */}
       <TeamSection />
 
-      {/* 6) BENEFITS SECTION (3-card grid with custom interior gradient divider lines) */}
+      {/* 6) BENEFITS SECTION */}
       <BenefitsSection />
 
       {/* 7) CONSULTANTS BENTO SECTION */}

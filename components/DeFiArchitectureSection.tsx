@@ -3,6 +3,24 @@
 import React from 'react'
 import { motion } from 'framer-motion'
 
+function LockIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+    </svg>
+  )
+}
+
+function ArrowUpRightIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <line x1="7" y1="17" x2="17" y2="7" />
+      <polyline points="7 7 17 7 17 17" />
+    </svg>
+  )
+}
+
 export function DeFiArchitectureSection() {
   return (
     <section className="py-24 bg-[#FAF9F6] px-6 md:px-12 border-b border-black/5">
@@ -12,7 +30,7 @@ export function DeFiArchitectureSection() {
           <div>
             <h2
               className="text-4xl md:text-5xl font-medium tracking-tight text-neutral-900"
-              style={{ fontFamily: "var(--font-inter-tight), sans-serif" }}
+              style={{ fontFamily: "'Inter Tight', sans-serif" }}
             >
               Architected for high-performance Search &amp; AI Visibility
             </h2>
@@ -23,20 +41,20 @@ export function DeFiArchitectureSection() {
 
           <button
             type="button"
-            className="self-start md:self-auto px-6 py-2.5 rounded-full border border-black/10 bg-white text-xs font-semibold text-neutral-900 hover:bg-neutral-100 transition shadow-sm cursor-pointer"
+            className="self-start md:self-auto px-6 py-2.5 rounded-full border border-black/10 bg-white text-xs font-semibold text-neutral-900 hover:bg-neutral-100 transition shadow-sm cursor-pointer flex items-center gap-1.5"
           >
-            Start Auditing ↗
+            Start Auditing <ArrowUpRightIcon />
           </button>
         </div>
 
         {/* Bento Grid Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* LEFT TALL CARD (Card 1 - Spans 5 columns on desktop) */}
+          {/* LEFT TALL CARD (Card 1 - Spans 5 columns on desktop) with AI Tech Nodes Asset */}
           <motion.div
             whileHover={{ y: -4 }}
-            className="lg:col-span-5 rounded-[32px] bg-white border border-black/8 p-8 md:p-10 shadow-sm flex flex-col justify-between min-h-[440px]"
+            className="lg:col-span-5 rounded-[32px] bg-white border border-black/8 p-8 md:p-10 shadow-sm flex flex-col justify-between min-h-[440px] relative overflow-hidden"
           >
-            <div>
+            <div className="z-10">
               <div className="flex items-center justify-between text-xs font-mono text-muted-foreground uppercase tracking-wider mb-8">
                 <span>01</span>
                 <span>SEARCH ENGINE ARCHITECTURE</span>
@@ -47,7 +65,16 @@ export function DeFiArchitectureSection() {
               </h3>
             </div>
 
-            <p className="text-sm text-muted-foreground leading-relaxed mt-8">
+            {/* AI Tech Architecture Nodes Graphic */}
+            <div className="my-4 h-36 rounded-2xl overflow-hidden bg-neutral-50 border border-black/5">
+              <img
+                src="/images/architecture_tech_concept_1786133613467.png"
+                alt="Architecture Tech Concept"
+                className="w-full h-full object-cover"
+              />
+            </div>
+
+            <p className="text-sm text-muted-foreground leading-relaxed z-10">
               Crawl, score, and rank items without indexation delays. Experience zero-latency SERP updates with immediate access to insights.
             </p>
           </motion.div>
@@ -69,7 +96,7 @@ export function DeFiArchitectureSection() {
               </h3>
 
               <p className="text-sm text-muted-foreground leading-relaxed mt-2 max-w-xl">
-                Track your organic keyword rewards minute by minute with our high-res SERP indexer. Keep your finger on the pulse of your portfolio's performance.
+                Track your organic keyword rewards minute by minute with our high-res SERP indexer. Keep your finger on the pulse of your portfolio&apos;s performance.
               </p>
             </motion.div>
 
@@ -93,7 +120,7 @@ export function DeFiArchitectureSection() {
 
                 <div className="mt-6 pt-4 border-t border-black/5 flex items-center justify-between text-xs font-semibold text-neutral-900">
                   <span>View Audits</span>
-                  <span>🔒</span>
+                  <LockIcon />
                 </div>
               </motion.div>
 
@@ -115,7 +142,7 @@ export function DeFiArchitectureSection() {
 
                 <div className="mt-6 flex justify-end">
                   <div className="w-9 h-9 rounded-full bg-neutral-100 flex items-center justify-center text-xs font-bold text-neutral-900">
-                    ↗
+                    <ArrowUpRightIcon />
                   </div>
                 </div>
               </motion.div>

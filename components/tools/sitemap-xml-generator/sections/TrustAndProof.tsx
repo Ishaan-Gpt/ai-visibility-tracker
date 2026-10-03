@@ -22,7 +22,7 @@ export function TrustAndProof() {
             <RevealText text="Validated against the actual protocol." />
           </h2>
           <p className="mt-6 max-w-md font-body text-sm text-foreground/60">
-            Checked against the sitemaps.org protocol and Google Search Central's sitemap guidelines —
+            Checked against the sitemaps.org protocol and Google Search Central&apos;s sitemap guidelines —
             last audited {RULES_SOURCE_VERSION.googleDocsCheckedOn}.
           </p>
         </div>

@@ -88,7 +88,7 @@ export function LiveMechanism() {
                 animate={{ opacity: 1, y: 0 }}
                 className="rounded-full bg-red-500/10 px-3 py-1 font-body text-xs text-red-500"
               >
-                Stuffing risk: "seo"
+                Stuffing risk: &quot;seo&quot;
               </motion.p>
             ) : (
               <motion.p

@@ -3,6 +3,23 @@
 import React, { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 
+function LightningIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" {...props}>
+      <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+    </svg>
+  )
+}
+
+function UserIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+      <circle cx="12" cy="7" r="4" />
+    </svg>
+  )
+}
+
 // --- Animated Words Helper ---
 function AnimatedWords({ text, baseDelay = 0 }: { text: string; baseDelay?: number }) {
   const words = text.split(' ')
@@ -45,7 +62,7 @@ function StyleCarouselCard() {
     const timer = setInterval(() => {
       setActive((prev) => (prev + 1) % CAROUSEL_ITEMS.length)
     }, 2800)
-    return () => clearInterval(timer)
+    return () => clearTimeout(timer)
   }, [])
 
   const len = CAROUSEL_ITEMS.length
@@ -101,13 +118,13 @@ function StyleCarouselCard() {
               >
                 {isActive ? (
                   <div className="w-[calc(100%_-_60px)] mx-[30px] h-[80px] bg-white/25 backdrop-blur-xl shadow-2xl rounded-full border border-white/20 p-2.5 flex items-center gap-4">
-                    <div className="w-[63px] h-[63px] rounded-full bg-[#FFD209] text-black font-bold text-xl flex items-center justify-center shrink-0">
-                      ⚡
+                    <div className="w-[63px] h-[63px] rounded-full bg-[#FFD209] text-black font-bold flex items-center justify-center shrink-0">
+                      <LightningIcon />
                     </div>
                     <div className="flex-1 min-w-0 text-left">
                       <div
                         className="text-white text-lg font-medium truncate"
-                        style={{ fontFamily: "var(--font-inter-tight), sans-serif" }}
+                        style={{ fontFamily: "'Inter Tight', sans-serif" }}
                       >
                         {label}
                       </div>
@@ -203,13 +220,13 @@ function ChatCustomerCard() {
                 className="flex flex-col h-full"
               >
                 <div className="flex items-center gap-[12px] h-[44px]">
-                  <div className="w-8 h-8 rounded-full bg-white text-black font-bold text-xs flex items-center justify-center">
-                    👤
+                  <div className="w-8 h-8 rounded-full bg-white text-black font-bold flex items-center justify-center">
+                    <UserIcon />
                   </div>
                   <span className="text-white text-base font-semibold">Me</span>
                 </div>
                 <p className="text-white text-[15px] leading-snug mt-1 ml-[44px] font-sans">
-                  "My search rankings won't update, any ideas on how to use OMNI SEO?"
+                  &quot;My search rankings won&apos;t update, any ideas on how to use OMNI SEO?&quot;
                 </p>
               </motion.div>
             )}
@@ -221,7 +238,7 @@ function ChatCustomerCard() {
       <div className="flex justify-between items-end pl-[32px] pr-[32px]">
         <div
           className="w-64 text-white text-3xl md:text-4xl leading-tight font-medium"
-          style={{ fontFamily: "var(--font-inter-tight), sans-serif" }}
+          style={{ fontFamily: "'Inter Tight', sans-serif" }}
         >
           <AnimatedWords text="Engage and rank across all engines" baseDelay={0.5} />
         </div>
@@ -262,9 +279,9 @@ function AdaptableListCard() {
       <div className="flex flex-col gap-[26px]">
         <h3
           className="text-white text-5xl font-normal leading-[1.05]"
-          style={{ fontFamily: "var(--font-inter-tight), sans-serif" }}
+          style={{ fontFamily: "'Inter Tight', sans-serif" }}
         >
-          It's completely
+          It&apos;s completely
           <br />
           adaptable.
         </h3>
@@ -290,7 +307,7 @@ function AdaptableListCard() {
           >
             <span
               className="text-lg font-semibold"
-              style={{ color: item.color, fontFamily: "var(--font-inter-tight), sans-serif" }}
+              style={{ color: item.color, fontFamily: "'Inter Tight', sans-serif" }}
             >
               {item.label}
             </span>
@@ -321,7 +338,7 @@ export function CraftExperiences() {
       <div className="max-w-[1360px] mx-auto px-6 md:px-12 pt-16 pb-20">
         <h2
           className="text-center text-5xl md:text-6xl font-normal leading-[1.1] mb-12 text-neutral-900"
-          style={{ fontFamily: "var(--font-inter-tight), sans-serif" }}
+          style={{ fontFamily: "'Inter Tight', sans-serif" }}
         >
           <span style={{ fontFamily: "'Playfair Display', serif", fontStyle: 'italic' }}>
             Craft search experiences

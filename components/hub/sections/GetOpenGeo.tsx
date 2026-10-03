@@ -9,7 +9,7 @@ export function GetOpenGeo() {
       <div className="mx-auto max-w-2xl text-center">
         <Logomark className="mx-auto mb-8 h-8 w-8 text-primary" />
         <p className="mb-6 font-body text-xs uppercase tracking-[0.25em] text-background/50 md:whitespace-nowrap">
-          The suite's flagship
+          The suite&apos;s flagship
         </p>
         <h2 className="font-display text-4xl leading-tight md:text-6xl">
           <RevealText text="The free tools fix your markup." className="block" />

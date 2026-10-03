@@ -10,8 +10,18 @@ interface ComponentProps {
   as?: React.ElementType
 }
 
+const MOTION_TAGS = {
+  h1: motion.h1,
+  h2: motion.h2,
+  h3: motion.h3,
+  h4: motion.h4,
+  p: motion.p,
+  div: motion.div,
+  span: motion.span,
+} as const
+
 export function AnimatedHeading({ children, className = '', delay = 0, as: As = 'h2' }: ComponentProps) {
-  const MotionTag = motion(As as any)
+  const MotionTag = (MOTION_TAGS[As as keyof typeof MOTION_TAGS] ?? motion.h2) as React.ElementType
   return (
     <MotionTag
       initial={{ opacity: 0, y: 30, filter: 'blur(12px)' }}

@@ -3,6 +3,14 @@
 import React from 'react'
 import { motion } from 'framer-motion'
 
+function LightningIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" {...props}>
+      <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+    </svg>
+  )
+}
+
 export function Testimonials() {
   const quoteText =
     'OMNI SEO completely changed how I approached ranking our product. Instead of feeling overwhelmed with choices, it felt like having a search engineer by my side 24/7.'
@@ -33,7 +41,7 @@ export function Testimonials() {
               <div className="flex flex-col gap-6 flex-1 lg:flex-none">
                 <h3
                   className="text-3xl text-black leading-tight max-w-[260px] font-medium"
-                  style={{ fontFamily: "var(--font-inter-tight), sans-serif" }}
+                  style={{ fontFamily: "'Inter Tight', sans-serif" }}
                 >
                   OMNI SEO{' '}
                   <span style={{ fontFamily: "'Playfair Display', serif", fontStyle: 'italic' }}>
@@ -55,7 +63,7 @@ export function Testimonials() {
                 viewport={{ once: true, amount: 0.4 }}
                 transition={{ delay: 0.3, duration: 0.5, ease: 'easeOut' }}
                 className="self-start bg-black text-white px-7 py-3 rounded-2xl text-xl font-medium hover:bg-neutral-800 transition-colors whitespace-nowrap shadow-md cursor-pointer"
-                style={{ fontFamily: "var(--font-inter-tight), sans-serif" }}
+                style={{ fontFamily: "'Inter Tight', sans-serif" }}
               >
                 Read Case Study
               </motion.button>
@@ -82,12 +90,12 @@ export function Testimonials() {
                 transition={{ delay: 0.4, duration: 0.55, ease: 'easeOut' }}
                 className="w-full h-24 rounded-2xl flex items-center justify-center gap-3 bg-[#F1F0EF]"
               >
-                <div className="w-8 h-8 rounded-full bg-[#FFD209] text-black font-bold text-sm flex items-center justify-center">
-                  ⚡
+                <div className="w-8 h-8 rounded-full bg-[#FFD209] text-black font-bold flex items-center justify-center">
+                  <LightningIcon />
                 </div>
                 <span
                   className="text-2xl font-bold text-black"
-                  style={{ fontFamily: "var(--font-inter-tight), sans-serif" }}
+                  style={{ fontFamily: "'Inter Tight', sans-serif" }}
                 >
                   Nutanix Tech
                 </span>
@@ -103,7 +111,7 @@ export function Testimonials() {
           >
             <p
               className="text-2xl md:text-3xl leading-relaxed text-black font-medium"
-              style={{ fontFamily: "var(--font-inter-tight), sans-serif" }}
+              style={{ fontFamily: "'Inter Tight', sans-serif" }}
             >
               {quoteText.split(' ').map((word, i) => (
                 <motion.span
