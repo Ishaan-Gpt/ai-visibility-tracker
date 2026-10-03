@@ -1,4 +1,5 @@
 import { Card, Container, Section, SectionHeading, StatTile } from '@/components/ds/primitives'
+import { Reveal } from '@/components/ds/motion'
 
 /** Real product facts in the Explee "result card" format. Swap for customer results once there are real ones. */
 const CARDS = [
@@ -32,10 +33,13 @@ export function ResultCards() {
   return (
     <Section>
       <Container>
-        <SectionHeading title="What you get out of it" />
+        <Reveal>
+          <SectionHeading title="What you get out of it" />
+        </Reveal>
         <div className="mt-12 grid gap-4 md:grid-cols-3">
-          {CARDS.map((c) => (
-            <Card key={c.title} className="flex flex-col p-5">
+          {CARDS.map((c, i) => (
+            <Reveal key={c.title} delay={i * 0.08} className="h-full">
+            <Card className="flex h-full flex-col p-5 transition-all duration-200 hover:-translate-y-0.5 hover:border-ds-ink/20">
               <h3 className="text-[18px] font-medium text-ds-ink">{c.title}</h3>
               <p className="mt-2 flex-1 text-[16px] leading-6 text-ds-ink-2">{c.body}</p>
               <div className="mt-6 grid grid-cols-2 gap-3">
@@ -44,6 +48,7 @@ export function ResultCards() {
                 ))}
               </div>
             </Card>
+            </Reveal>
           ))}
         </div>
       </Container>

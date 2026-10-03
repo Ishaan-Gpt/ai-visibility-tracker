@@ -10,6 +10,11 @@ export interface UserDoc {
   email: string;
   plan: Plan;
   createdAt: number;
+  billingProvider?: "razorpay";
+  pendingSubscriptionId?: string;
+  subscriptionId?: string;
+  billingStatus?: string;
+  paidAt?: number;
 }
 
 export interface Competitor {

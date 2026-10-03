@@ -1,5 +1,6 @@
 import { Check } from 'lucide-react'
 import { ButtonLink, Card, Container, Section, SectionHeading } from '@/components/ds/primitives'
+import { Reveal } from '@/components/ds/motion'
 
 /** Pricing section. Limits come from PLAN_LIMITS (lib/types.ts); Pro price is intentionally not shown until billing exists. */
 const PLANS = [
@@ -25,10 +26,13 @@ export function Pricing() {
   return (
     <Section id="pricing">
       <Container>
-        <SectionHeading title="Simple pricing" description="Start free. Upgrade when your tracking needs outgrow it." />
+        <Reveal>
+          <SectionHeading title="Simple pricing" description="Start free. Upgrade when your tracking needs outgrow it." />
+        </Reveal>
         <div className="mx-auto mt-12 grid max-w-[760px] gap-4 md:grid-cols-2">
-          {PLANS.map((p) => (
-            <Card key={p.name} className="flex flex-col p-8">
+          {PLANS.map((p, i) => (
+            <Reveal key={p.name} delay={i * 0.08} className="h-full">
+            <Card className="flex h-full flex-col p-8">
               <h3 className="text-[18px] font-medium text-ds-ink">{p.name}</h3>
               <div className="mt-4 flex items-baseline gap-2">
                 <span className="text-[36px] font-normal leading-10 tracking-[-0.02em] text-ds-ink">{p.price}</span>
@@ -51,6 +55,7 @@ export function Pricing() {
                 {p.cta}
               </ButtonLink>
             </Card>
+            </Reveal>
           ))}
         </div>
       </Container>

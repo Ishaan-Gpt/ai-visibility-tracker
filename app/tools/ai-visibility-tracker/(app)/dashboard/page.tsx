@@ -7,6 +7,8 @@ import TrendChart from "@/components/dashboard/TrendChart";
 import PromptList from "@/components/dashboard/PromptList";
 import CompetitorCompare from "@/components/dashboard/CompetitorCompare";
 import { Card } from "@/components/ds/primitives";
+import { UpgradeCard } from "@/components/studio/UpgradeCard";
+import { billingConfigured } from "@/lib/billing/razorpay";
 
 function MiniStat({ label, value, hint }: { label: string; value: string; hint?: string }) {
   return (
@@ -43,6 +45,7 @@ export default async function DashboardPage({
   const refresh = limits.refreshDays === 1 ? "daily" : `every ${limits.refreshDays} days`;
 
   const overviewContent = (
+    <div className="space-y-4">
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
       <ScoreCard score={latestRollup?.score ?? null} checkedPrompts={latestRollup?.totalPrompts ?? 0} />
       <MiniStat label="Tracked prompts" value={`${prompts.length} / ${limits.maxPrompts}`} hint="On your current plan" />
@@ -56,6 +59,8 @@ export default async function DashboardPage({
         value={latestRollup?.date ?? "—"}
         hint={`Refreshes ${refresh} on ${planLabel}`}
       />
+    </div>
+    <UpgradeCard isPaid={userDoc?.plan === "paid"} billingConfigured={billingConfigured()} />
     </div>
   );
 

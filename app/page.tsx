@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { motion, useInView } from 'framer-motion'
 
 import { SiteNav } from '@/components/SiteNav'
+import { ScrollProgress } from '@/components/tools/shared/motion/ScrollProgress'
 import { HeroCommandBar } from '@/components/landing/HeroCommandBar'
 import { ProductsGrid } from '@/components/landing/ProductsGrid'
 import { ResultCards } from '@/components/landing/ResultCards'
@@ -443,6 +444,7 @@ function HeroSection() {
 export default function LandingPage() {
   return (
     <div className="w-full bg-ds-canvas min-h-screen font-sans text-ds-ink">
+      <ScrollProgress />
       <SiteNav />
 
       {/* 1) HERO SECTION */}

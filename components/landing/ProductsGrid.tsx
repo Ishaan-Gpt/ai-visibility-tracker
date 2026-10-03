@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { ArrowUpRight, Code2, FileCode2, Gauge, Network, Search, Sparkles } from 'lucide-react'
 import { Card, Container, Section, SectionHeading } from '@/components/ds/primitives'
+import { Reveal } from '@/components/ds/motion'
 
 type Product = {
   name: string
@@ -62,14 +63,17 @@ export function ProductsGrid() {
   return (
     <Section id="products">
       <Container>
-        <SectionHeading
-          title="One studio, every tool"
-          description="Replace a stack of single-purpose tools with one login and one consistent workflow."
-        />
+        <Reveal>
+          <SectionHeading
+            title="One studio, every tool"
+            description="Replace a stack of single-purpose tools with one login and one consistent workflow."
+          />
+        </Reveal>
         <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {PRODUCTS.map((p) => (
-            <Link key={p.name} href={p.href} className="group">
-              <Card className="flex h-full flex-col transition-colors group-hover:bg-ds-canvas">
+          {PRODUCTS.map((p, i) => (
+            <Reveal key={p.name} delay={(i % 3) * 0.06}>
+            <Link href={p.href} className="group block h-full">
+              <Card className="flex h-full flex-col transition-all duration-200 group-hover:-translate-y-0.5 group-hover:border-ds-ink/20">
                 <div className="flex items-start justify-between">
                   <span className="flex h-10 w-10 items-center justify-center rounded-ds-md bg-ds-muted">
                     <p.icon className="h-5 w-5 text-ds-ink" strokeWidth={1.5} />
@@ -87,6 +91,7 @@ export function ProductsGrid() {
                 <p className="mt-3 text-[16px] leading-6 text-ds-ink-2">{p.description}</p>
               </Card>
             </Link>
+            </Reveal>
           ))}
         </div>
       </Container>
