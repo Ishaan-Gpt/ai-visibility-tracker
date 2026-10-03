@@ -1,0 +1,45 @@
+/* OMNI SEO design tokens — see DESIGN-SYSTEM.md. Namespaced --ds-* so legacy styles are untouched. */
+:root {
+  --ds-canvas: #f6f5f3;
+  --ds-surface: #ffffff;
+  --ds-surface-muted: rgba(0, 0, 0, 0.04);
+  --ds-ink: #0b0b0b;
+  --ds-ink-2: #777777;
+  --ds-ink-3: #a3a3a3;
+  --ds-line: rgba(0, 0, 0, 0.08);
+  --ds-btn: #161616;
+  --ds-btn-text: #f7f7f7;
+  --ds-accent: #e86a00;
+  --ds-accent-hover: #cf5f00;
+  --ds-accent-soft: #fff1e6;
+  --ds-success: #0d9467;
+  --ds-warning: #d97706;
+  --ds-danger: #dc2626;
+
+  --ds-r-sm: 8px;
+  --ds-r-md: 10px;
+  --ds-r-lg: 16px;
+  --ds-r-full: 9999px;
+
+  --ds-shadow-pop: 0 8px 24px rgba(0, 0, 0, 0.08);
+  --ds-container: 1120px;
+}
+
+@theme inline {
+  --color-ds-canvas: var(--ds-canvas);
+  --color-ds-surface: var(--ds-surface);
+  --color-ds-muted: var(--ds-surface-muted);
+  --color-ds-ink: var(--ds-ink);
+  --color-ds-ink-2: var(--ds-ink-2);
+  --color-ds-ink-3: var(--ds-ink-3);
+  --color-ds-line: var(--ds-line);
+  --color-ds-btn: var(--ds-btn);
+  --color-ds-accent: var(--ds-accent);
+  --color-ds-accent-soft: var(--ds-accent-soft);
+  --color-ds-success: var(--ds-success);
+  --color-ds-warning: var(--ds-warning);
+  --color-ds-danger: var(--ds-danger);
+  --radius-ds-sm: var(--ds-r-sm);
+  --radius-ds-md: var(--ds-r-md);
+  --radius-ds-lg: var(--ds-r-lg);
+}

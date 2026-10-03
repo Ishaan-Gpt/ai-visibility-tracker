@@ -1,172 +1,95 @@
 'use client'
 
-import React, { useState } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
-import { motion } from 'framer-motion'
+import { ChevronDown } from 'lucide-react'
 import { Logomark } from '@/components/tools/shared/icons/Logomark'
+import { ButtonLink, Container, Section, SectionHeading } from '@/components/ds/primitives'
 
-function ArrowUpRightIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" {...props}>
-      <line x1="7" y1="17" x2="17" y2="7" />
-      <polyline points="7 7 17 7 17 17" />
-    </svg>
-  )
-}
+const FAQS = [
+  {
+    q: 'What is OMNI SEO?',
+    a: 'A single studio that combines an AI-visibility tracker with schema, sitemap and keyword-density tools, so you do not need a separate tool for each job.',
+  },
+  {
+    q: 'Which AI engines do you track?',
+    a: 'Today the tracker checks Gemini. ChatGPT and Perplexity are next on the roadmap, and we will say clearly which engines each result came from.',
+  },
+  {
+    q: 'Is it really free?',
+    a: 'Yes. The free tier includes the SEO tools and one tracked brand with 3 prompts, refreshed weekly. Pro raises the limits and refreshes daily.',
+  },
+  {
+    q: 'Can I replace my current SEO subscription?',
+    a: 'For schema, sitemaps, content checks and AI-visibility tracking, yes. We do not yet offer backlink data or full keyword research, which is why those are marked Soon.',
+  },
+  {
+    q: 'Do I need to know how to code?',
+    a: 'No. Every tool is a guided form and the output is ready to paste into your site or submit to Search Console.',
+  },
+]
 
 export function FAQFooterSection() {
-  const [openFaq, setOpenFaq] = useState<number | null>(0)
-
-  const faqs = [
-    {
-      q: 'What is OMNI SEO?',
-      a: 'OMNI SEO is the all-in-one search visibility suite designed for modern brands. It unifies AI Search Visibility tracking (OpenGeo), Schema Markup Generation, Sitemap XML & HTML building, and Keyword Density checking into one unified platform.',
-    },
-    {
-      q: 'How does OMNI SEO track AI answer engines like ChatGPT and Gemini?',
-      a: 'OMNI SEO runs real-time query simulations across ChatGPT Search, Google AI Overviews, Gemini, and Perplexity to track whether your brand is cited and recommended in AI summaries.',
-    },
-    {
-      q: 'Can I replace my existing SEO subscriptions with OMNI SEO?',
-      a: 'Yes! OMNI SEO replaces 5 fragmented tools (schema generators, sitemap plugins, density checkers, AI trackers, and bloated SEO suites) starting free.',
-    },
-    {
-      q: 'Is there a free trial?',
-      a: 'Yes, OMNI SEO offers a free tier with full access to all 5 search tools so you can start optimizing immediately.',
-    },
-    {
-      q: 'Which currencies or plans are supported?',
-      a: 'All plans include unlimited workspace team access with transparent usage limits for enterprise domains.',
-    },
-  ]
+  const [open, setOpen] = useState<number | null>(0)
 
   return (
-    <footer className="bg-white border-t border-black/5">
-      {/* TOP SECTION: GRADIENT CTA BANNER + FAQ ACCORDIONS */}
-      <div className="py-24 px-6 md:px-12 max-w-[1360px] mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
-          {/* LEFT WARM VIBRANT GRADIENT CTA CARD */}
-          <div
-            className="lg:col-span-6 rounded-[36px] p-8 md:p-12 text-black flex flex-col justify-between min-h-[380px] shadow-2xl relative overflow-hidden"
-            style={{
-              background: 'linear-gradient(135deg, #FEF08A 0%, #FDE047 35%, #F97316 100%)',
-            }}
-          >
-            <div>
-              <h3
-                className="text-4xl md:text-5xl font-extrabold tracking-tight text-neutral-950 leading-[1.1]"
-                style={{ fontFamily: "'Inter Tight', sans-serif" }}
-              >
-                Ready to Dominate Search &amp; AI Visibility?
-              </h3>
-              <p className="text-sm font-medium text-black/80 mt-4 max-w-sm leading-relaxed">
-                Zero Friction. Real-Time SERP Insights at the Best Rates.
-              </p>
-            </div>
-
-            <div className="mt-10">
-              <button
-                type="button"
-                className="px-8 py-4 rounded-2xl bg-black text-white text-sm font-bold shadow-xl hover:bg-neutral-900 transition cursor-pointer flex items-center gap-2"
-              >
-                Get Started Today <ArrowUpRightIcon />
-              </button>
-            </div>
-          </div>
-
-          {/* RIGHT ACCORDION LIST */}
-          <div className="lg:col-span-6 space-y-4">
-            {faqs.map((faq, idx) => {
-              const isOpen = openFaq === idx
+    <>
+      <Section className="bg-ds-surface" id="faq">
+        <Container className="max-w-[760px]">
+          <SectionHeading title="Common questions" />
+          <div className="mt-10 divide-y divide-ds-line border-y border-ds-line">
+            {FAQS.map((f, i) => {
+              const isOpen = open === i
               return (
-                <div
-                  key={idx}
-                  className="rounded-[22px] bg-[#FAF9F6] border border-black/8 overflow-hidden transition shadow-sm"
-                >
+                <div key={f.q}>
                   <button
                     type="button"
-                    onClick={() => setOpenFaq(isOpen ? null : idx)}
-                    className="w-full p-5 md:p-6 text-left font-bold text-neutral-900 flex items-center justify-between gap-4 text-base md:text-lg cursor-pointer"
+                    onClick={() => setOpen(isOpen ? null : i)}
+                    aria-expanded={isOpen}
+                    className="flex w-full items-center justify-between gap-4 py-5 text-left text-[16px] font-medium text-ds-ink"
                   >
-                    <span>{faq.q}</span>
-                    <span className="text-xl font-mono shrink-0">{isOpen ? '−' : '+'}</span>
+                    {f.q}
+                    <ChevronDown
+                      className={`h-4 w-4 shrink-0 text-ds-ink-2 transition-transform duration-150 ${isOpen ? 'rotate-180' : ''}`}
+                    />
                   </button>
-
-                  {isOpen && (
-                    <div className="px-5 md:px-6 pb-6 text-sm text-muted-foreground leading-relaxed border-t border-black/5 pt-4">
-                      {faq.a}
-                    </div>
-                  )}
+                  {isOpen && <p className="pb-5 text-[16px] leading-6 text-ds-ink-2">{f.a}</p>}
                 </div>
               )
             })}
           </div>
-        </div>
-      </div>
+        </Container>
+      </Section>
 
-      {/* FOOTER BOTTOM NAV & NEWSLETTER */}
-      <div className="py-16 px-6 md:px-12 border-t border-black/5 max-w-[1360px] mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-10 items-start">
-          {/* BRAND COLUMN */}
-          <div className="md:col-span-4 space-y-3">
-            <div className="flex items-center gap-2.5">
-              <Logomark className="w-7 h-7 text-[#E86A00]" />
-              <span className="font-bold text-neutral-900 text-xl tracking-tight">OMNI SEO</span>
-            </div>
-            <p className="text-xs text-muted-foreground max-w-xs leading-relaxed">
-              Reliable search tools that always reach your destination on time.
-            </p>
-          </div>
+      <Section>
+        <Container className="text-center">
+          <h2 className="mx-auto max-w-[620px] text-[28px] font-normal leading-8 tracking-[-0.02em] text-ds-ink md:text-[36px] md:leading-10">
+            See how AI search sees your brand
+          </h2>
+          <p className="mx-auto mt-4 max-w-[480px] text-[18px] leading-7 text-ds-ink-2">
+            Create a free account and run your first check in a few minutes.
+          </p>
+          <ButtonLink href="/tools/ai-visibility-tracker/signup" size="lg" className="mt-8">
+            Get started free
+          </ButtonLink>
+        </Container>
+      </Section>
 
-          {/* NAVIGATION LINKS */}
-          <div className="md:col-span-2 space-y-3">
-            <h4 className="text-xs font-bold text-neutral-900 uppercase tracking-wider">Navigation</h4>
-            <ul className="space-y-2 text-xs text-neutral-600">
-              <li><a href="#features" className="hover:text-black">Features</a></li>
-              <li><a href="#benefits" className="hover:text-black">Benefits</a></li>
-              <li><a href="#testimonials" className="hover:text-black">Testimonials</a></li>
-              <li><a href="#pricing" className="hover:text-black">Pricing</a></li>
-            </ul>
+      <footer className="border-t border-ds-line">
+        <Container className="flex flex-col items-center justify-between gap-4 py-8 text-[14px] text-ds-ink-2 sm:flex-row">
+          <div className="flex items-center gap-2 text-ds-ink">
+            <Logomark className="h-5 w-5 text-ds-accent" />
+            <span className="font-medium">OMNI SEO</span>
+            <span className="text-ds-ink-2">© 2026</span>
           </div>
-
-          {/* PAGES LINKS */}
-          <div className="md:col-span-2 space-y-3">
-            <h4 className="text-xs font-bold text-neutral-900 uppercase tracking-wider">Pages</h4>
-            <ul className="space-y-2 text-xs text-neutral-600">
-              <li><Link href="/" className="hover:text-black">Home</Link></li>
-              <li><a href="#contact" className="hover:text-black">Contact</a></li>
-              <li><a href="#faq" className="hover:text-black">FAQ</a></li>
-            </ul>
-          </div>
-
-          {/* NEWSLETTER COLUMN */}
-          <div className="md:col-span-4 space-y-3">
-            <h4 className="text-xs font-bold text-neutral-900 uppercase tracking-wider">Newsletter</h4>
-            <p className="text-xs text-muted-foreground">Join our newsletter and get notified.</p>
-            <div className="flex items-center gap-2">
-              <input
-                type="email"
-                placeholder="Enter your email..."
-                className="flex-1 px-4 py-2.5 rounded-xl border border-neutral-300 bg-neutral-50 text-xs text-neutral-900 outline-none focus:border-black transition"
-              />
-              <button
-                type="button"
-                className="px-5 py-2.5 rounded-xl bg-black text-white text-xs font-bold shadow-md hover:bg-neutral-800 transition cursor-pointer"
-              >
-                Subscribe
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-12 pt-8 border-t border-black/5 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
-          <span>© 2026 OMNI SEO Inc. All rights reserved.</span>
-          <div className="flex items-center gap-6">
-            <a href="#privacy" className="hover:text-black">Privacy Policy</a>
-            <a href="#terms" className="hover:text-black">Terms of Service</a>
-          </div>
-        </div>
-      </div>
-    </footer>
+          <nav className="flex flex-wrap items-center justify-center gap-6">
+            <Link href="#products" className="hover:text-ds-ink">Products</Link>
+            <Link href="#pricing" className="hover:text-ds-ink">Pricing</Link>
+            <Link href="#faq" className="hover:text-ds-ink">FAQ</Link>
+            <Link href="/tools/ai-visibility-tracker/login" className="hover:text-ds-ink">Sign in</Link>
+          </nav>
+        </Container>
+      </footer>
+    </>
   )
 }

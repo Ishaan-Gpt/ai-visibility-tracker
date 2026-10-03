@@ -1,59 +1,41 @@
-'use client'
+import { Building2, Rocket, UserRound } from 'lucide-react'
+import { Container, Section, SectionHeading } from '@/components/ds/primitives'
 
-import React from 'react'
-import { AnimatedHeading, AnimatedText } from './AnimatedHeading'
-import { TeamCarousel } from './TeamCarousel'
+const AUDIENCES = [
+  {
+    icon: Building2,
+    title: 'Agencies',
+    body: 'Run technical SEO and AI-visibility reporting for many clients from one place.',
+  },
+  {
+    icon: UserRound,
+    title: 'In-house marketers',
+    body: 'Ship schema, sitemaps and content checks yourself without waiting on a developer.',
+  },
+  {
+    icon: Rocket,
+    title: 'Founders',
+    body: 'Get found by Google and by AI assistants from day one, on a free tier.',
+  },
+]
 
 export function TeamSection() {
   return (
-    <section
-      className="py-32 px-8 md:px-12 bg-white border-b border-black/5"
-      style={{ fontFamily: '"TT Hoves", "Helvetica Neue", Helvetica, Arial, sans-serif' }}
-    >
-      <div className="max-w-[1728px] mx-auto">
-        {/* Heading Block padded left to align with carousel card 1 */}
-        <div style={{ paddingLeft: '335.26px' }} className="mb-20">
-          <div
-            className="flex gap-24 tracking-[0.2em] uppercase text-muted-foreground mb-16 font-medium"
-            style={{ fontSize: '11.26px' }}
-          >
-            <span>OMNI SEO</span>
-            <span>Our Search Strategists</span>
-          </div>
-
-          <AnimatedHeading className="font-medium leading-[1.05] text-neutral-900">
-            <span
-              style={{
-                fontSize: '58.55px',
-                lineHeight: 1.05,
-                display: 'block',
-              }}
-            >
-              Get to Know the AI Engineers
-              <br />
-              that Dominate the SERPs
-            </span>
-          </AnimatedHeading>
-        </div>
-
-        {/* Carousel Row */}
-        <TeamCarousel
-          intro={
-            <AnimatedText className="text-muted-foreground leading-relaxed">
-              <span
-                style={{
-                  fontSize: '16.89px',
-                  lineHeight: 1.5,
-                  display: 'block',
-                  width: '270px',
-                }}
-              >
-                On our platform, our devoted team of AI search engineers works ceaselessly to enhance your online presence and ensure maximum visibility across all search surfaces.
+    <Section className="bg-ds-surface">
+      <Container>
+        <SectionHeading title="Built for people who own their search" />
+        <div className="mt-12 grid gap-8 md:grid-cols-3">
+          {AUDIENCES.map((a) => (
+            <div key={a.title} className="text-center md:text-left">
+              <span className="mx-auto flex h-10 w-10 items-center justify-center rounded-ds-md bg-ds-muted md:mx-0">
+                <a.icon className="h-5 w-5 text-ds-ink" strokeWidth={1.5} />
               </span>
-            </AnimatedText>
-          }
-        />
-      </div>
-    </section>
+              <h3 className="mt-4 text-[20px] font-medium text-ds-ink">{a.title}</h3>
+              <p className="mt-2 text-[16px] leading-6 text-ds-ink-2">{a.body}</p>
+            </div>
+          ))}
+        </div>
+      </Container>
+    </Section>
   )
 }

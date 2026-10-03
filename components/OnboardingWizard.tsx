@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { createBrand } from "@/app/tools/ai-visibility-tracker/(app)/onboarding/actions";
 
-export default function OnboardingWizard({ maxPrompts }: { maxPrompts: number }) {
+export default function OnboardingWizard({ maxPrompts, defaultDomain = "" }: { maxPrompts: number; defaultDomain?: string }) {
   const [step, setStep] = useState<1 | 2>(1);
 
   return (
@@ -53,6 +53,7 @@ export default function OnboardingWizard({ maxPrompts }: { maxPrompts: number })
             <label className="mb-1 block text-xs font-semibold text-neutral-700">Domain</label>
             <input
               name="domain"
+              defaultValue={defaultDomain}
               required
               placeholder="eegnite.com"
               className="w-full rounded-xl border border-neutral-300 bg-neutral-50 px-4 py-3 text-sm font-mono text-neutral-900 outline-none transition focus:border-black focus:ring-2 focus:ring-black/10"
