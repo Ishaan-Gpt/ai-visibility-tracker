@@ -16,6 +16,28 @@ function ArrowUpRightIcon(props: React.SVGProps<SVGSVGElement>) {
 
 export function FAQFooterSection() {
   const [openFaq, setOpenFaq] = useState<number | null>(0)
+  const [email, setEmail] = useState('')
+  const [honeypot, setHoneypot] = useState('')
+  const [nl, setNl] = useState<{ state: 'idle' | 'loading' | 'done' | 'error'; msg?: string }>({ state: 'idle' })
+
+  async function subscribe(e: React.FormEvent) {
+    e.preventDefault()
+    if (nl.state === 'loading') return
+    setNl({ state: 'loading' })
+    try {
+      const res = await fetch('/api/newsletter', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, website: honeypot }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error ?? 'Something went wrong.')
+      setNl({ state: 'done' })
+      setEmail('')
+    } catch (err) {
+      setNl({ state: 'error', msg: err instanceof Error ? err.message : 'Something went wrong.' })
+    }
+  }
 
   const faqs = [
     {
@@ -133,7 +155,7 @@ export function FAQFooterSection() {
             <h4 className="text-xs font-bold text-ds-ink uppercase tracking-wider">Pages</h4>
             <ul className="space-y-2 text-xs text-neutral-600">
               <li><Link href="/" className="hover:text-black">Home</Link></li>
-              <li><a href="#contact" className="hover:text-black">Contact</a></li>
+              <li><Link href="/tools/ai-visibility-tracker/login" className="hover:text-black">Sign in</Link></li>
               <li><a href="#faq" className="hover:text-black">FAQ</a></li>
             </ul>
           </div>
@@ -142,27 +164,48 @@ export function FAQFooterSection() {
           <div className="md:col-span-4 space-y-3">
             <h4 className="text-xs font-bold text-ds-ink uppercase tracking-wider">Newsletter</h4>
             <p className="text-xs text-ds-ink-2">Join our newsletter and get notified.</p>
-            <div className="flex items-center gap-2">
-              <input
-                type="email"
-                placeholder="Enter your email..."
-                className="flex-1 px-4 py-2.5 rounded-xl border border-neutral-300 bg-neutral-50 text-xs text-ds-ink outline-none focus:border-black transition"
-              />
-              <button
-                type="button"
-                className="px-5 py-2.5 rounded-xl bg-black text-white text-xs font-bold hover:bg-neutral-800 transition cursor-pointer"
-              >
-                Subscribe
-              </button>
-            </div>
+            {nl.state === 'done' ? (
+              <p className="text-xs text-ds-success" role="status">Thanks! You are on the list.</p>
+            ) : (
+              <form onSubmit={subscribe} className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    aria-label="Email address"
+                    placeholder="Enter your email..."
+                    className="min-w-0 flex-1 px-4 py-2.5 rounded-xl border border-neutral-300 bg-neutral-50 text-xs text-ds-ink outline-none focus:border-black transition"
+                  />
+                  <input
+                    tabIndex={-1}
+                    autoComplete="off"
+                    aria-hidden="true"
+                    value={honeypot}
+                    onChange={(e) => setHoneypot(e.target.value)}
+                    name="website"
+                    className="hidden"
+                  />
+                  <button
+                    type="submit"
+                    disabled={nl.state === 'loading'}
+                    className="shrink-0 px-5 py-2.5 rounded-xl bg-black text-white text-xs font-bold hover:bg-neutral-800 transition cursor-pointer disabled:opacity-60"
+                  >
+                    {nl.state === 'loading' ? '…' : 'Subscribe'}
+                  </button>
+                </div>
+                {nl.state === 'error' && <p role="alert" className="text-xs text-ds-danger">{nl.msg}</p>}
+              </form>
+            )}
           </div>
         </div>
 
         <div className="mt-12 pt-8 border-t border-ds-line flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-ds-ink-2">
           <span>© 2026 OMNI SEO Inc. All rights reserved.</span>
           <div className="flex items-center gap-6">
-            <a href="#privacy" className="hover:text-black">Privacy Policy</a>
-            <a href="#terms" className="hover:text-black">Terms of Service</a>
+            <Link href="/privacy" className="hover:text-black">Privacy Policy</Link>
+            <Link href="/terms" className="hover:text-black">Terms of Service</Link>
           </div>
         </div>
       </div>

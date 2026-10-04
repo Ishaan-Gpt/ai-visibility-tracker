@@ -167,14 +167,14 @@ function HeroSection() {
 
           {/* H1 Heading (2-Line Wrapper, Smaller Font, Tight Line Spacing) */}
           <h1 className="max-w-[950px] text-[40px] sm:text-[54px] md:text-[64px] lg:text-[70px] font-medium leading-[0.98] md:leading-[0.98] tracking-[-0.035em] text-center mx-auto">
-            <div className="md:whitespace-nowrap">
+            <div className="xl:whitespace-nowrap">
               <AnimatedWords
                 text="AI that ranks & converts search traffic"
                 delayStart={0.40}
                 stagger={0.04}
               />
             </div>
-            <div className="mt-1 flex items-center justify-center flex-wrap gap-2 md:whitespace-nowrap">
+            <div className="mt-1 flex items-center justify-center flex-wrap gap-2 xl:whitespace-nowrap">
               <AnimatedWords text="for your" delayStart={0.65} stagger={0.04} />
               <motion.div
                 className="inline-block w-[64px] h-[64px] md:w-[76px] md:h-[76px] rounded-full overflow-hidden border-2 border-white align-middle"
@@ -348,7 +348,7 @@ function HeroSection() {
               <div>
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-center gap-3">
-                    <div className="flex -space-x-2">
+                    <div className="flex shrink-0 -space-x-2">
                       <img src="/images/ai_expert_1_1786114890114.png" className="w-8 h-8 rounded-full border-2 border-white object-cover" />
                       <img src="/images/ai_expert_2_1786114890114.png" className="w-8 h-8 rounded-full border-2 border-white object-cover" />
                       <img src="/images/ai_expert_3_1786114929317.png" className="w-8 h-8 rounded-full border-2 border-white object-cover" />

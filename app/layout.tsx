@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Fraunces, Instrument_Sans, Inter_Tight } from "next/font/google";
 import { LenisProvider } from "@/components/tools/shared/providers/LenisProvider";
 import "./globals.css";
+import { siteUrl } from "@/lib/site";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,6 +31,7 @@ const instrumentSans = Instrument_Sans({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl()),
   title: {
     template: "%s — OMNI SEO",
     default: "OMNI SEO — The AI Search & Visibility Studio",

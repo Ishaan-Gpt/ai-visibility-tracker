@@ -33,9 +33,9 @@ export function SiteNav() {
       }`}
     >
       <div className="mx-auto flex h-16 w-full max-w-[1120px] items-center justify-between px-4 sm:px-6">
-        <Link href="/" className="flex items-center gap-2 text-ds-ink">
+        <Link href="/" className="flex shrink-0 items-center gap-2 whitespace-nowrap text-ds-ink">
           <Logomark className="h-7 w-7 text-ds-accent" />
-          <span className="text-[20px] font-medium tracking-[-0.02em]">OMNI SEO</span>
+          <span className="text-[18px] font-medium tracking-[-0.02em] sm:text-[20px]">OMNI SEO</span>
         </Link>
 
         <nav className="flex items-center gap-1 text-[16px]">
@@ -77,12 +77,13 @@ export function SiteNav() {
           </Link>
           <Link
             href="/tools/ai-visibility-tracker/login"
-            className="inline-flex h-10 items-center rounded-ds-md px-4 text-ds-ink hover:bg-ds-muted"
+            className="inline-flex h-10 items-center whitespace-nowrap rounded-ds-md px-3 text-ds-ink hover:bg-ds-muted sm:px-4"
           >
             Sign in
           </Link>
-          <ButtonLink href="/tools/ai-visibility-tracker/signup" className="ml-1">
-            Get started free
+          <ButtonLink href="/tools/ai-visibility-tracker/signup" className="ml-1 px-4 sm:px-5">
+            <span className="sm:hidden">Start free</span>
+            <span className="hidden sm:inline">Get started free</span>
           </ButtonLink>
         </nav>
       </div>

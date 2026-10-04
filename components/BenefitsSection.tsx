@@ -29,12 +29,12 @@ export function BenefitsSection() {
   ]
 
   return (
-    <section className="py-32 px-8 md:px-12 bg-[#FAF9F6] border-b border-ds-line">
+    <section id="benefits" className="py-20 md:py-32 px-5 sm:px-8 md:px-12 bg-[#FAF9F6] border-b border-ds-line">
       <div className="max-w-[1728px] mx-auto">
         {/* Top Intro Grid */}
-        <div className="grid grid-cols-12 gap-12 mb-24 items-start">
+        <div className="grid grid-cols-12 gap-x-0 gap-y-8 md:gap-x-12 md:gap-y-12 mb-16 md:mb-24 items-start">
           <div className="col-span-12 md:col-span-7">
-            <AnimatedHeading className="text-5xl md:text-6xl font-medium leading-[1.05] text-ds-ink">
+            <AnimatedHeading className="text-4xl sm:text-5xl md:text-6xl font-medium leading-[1.05] text-ds-ink">
               Explore the Benefits of
               <br />
               Our AI Search Platform

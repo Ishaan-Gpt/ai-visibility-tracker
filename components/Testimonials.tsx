@@ -21,7 +21,7 @@ export function Testimonials() {
   }
 
   return (
-    <section className="bg-white border-b border-ds-line">
+    <section id="testimonials" className="bg-white border-b border-ds-line">
       <div className="max-w-[1360px] mx-auto px-6 md:px-10 py-20">
         <motion.div
           initial="hidden"
@@ -36,7 +36,7 @@ export function Testimonials() {
             <motion.div
               variants={fadeUp}
               transition={{ duration: 0.6, ease: 'easeOut' }}
-              className="flex flex-row lg:flex-col justify-between lg:h-full lg:min-h-[447px] gap-4 lg:gap-8 items-center lg:items-start p-6 rounded-ds-lg bg-[#FAF9F6] border border-ds-line"
+              className="flex flex-col sm:flex-row lg:flex-col justify-between lg:h-full lg:min-h-[447px] gap-4 lg:gap-8 items-start sm:items-center lg:items-start p-6 rounded-ds-lg bg-[#FAF9F6] border border-ds-line"
             >
               <div className="flex flex-col gap-6 flex-1 lg:flex-none">
                 <h3
