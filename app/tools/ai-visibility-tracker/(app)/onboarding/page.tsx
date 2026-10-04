@@ -16,7 +16,7 @@ export default async function OnboardingPage({ searchParams }: { searchParams: P
 
   return (
     <div className="flex min-h-screen items-center justify-center px-4 py-16">
-      <div className="w-full max-w-xl rounded-[28px] border border-black/5 bg-white p-8 shadow-2xl md:p-10">
+      <div className="w-full max-w-xl rounded-ds-lg border border-ds-line bg-ds-surface p-6 sm:p-8 md:p-10">
         <OnboardingWizard maxPrompts={limits.maxPrompts} defaultDomain={domain?.slice(0, 253)} />
       </div>
     </div>

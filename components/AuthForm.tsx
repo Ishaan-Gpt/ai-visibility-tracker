@@ -135,7 +135,7 @@ export default function AuthForm({ mode, next }: { mode: "login" | "signup"; nex
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="you@domain.com"
-            className="w-full rounded-xl border border-neutral-300 bg-neutral-50 px-4 py-3 text-sm text-neutral-900 outline-none transition focus:border-black focus:ring-2 focus:ring-black/10"
+            className="w-full rounded-ds-md border border-ds-line bg-ds-surface px-4 py-3 text-sm text-neutral-900 outline-none transition focus:ring-2 focus:ring-ds-ink"
           />
         </div>
         <div>
@@ -147,20 +147,20 @@ export default function AuthForm({ mode, next }: { mode: "login" | "signup"; nex
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="••••••••"
-            className="w-full rounded-xl border border-neutral-300 bg-neutral-50 px-4 py-3 text-sm text-neutral-900 outline-none transition focus:border-black focus:ring-2 focus:ring-black/10"
+            className="w-full rounded-ds-md border border-ds-line bg-ds-surface px-4 py-3 text-sm text-neutral-900 outline-none transition focus:ring-2 focus:ring-ds-ink"
           />
         </div>
         {error && <p className="text-sm text-rose-600">{error}</p>}
         <button
           type="submit"
           disabled={loading}
-          className="w-full cursor-pointer rounded-xl bg-[#FFD209] py-3.5 text-sm font-semibold text-black shadow-md transition hover:bg-[#e0b800] disabled:cursor-default disabled:opacity-60"
+          className="w-full cursor-pointer rounded-ds-md bg-ds-btn py-3.5 text-sm font-semibold text-white  transition hover:bg-black disabled:cursor-default disabled:opacity-60"
         >
           {loading ? "Please wait…" : mode === "login" ? "Log In ↗" : "Sign Up Free ↗"}
         </button>
       </form>
 
-      <div className="my-5 flex items-center gap-3 text-xs text-muted-foreground">
+      <div className="my-5 flex items-center gap-3 text-xs text-ds-ink-2">
         <div className="h-px flex-1 bg-neutral-200" />
         or
         <div className="h-px flex-1 bg-neutral-200" />
@@ -169,7 +169,7 @@ export default function AuthForm({ mode, next }: { mode: "login" | "signup"; nex
       <button
         onClick={handleGoogle}
         disabled={loading}
-        className="flex w-full items-center justify-center gap-2 rounded-xl border border-neutral-300 bg-white py-3 text-sm font-semibold text-neutral-800 shadow-sm transition hover:bg-neutral-50 disabled:cursor-default disabled:opacity-60"
+        className="flex w-full items-center justify-center gap-2 rounded-ds-md border border-neutral-300 bg-white py-3 text-sm font-semibold text-neutral-800 transition hover:bg-neutral-50 disabled:cursor-default disabled:opacity-60"
       >
         <svg className="h-4 w-4" viewBox="0 0 24 24">
           <path

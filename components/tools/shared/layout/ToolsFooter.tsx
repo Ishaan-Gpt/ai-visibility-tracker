@@ -17,7 +17,7 @@ export function ToolsFooter() {
           <div>
             <div className="mb-4 flex items-center gap-2">
               <Logomark className="h-6 w-6 text-primary" />
-              <span className="font-display text-lg">OpenSeo</span>
+              <span className="font-display text-lg">OMNI SEO</span>
             </div>
             <p className="max-w-xs font-body text-sm text-foreground/60">
               A suite of free SEO tools built by the team behind OpenGeo — the AI visibility tracker for brands
@@ -61,7 +61,7 @@ export function ToolsFooter() {
         </div>
 
         <div className="mt-12 flex flex-col items-start justify-between gap-2 border-t border-foreground/10 pt-6 font-body text-xs text-foreground/40 md:flex-row md:items-center">
-          <p>© {new Date().getFullYear()} OpenSeo. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} OMNI SEO. All rights reserved.</p>
           <p>Built for the age of AI search.</p>
         </div>
       </div>

@@ -1,5 +1,8 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import AuthForm from "@/components/AuthForm";
+
+export const metadata: Metadata = { title: "Log in", robots: { index: false } };
 
 export default async function LoginPage({
   searchParams,
@@ -9,29 +12,27 @@ export default async function LoginPage({
   const { next } = await searchParams;
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-[#FAF9F6] px-4 py-16">
-      <div className="w-full max-w-xl rounded-[28px] border border-black/5 bg-white p-8 shadow-2xl md:p-10">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-ds-canvas px-4 py-16">
+      <div className="w-full max-w-xl rounded-ds-lg border border-ds-line bg-ds-surface p-6 sm:p-8 md:p-10">
         <div className="mb-6 flex flex-col items-center text-center">
           <div
-            className="mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-[#FFD209] text-lg font-bold text-black"
-            style={{ fontFamily: "var(--font-inter-tight), sans-serif" }}
+            className="mb-3 flex h-12 w-12 items-center justify-center rounded-ds-md bg-ds-accent text-lg font-medium text-white"
           >
             O
           </div>
           <h1
-            className="text-2xl font-bold tracking-tight text-neutral-900"
-            style={{ fontFamily: "var(--font-inter-tight), sans-serif" }}
+            className="text-[26px] font-normal tracking-[-0.02em] text-ds-ink"
           >
             Log in to OMNI SEO
           </h1>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Access all 5 AI search &amp; visibility tools in one studio.
+          <p className="mt-1 text-xs text-ds-ink-2">
+            Access all your SEO and AI-visibility tools in one studio.
           </p>
         </div>
 
         <AuthForm mode="login" next={next} />
 
-        <p className="mt-6 text-center text-xs text-muted-foreground">
+        <p className="mt-6 text-center text-xs text-ds-ink-2">
           Don&apos;t have an account?{" "}
           <Link
             href={`/tools/ai-visibility-tracker/signup${next ? `?next=${encodeURIComponent(next)}` : ""}`}

@@ -13,7 +13,7 @@ export function ToolsHeader({ toolName }: ToolsHeaderProps) {
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4 md:px-10">
         <Link href="/" className="flex items-center gap-2 text-foreground">
           <Logomark className="h-6 w-6 text-primary" />
-          <span className="font-display text-lg">OpenSeo</span>
+          <span className="font-display text-lg">OMNI SEO</span>
           {toolName ? (
             <span className="hidden font-body text-sm text-foreground/40 md:inline">/ {toolName}</span>
           ) : null}

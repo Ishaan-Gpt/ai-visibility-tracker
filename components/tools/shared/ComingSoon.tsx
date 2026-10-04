@@ -36,7 +36,7 @@ export function ComingSoon({ toolName, tagline, description, icon: Icon }: Comin
           <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
             <MagneticButton href="/tools/schema-generator">Try Schema Markup Generator</MagneticButton>
             <MagneticButton href="/" tone="ghost">
-              Back to OpenSeo
+              Back to OMNI SEO
             </MagneticButton>
           </div>
         </div>

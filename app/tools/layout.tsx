@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: {
-    template: "%s — OpenSeo",
-    default: "Free SEO Tools — OpenSeo",
+    template: "%s — OMNI SEO",
+    default: "Free SEO Tools — OMNI SEO",
   },
 };
 

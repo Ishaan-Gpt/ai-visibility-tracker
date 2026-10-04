@@ -12,7 +12,7 @@ export default function OpenGeoComingSoonPage() {
     <ComingSoon
       toolName="OpenGeo"
       tagline="The AI visibility tracker"
-      description="See whether Gemini, ChatGPT, and Perplexity actually mention your brand — and how you compare to a named competitor. Launching to the OpenSeo suite soon."
+      description="See whether Gemini, ChatGPT, and Perplexity actually mention your brand — and how you compare to a named competitor. Launching to the OMNI SEO suite soon."
       icon={GraphIcon}
     />
   );
