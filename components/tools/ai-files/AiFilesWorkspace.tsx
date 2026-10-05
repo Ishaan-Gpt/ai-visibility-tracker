@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Check, Copy, Download, Plus, Trash2 } from "lucide-react";
+import { IconBin as Trash2, IconCopy as Copy, IconDownload as Download, IconPlusSmall as Plus, IconTick as Check } from "@/components/icons/Icons";
 import { Card, buttonClass } from "@/components/ds/primitives";
 import { AI_BOTS, PURPOSE_LABEL } from "@/lib/tools/aiCrawlers/bots";
 import {
@@ -20,13 +20,13 @@ const PRESETS: { id: Exclude<Preset, "custom">; title: string; body: string }[] 
 ];
 
 const field =
-  "h-10 w-full rounded-ds-md border border-ds-line bg-ds-surface px-3 text-[15px] text-ds-ink outline-none placeholder:text-ds-ink-3 focus:ring-2 focus:ring-ds-ink";
+  "h-10 w-full rounded-[12px] border border-white/70 bg-white/55 px-3 text-[15px] text-ds-ink outline-none placeholder:text-ds-ink-3 focus:ring-2 focus:ring-ds-accent/60";
 
 function Output({ text, filename }: { text: string; filename: string }) {
   const [copied, setCopied] = useState(false);
   return (
     <Card className="p-0">
-      <div className="flex items-center justify-between border-b border-ds-line px-4 py-2.5">
+      <div className="flex items-center justify-between border-b border-white/70 px-4 py-2.5">
         <span className="font-mono text-[13px] text-ds-ink-2">{filename}</span>
         <div className="flex gap-2">
           <button
@@ -86,7 +86,7 @@ function RobotsPanel({ domain }: { domain: string }) {
                   setPreset(p.id);
                   setPolicies(presetPolicies(p.id));
                 }}
-                className={`rounded-ds-md border p-3 text-left transition-colors ${preset === p.id ? "border-ds-ink bg-ds-canvas" : "border-ds-line hover:bg-ds-canvas"}`}
+                className={`rounded-[12px] border p-3 text-left transition-colors ${preset === p.id ? "border-ds-ink bg-white/75" : "border-white/70 hover:bg-white/75"}`}
               >
                 <span className="block text-[15px] font-medium text-ds-ink">{p.title}</span>
                 <span className="block text-[13px] text-ds-ink-2">{p.body}</span>
@@ -95,14 +95,14 @@ function RobotsPanel({ domain }: { domain: string }) {
           </div>
           <details className="mt-4">
             <summary className="cursor-pointer text-[14px] text-ds-ink-2 hover:text-ds-ink">Fine-tune each bot</summary>
-            <ul className="mt-3 divide-y divide-ds-line">
+            <ul className="mt-3 divide-y divide-white/60">
               {AI_BOTS.filter((b) => b.purpose !== "search").map((b) => (
                 <li key={b.agent} className="flex items-center justify-between gap-3 py-2">
                   <div className="min-w-0">
                     <span className="font-mono text-[13px] text-ds-ink">{b.agent}</span>
                     <span className="ml-2 text-[12px] text-ds-ink-3">{PURPOSE_LABEL[b.purpose]}</span>
                   </div>
-                  <div className="inline-flex rounded-ds-md bg-ds-muted p-0.5 text-[13px]">
+                  <div className="inline-flex rounded-[12px] bg-white/40 p-0.5 text-[13px]">
                     {(["allow", "block"] as const).map((v) => (
                       <button
                         key={v}
@@ -111,7 +111,7 @@ function RobotsPanel({ domain }: { domain: string }) {
                           setPreset("custom");
                           setPolicies((prev) => ({ ...prev, [b.agent]: v }));
                         }}
-                        className={`rounded-[8px] px-3 py-1 capitalize ${policies[b.agent] === v ? (v === "block" ? "bg-ds-surface text-ds-danger" : "bg-ds-surface text-ds-success") : "text-ds-ink-2"}`}
+                        className={`rounded-[9px] px-3 py-1 capitalize ${policies[b.agent] === v ? (v === "block" ? "bg-white/55 text-ds-danger" : "bg-white/55 text-ds-success") : "text-ds-ink-2"}`}
                       >
                         {v}
                       </button>
@@ -180,17 +180,17 @@ function LlmsPanel({ brandName, domain }: { brandName: string; domain: string })
           <Card key={si} className="space-y-3">
             <div className="flex items-center gap-2">
               <input value={s.title} onChange={(e) => update(si, (x) => ({ ...x, title: e.target.value }))} placeholder="Section title" className={`${field} font-medium`} aria-label="Section title" />
-              <button type="button" onClick={() => setSections((p) => p.filter((_, i) => i !== si))} aria-label="Remove section" className="rounded-ds-sm p-2 text-ds-ink-3 hover:bg-ds-muted hover:text-ds-danger">
+              <button type="button" onClick={() => setSections((p) => p.filter((_, i) => i !== si))} aria-label="Remove section" className="rounded-ds-sm p-2 text-ds-ink-3 hover:bg-white/40 hover:text-ds-danger">
                 <Trash2 className="h-4 w-4" />
               </button>
             </div>
             {s.links.map((l, li) => (
-              <div key={li} className="grid gap-2 rounded-ds-md bg-ds-canvas p-3 sm:grid-cols-2">
+              <div key={li} className="grid gap-2 rounded-[12px] bg-white/75 p-3 sm:grid-cols-2">
                 <input value={l.title} onChange={(e) => update(si, (x) => ({ ...x, links: x.links.map((y, i) => (i === li ? { ...y, title: e.target.value } : y)) }))} placeholder="Page title" className={field} aria-label="Link title" />
                 <input value={l.url} onChange={(e) => update(si, (x) => ({ ...x, links: x.links.map((y, i) => (i === li ? { ...y, url: e.target.value } : y)) }))} placeholder="https://…" className={`${field} font-mono text-[13px]`} aria-label="Link URL" />
                 <div className="flex gap-2 sm:col-span-2">
                   <input value={l.description} onChange={(e) => update(si, (x) => ({ ...x, links: x.links.map((y, i) => (i === li ? { ...y, description: e.target.value } : y)) }))} placeholder="Short description (optional)" className={field} aria-label="Link description" />
-                  <button type="button" onClick={() => update(si, (x) => ({ ...x, links: x.links.filter((_, i) => i !== li) }))} aria-label="Remove link" className="rounded-ds-sm p-2 text-ds-ink-3 hover:bg-ds-muted hover:text-ds-danger">
+                  <button type="button" onClick={() => update(si, (x) => ({ ...x, links: x.links.filter((_, i) => i !== li) }))} aria-label="Remove link" className="rounded-ds-sm p-2 text-ds-ink-3 hover:bg-white/40 hover:text-ds-danger">
                     <Trash2 className="h-4 w-4" />
                   </button>
                 </div>
@@ -220,12 +220,12 @@ export function AiFilesWorkspace({ brandName, domain }: { brandName: string; dom
   const [tab, setTab] = useState<"robots" | "llms">("robots");
   return (
     <div className="space-y-6">
-      <div className="inline-flex rounded-ds-md bg-ds-muted p-0.5 text-[14px]">
+      <div className="inline-flex rounded-[12px] bg-white/40 p-0.5 text-[14px]">
         {([
           ["robots", "robots.txt"],
           ["llms", "llms.txt"],
         ] as const).map(([id, label]) => (
-          <button key={id} type="button" onClick={() => setTab(id)} className={`rounded-[8px] px-4 py-1.5 ${tab === id ? "bg-ds-surface text-ds-ink" : "text-ds-ink-2"}`}>
+          <button key={id} type="button" onClick={() => setTab(id)} className={`rounded-[9px] px-4 py-1.5 ${tab === id ? "bg-white/55 text-ds-ink" : "text-ds-ink-2"}`}>
             {label}
           </button>
         ))}

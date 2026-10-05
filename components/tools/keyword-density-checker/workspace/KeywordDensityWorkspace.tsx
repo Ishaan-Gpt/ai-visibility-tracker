@@ -73,12 +73,6 @@ export function KeywordDensityWorkspace({ initialContent = "", initialKeywordsRa
         ) : null}
       </AnimatePresence>
 
-      <div className="mb-6 flex justify-end">
-        <button type="button" onClick={onBack} className="rounded-ds-md px-3 py-1.5 text-[14px] text-ds-ink-2 transition-colors hover:bg-ds-muted hover:text-ds-ink">
-          Start fresh
-        </button>
-      </div>
-
       <div className="grid gap-6 xl:grid-cols-[1fr_360px]">
         <div className="space-y-8">
           <ContentInput

@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getCurrentUser } from "@/lib/session";
-import { adminDb } from "@/lib/firebase/admin";
-import { getUser } from "@/lib/data";
+import { consumeQuota, getViewer } from "@/lib/usage";
 import { expandSeed } from "@/lib/keywords/suggest";
 import { classifyIntent } from "@/lib/keywords/intent";
 import { clusterKeywords } from "@/lib/keywords/cluster";
@@ -10,13 +8,9 @@ import { COUNTRIES, type KeywordRow, type ResearchResponse } from "@/lib/keyword
 
 export const maxDuration = 60;
 
-const DAILY_RUNS = { free: 5, paid: 50 } as const;
 const MAX_KEYWORDS = 600;
 
 export async function POST(req: NextRequest) {
-  const user = await getCurrentUser();
-  if (!user) return NextResponse.json({ error: "Please sign in." }, { status: 401 });
-
   let body: { seed?: unknown; country?: unknown; language?: unknown };
   try {
     body = await req.json();
@@ -31,18 +25,10 @@ export async function POST(req: NextRequest) {
   const country = COUNTRIES.some((c) => c.code === body.country) ? (body.country as string) : "us";
   const language = typeof body.language === "string" && /^[a-z]{2}$/.test(body.language) ? body.language : "en";
 
-  // Daily per-user cap: protects the (paid) data provider and Google from abuse.
-  const userDoc = await getUser(user.uid);
-  const limit = DAILY_RUNS[userDoc?.plan === "paid" ? "paid" : "free"];
-  const day = new Date().toISOString().slice(0, 10);
-  const usageRef = adminDb().collection("keywordUsage").doc(`${user.uid}_${day}`);
-  const used = ((await usageRef.get()).data()?.runs as number | undefined) ?? 0;
-  if (used >= limit) {
-    return NextResponse.json(
-      { error: `Daily limit reached (${limit} research runs on your plan). Try again tomorrow or upgrade.` },
-      { status: 429 },
-    );
-  }
+  // Daily cap (per IP when anonymous): protects the data provider and Google autocomplete from abuse.
+  const viewer = await getViewer();
+  const usage = await consumeQuota(req, "keywords", viewer);
+  if (!usage.ok) return NextResponse.json({ error: usage.message, quota: usage.quota, limited: true }, { status: 429 });
 
   const started = Date.now();
   const { suggestions, requests } = await expandSeed(seed, country, language);
@@ -80,9 +66,8 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  await usageRef.set({ uid: user.uid, day, runs: used + 1 }, { merge: true });
-
-  const response: ResearchResponse = {
+  const response: ResearchResponse & { quota: typeof usage.quota } = {
+    quota: usage.quota,
     seed,
     country,
     language,

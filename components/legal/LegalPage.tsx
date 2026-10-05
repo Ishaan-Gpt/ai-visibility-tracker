@@ -1,14 +1,12 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { SiteNav } from "@/components/SiteNav";
 import { Container } from "@/components/ds/primitives";
 
 export function LegalPage({ title, updated, children }: { title: string; updated: string; children: ReactNode }) {
   const contact = process.env.NEXT_PUBLIC_CONTACT_EMAIL;
   return (
-    <div className="min-h-screen bg-ds-canvas font-sans text-ds-ink">
-      <SiteNav />
-      <main>
+    <div className="bg-ds-canvas text-ds-ink">
+      <div>
         <Container className="max-w-[760px] py-12 md:py-20">
           <h1 className="text-[36px] font-normal leading-10 tracking-[-0.02em] md:text-[44px] md:leading-[48px]">{title}</h1>
           <p className="mt-3 text-[14px] text-ds-ink-2">Last updated {updated}</p>
@@ -27,7 +25,7 @@ export function LegalPage({ title, updated, children }: { title: string; updated
             <Link href="/" className="text-ds-ink-2 hover:text-ds-ink">← Back to home</Link>
           </p>
         </Container>
-      </main>
+      </div>
     </div>
   );
 }

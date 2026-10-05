@@ -104,7 +104,7 @@ function once(url: URL, timeoutMs: number, maxBytes: number): Promise<Omit<SafeR
         lookup: guardedLookup as unknown as net.LookupFunction,
         timeout: timeoutMs,
         headers: {
-          "user-agent": "Mozilla/5.0 (compatible; OMNI-SEO-Bot/1.0; +https://omniseo.app/bot)",
+          "user-agent": "Mozilla/5.0 (compatible; seowise-Bot/1.0; +https://tools.eegnite.com/bot)",
           accept: "text/html,application/xhtml+xml,text/plain;q=0.9,*/*;q=0.5",
           "accept-encoding": "gzip, br, deflate",
         },

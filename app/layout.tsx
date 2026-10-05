@@ -1,58 +1,31 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono, Fraunces, Instrument_Sans, Inter_Tight } from "next/font/google";
-import { LenisProvider } from "@/components/tools/shared/providers/LenisProvider";
+import type { Metadata, Viewport } from "next";
+import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
 import "./globals.css";
 import { siteUrl } from "@/lib/site";
+import { BRAND } from "@/lib/brand";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const interTight = Inter_Tight({
-  variable: "--font-inter-tight",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
-const fraunces = Fraunces({
-  variable: "--font-fraunces",
-  subsets: ["latin"],
-  axes: ["opsz", "SOFT", "WONK"],
-});
-
-const instrumentSans = Instrument_Sans({
-  variable: "--font-instrument-sans",
-  subsets: ["latin"],
-});
+const geist = Geist({ variable: "--font-geist", subsets: ["latin"], display: "swap" });
+const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"], display: "swap" });
+const instrument = Instrument_Serif({ variable: "--font-instrument", subsets: ["latin"], weight: "400", style: ["normal", "italic"], display: "swap" });
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl()),
   title: {
-    template: "%s — OMNI SEO",
-    default: "OMNI SEO — The AI Search & Visibility Studio",
+    template: `%s · ${BRAND.name}`,
+    default: `${BRAND.name}: free SEO tools with an AI-search lens`,
   },
-  description:
-    "OMNI SEO unites AI search visibility tracking, structured data, sitemaps, and content audits in one login — one studio for the AI search era.",
+  description: BRAND.description,
+  applicationName: BRAND.name,
+  openGraph: { siteName: BRAND.name, type: "website", locale: "en_US" },
+  twitter: { card: "summary_large_image" },
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export const viewport: Viewport = { themeColor: "#f2efe5" };
+
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} ${fraunces.variable} ${instrumentSans.variable} ${interTight.variable} h-full antialiased`}
-    >
-      <body className="min-h-full flex flex-col">
-        <LenisProvider>{children}</LenisProvider>
-      </body>
+    <html lang="en" className={`${geist.variable} ${geistMono.variable} ${instrument.variable} h-full antialiased`}>
+      <body className="flex min-h-full flex-col">{children}</body>
     </html>
   );
 }

@@ -51,7 +51,7 @@ export async function emailPasswordSignIn(mode: "login" | "signup", email: strin
 /**
  * Popup-only Google sign-in (no redirect fallback — this is used from the homepage's
  * in-page modal, which has nowhere to resume a redirect flow). If the popup is blocked,
- * callers should point the user at /tools/ai-visibility-tracker/login, which does support
+ * callers should point the user at /login, which does support
  * the redirect fallback.
  */
 export async function googleSignIn() {

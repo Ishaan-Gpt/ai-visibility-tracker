@@ -2,19 +2,21 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  AlertCircle,
-  ArrowDown,
-  ArrowUp,
-  Bookmark,
-  ChevronLeft,
-  ChevronRight,
-  Copy,
-  Download,
-  Loader2,
-  Search,
-  Trash2,
-} from "lucide-react";
+  IconAlert as AlertCircle,
+  IconBin as Trash2,
+  IconBookmark as Bookmark,
+  IconChevronLeft as ChevronLeft,
+  IconChevronRight as ChevronRight,
+  IconCopy as Copy,
+  IconDownload as Download,
+  IconLoupe as Search,
+  IconSpinner as Loader2,
+} from "@/components/icons/Icons";
+
+const ArrowUp = (p: { className?: string }) => <IconCaret {...p} />;
+const ArrowDown = (p: { className?: string }) => <IconCaret {...p} style={{ transform: "rotate(180deg)" }} />;
 import { Card, StatTile, buttonClass } from "@/components/ds/primitives";
+import { IconCaret } from "@/components/icons/Icons";
 import { COUNTRIES, type Intent, type KeywordRow, type ResearchResponse } from "@/lib/keywords/types";
 
 type SortKey = "keyword" | "intent" | "words" | "volume" | "kd" | "cpc";
@@ -23,7 +25,7 @@ type SavedList = { id: string; name: string; seed: string; country: string; coun
 const PAGE_SIZE = 50;
 const INTENTS: Intent[] = ["informational", "commercial", "transactional", "navigational"];
 const INTENT_STYLE: Record<Intent, string> = {
-  informational: "bg-ds-muted text-ds-ink-2",
+  informational: "bg-white/40 text-ds-ink-2",
   commercial: "bg-ds-accent-soft text-ds-accent",
   transactional: "bg-ds-success/10 text-ds-success",
   navigational: "bg-ds-warning/10 text-ds-warning",
@@ -252,7 +254,7 @@ export function KeywordResearchWorkspace() {
               value={seed}
               onChange={(e) => setSeed(e.target.value)}
               placeholder="Enter a seed keyword, e.g. project management software"
-              className="h-12 w-full rounded-ds-md border border-ds-line bg-ds-surface pl-11 pr-4 text-[16px] text-ds-ink outline-none placeholder:text-ds-ink-3 focus:ring-2 focus:ring-ds-ink"
+              className="h-12 w-full rounded-[12px] border border-white/70 bg-white/55 pl-11 pr-4 text-[16px] text-ds-ink outline-none placeholder:text-ds-ink-3 focus:ring-2 focus:ring-ds-accent/60"
               maxLength={80}
             />
           </div>
@@ -260,7 +262,7 @@ export function KeywordResearchWorkspace() {
             value={country}
             onChange={(e) => setCountry(e.target.value)}
             aria-label="Country"
-            className="h-12 rounded-ds-md border border-ds-line bg-ds-surface px-3 text-[16px] text-ds-ink outline-none focus:ring-2 focus:ring-ds-ink"
+            className="h-12 rounded-[12px] border border-white/70 bg-white/55 px-3 text-[16px] text-ds-ink outline-none focus:ring-2 focus:ring-ds-accent/60"
           >
             {COUNTRIES.map((c) => (
               <option key={c.code} value={c.code}>
@@ -280,7 +282,7 @@ export function KeywordResearchWorkspace() {
       </Card>
 
       {error && (
-        <div role="alert" className="flex items-start gap-3 rounded-ds-lg border border-ds-danger/30 bg-ds-danger/5 p-4 text-[14px] text-ds-danger">
+        <div role="alert" className="flex items-start gap-3 rounded-[18px] border border-ds-danger/30 bg-ds-danger/5 p-4 text-[14px] text-ds-danger">
           <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
           {error}
         </div>
@@ -295,7 +297,7 @@ export function KeywordResearchWorkspace() {
       {result && stats && !loading && (
         <>
           {!hasVolume && (
-            <div className="flex items-start gap-3 rounded-ds-lg border border-ds-line bg-ds-surface p-4 text-[14px] text-ds-ink-2">
+            <div className="flex items-start gap-3 rounded-[18px] border border-white/70 bg-white/55 p-4 text-[14px] text-ds-ink-2">
               <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-ds-warning" />
               <div>
                 <p className="font-medium text-ds-ink">
@@ -319,7 +321,7 @@ export function KeywordResearchWorkspace() {
           </div>
 
           <Card className="p-0">
-            <div className="flex flex-col gap-3 border-b border-ds-line p-4 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex flex-col gap-3 border-b border-white/70 p-4 lg:flex-row lg:items-center lg:justify-between">
               <div className="flex flex-wrap items-center gap-2">
                 <input
                   value={query}
@@ -328,7 +330,7 @@ export function KeywordResearchWorkspace() {
                     setPage(0);
                   }}
                   placeholder="Filter keywords…"
-                  className="h-9 w-48 rounded-ds-md border border-ds-line bg-ds-surface px-3 text-[14px] outline-none focus:ring-2 focus:ring-ds-ink"
+                  className="h-9 w-48 rounded-[12px] border border-white/70 bg-white/55 px-3 text-[14px] outline-none focus:ring-2 focus:ring-ds-accent/60"
                 />
                 {INTENTS.map((i) => (
                   <button
@@ -345,7 +347,7 @@ export function KeywordResearchWorkspace() {
                       setPage(0);
                     }}
                     className={`h-8 rounded-full px-3 text-[13px] capitalize transition-colors ${
-                      intents.has(i) ? "bg-ds-btn text-white" : "bg-ds-muted text-ds-ink-2 hover:text-ds-ink"
+                      intents.has(i) ? "bg-ds-accent text-ds-ink" : "bg-white/40 text-ds-ink-2 hover:text-ds-ink"
                     }`}
                   >
                     {i}
@@ -353,13 +355,13 @@ export function KeywordResearchWorkspace() {
                 ))}
               </div>
               <div className="flex flex-wrap items-center gap-2">
-                <div className="inline-flex rounded-ds-md bg-ds-muted p-0.5 text-[13px]">
+                <div className="inline-flex rounded-[12px] bg-white/40 p-0.5 text-[13px]">
                   {(["table", "clusters"] as const).map((v) => (
                     <button
                       key={v}
                       type="button"
                       onClick={() => setView(v)}
-                      className={`rounded-[8px] px-3 py-1 capitalize ${view === v ? "bg-ds-surface text-ds-ink" : "text-ds-ink-2"}`}
+                      className={`rounded-[9px] px-3 py-1 capitalize ${view === v ? "bg-white/55 text-ds-ink" : "text-ds-ink-2"}`}
                     >
                       {v}
                     </button>
@@ -388,7 +390,7 @@ export function KeywordResearchWorkspace() {
             {view === "table" ? (
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[720px] text-[14px]">
-                  <thead className="bg-ds-muted text-[12px] text-ds-ink-2">
+                  <thead className="bg-white/40 text-[12px] text-ds-ink-2">
                     <tr>
                       <th className="w-10 px-3 py-2.5">
                         <input
@@ -412,9 +414,9 @@ export function KeywordResearchWorkspace() {
                       {hasVolume && <SortHead k="cpc" label="CPC" right sort={sort} onSort={toggleSort} />}
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-ds-line">
+                  <tbody className="divide-y divide-white/60">
                     {pageRows.map((r) => (
-                      <tr key={r.keyword} className="h-12 hover:bg-ds-canvas">
+                      <tr key={r.keyword} className="h-12 hover:bg-white/75">
                         <td className="px-3">
                           <input
                             type="checkbox"
@@ -451,7 +453,7 @@ export function KeywordResearchWorkspace() {
                   </tbody>
                 </table>
                 {pageCount > 1 && (
-                  <div className="flex items-center justify-between border-t border-ds-line px-4 py-3 text-[13px] text-ds-ink-2">
+                  <div className="flex items-center justify-between border-t border-white/70 px-4 py-3 text-[13px] text-ds-ink-2">
                     <span>
                       Page {page + 1} of {pageCount}
                     </span>
@@ -469,10 +471,10 @@ export function KeywordResearchWorkspace() {
             ) : (
               <div className="grid gap-3 p-4 md:grid-cols-2">
                 {clusters.slice(0, 40).map(([name, rows]) => (
-                  <div key={name} className="rounded-ds-lg border border-ds-line p-4">
+                  <div key={name} className="rounded-[18px] border border-white/70 p-4">
                     <div className="flex items-center justify-between">
                       <h3 className="text-[16px] font-medium text-ds-ink">{name}</h3>
-                      <span className="rounded-full bg-ds-muted px-2 py-0.5 text-[12px] text-ds-ink-2">{rows.length}</span>
+                      <span className="rounded-full bg-white/40 px-2 py-0.5 text-[12px] text-ds-ink-2">{rows.length}</span>
                     </div>
                     <ul className="mt-3 space-y-1 text-[14px] text-ds-ink-2">
                       {rows.slice(0, 6).map((r) => (
@@ -493,7 +495,7 @@ export function KeywordResearchWorkspace() {
       {lists.length > 0 && (
         <Card>
           <h2 className="mb-3 text-[18px] font-medium text-ds-ink">Saved lists</h2>
-          <ul className="divide-y divide-ds-line">
+          <ul className="divide-y divide-white/60">
             {lists.map((l) => (
               <li key={l.id} className="flex items-center justify-between gap-3 py-3">
                 <button type="button" onClick={() => openList(l.id)} className="min-w-0 text-left">
@@ -506,7 +508,7 @@ export function KeywordResearchWorkspace() {
                   type="button"
                   onClick={() => removeList(l.id)}
                   aria-label={`Delete ${l.name}`}
-                  className="rounded-ds-sm p-2 text-ds-ink-3 transition-colors hover:bg-ds-muted hover:text-ds-danger"
+                  className="rounded-ds-sm p-2 text-ds-ink-3 transition-colors hover:bg-white/40 hover:text-ds-danger"
                 >
                   <Trash2 className="h-4 w-4" />
                 </button>

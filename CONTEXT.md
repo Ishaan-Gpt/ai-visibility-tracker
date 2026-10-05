@@ -1,26 +1,42 @@
-# CONTEXT.md — OMNI SEO (give this to an LLM)
+# CONTEXT.md — seowise (give this to an LLM)
 
-**Goal:** Free, no-login SEO utility tools that rank on Google and funnel users into a paid AI-visibility (GEO) tracker. Owner: Ishaan (agency: Eegnite). Target: first paying customers fast, India price-point first.
+## Essence (agreed with owner, 2026-10-06)
+**seowise**: free SEO tools anyone can use instantly (no signup), built for **agencies and freelancers**. The paid plan = **higher limits + saved history** across every tool. Revenue: Razorpay subscription (price TBD, show "Soon").
 
-**Stack:** Next.js 16 (App Router, Turbopack) · React 19 · Tailwind v4 · framer-motion/GSAP/Lenis · Firebase Auth + Firestore · Gemini (`@google/genai`) · Vercel (cron). Read `node_modules/next/dist/docs/` before writing Next code — APIs differ from training data (see AGENTS.md).
+## Moat (all three agreed)
+1. **Zero friction** — paste a URL, get a useful answer in seconds, no signup.
+2. **Client-ready output** — every result can be shared/exported as a clean report an agency can send to a client.
+3. **AI-search lens on every tool** — each tool also answers "is this ready for ChatGPT/Gemini/AI answers?"
+Supporting principle: be honest about data (label real vs estimated; never fabricate numbers).
 
-**Layout:**
-- `app/page.tsx` — marketing home (`src/routes/index.tsx` is a dead duplicate; delete).
-- `app/tools/<tool>/page.tsx` — marketing landing; `/build` currently redirects to login-gated dashboard (BUG vs "no login" promise).
-- Tools: schema-generator, sitemap-xml-generator, sitemap-html-generator, keyword-density-checker. Logic in `lib/tools/*` (pure TS, client-side), UI in `components/tools/<tool>/{sections,workspace,onboarding}`. Workspace state via `*WorkspaceStorage.ts` (localStorage).
-- `app/tools/ai-visibility-tracker/*` — the real product (OpenGeo): auth, onboarding, dashboard. `lib/providers/` (Gemini only), `app/api/cron/check-prompts/route.ts` (daily, sequential), Firestore collections: users, brands, prompts, runs, rollups. Plan limits in `lib/types.ts` PLAN_LIMITS. Billing is a stub.
-- `lib/hub/tools.ts` — hub registry (OpenGeo marked coming-soon).
+## Result screen pattern (every tool)
+**Verdict first** (score/verdict + top fixes), **expandable pro detail underneath**. Share/export action on every result.
 
-**Known problems (priority order):**
-1. Tool pages gate the tool behind login → breaks SEO funnel. Render tool inline, login only for save/export/paid.
-2. No payments. Add Razorpay (IN) + Stripe/LemonSqueezy (global), 3 tiers, pricing page, email capture.
-3. GEO tracker is Gemini-only with naive substring matching. Add OpenAI (web search) + Perplexity providers; word-boundary + citation-domain matching, position, sentiment; per-prompt queue jobs instead of one sequential cron loop.
-4. Site's own SEO missing: `app/sitemap.ts`, `app/robots.ts`, OG images, FAQ JSON-LD, internal links. Scroll-jack story pages hurt CWV; tool should be above the fold.
-5. Fake/template social proof on home (`DeFiArchitectureSection`, `TrustedBy`, `Testimonials`) — replace with real or remove.
-6. Naming inconsistent (OMNI SEO / OpenGeo / OpenSeo / ai-visibility-tracker); README says Next 15.
+## Hero tools (landing + primary nav)
+1. **Page Audit** (verdict + top fixes + AI-readiness)  2. **AI Crawler Check + robots.txt/llms.txt**  3. **Schema + Sitemaps + Meta Preview**.
+Keyword Research, AI Visibility tracker and Keyword Density stay available but quieter.
 
-**Strategy rules:** Don't add more commodity tools/landing-page sections. Only build free tools that feed the tracker (llms.txt generator, AI-crawler robots checker, free "is my brand cited in ChatGPT?" check). Validate with real Eegnite clients before more features. Keep tool pages: H1 → working tool → short FAQ.
+## Client-ready output
+**PDF export** of every result (clean, branded seowise for now). No public share links and no white-label branding in v1.
 
-**Env:** see `.env.example` (Firebase client+admin, `GEMINI_API_KEY`, `CRON_SECRET`). Dev: `npm run dev` (port 3000, auto-falls to 3001 if busy).
+## Visual identity
+- Keep the original **orange + cream** identity, pushed bolder and more premium (not the violet/dark OpenGEO experiment).
+- Type: **Helvetica-style grotesk** (free match: Inter Tight / Geist; Helvetica Neue where available) + **elegant calligraphic italic on accent words** (Playfair-italic feel).
+- Motion: subtle, eased, in/out transitions, micro-interactions everywhere (magnetic buttons, springy hovers, text reveals). Must respect prefers-reduced-motion.
 
-Full analysis: `REVIEW.md`.
+## Landing page
+Lean but extremely cool, highly interactive. Centrepiece: **scroll-driven story** (messy site -> audit -> fixes -> client report) plus playful micro-interactions. Keep the original landing sections/layout language, with **honest content** (no fake logos/testimonials/team).
+
+## Information architecture
+- `/` landing. `/tools/<tool>` = **working public tool** (tool first, short explainer below; no login wall).
+- `/app` = account area: saved history/projects, plan + billing.
+- Free anonymous limits on fetch-based tools (Page Audit, AI Crawler Check, Keyword Research): per-IP daily caps, higher signed-in, highest paid. Client-only tools are unlimited.
+
+## Stack
+Next.js 16 (App Router), React 19, Tailwind v4, framer-motion, Firebase Auth + Firestore, Gemini, Vercel. Read `node_modules/next/dist/docs/` before writing Next code. Firebase project `eegnite-seo`; Vercel project `ai-visibility-tracker` (domain tools.eegnite.com).
+
+## Existing real code to reuse
+`lib/net/safeFetch.ts` (SSRF-safe fetch), `lib/tools/{pageAudit,aiCrawlers,aiFiles,...}`, `lib/keywords/*`, tool workspaces under `components/tools/*/workspace`, Razorpay billing in `lib/billing` + `app/api/billing/*`, newsletter route, Firebase auth session (`lib/session.ts`).
+
+## Open decisions
+Final brand assets (logo), Pro price, ChatGPT/Perplexity provider keys, Razorpay + DataForSEO credentials, real testimonials/logos (until then, none shown).

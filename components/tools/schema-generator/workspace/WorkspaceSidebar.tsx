@@ -9,15 +9,12 @@ type WorkspaceSidebarProps = {
   onSelectActive: (type: SchemaType) => void;
   onRemove: (type: SchemaType) => void;
   onAdd: (type: SchemaType) => void;
-  onBack: () => void;
+  onBack?: () => void;
 };
 
-export function WorkspaceSidebar({ types, activeType, onSelectActive, onRemove, onAdd, onBack }: WorkspaceSidebarProps) {
+export function WorkspaceSidebar({ types, activeType, onSelectActive, onRemove, onAdd }: WorkspaceSidebarProps) {
   return (
     <aside className="md:sticky md:top-24 md:h-fit">
-      <button type="button" onClick={onBack} className="mb-6 font-body text-xs text-foreground/40 hover:text-foreground">
-        ← Start fresh
-      </button>
       <GraphComposer types={types} activeType={activeType} onSelectActive={onSelectActive} onRemove={onRemove} onAdd={onAdd} />
     </aside>
   );

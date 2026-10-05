@@ -1,64 +1,79 @@
-import { Check } from 'lucide-react'
-import { ButtonLink, Card, Container, Section, SectionHeading } from '@/components/ds/primitives'
-import { Reveal } from '@/components/ds/motion'
+"use client";
 
-/** Pricing section. Limits come from PLAN_LIMITS (lib/types.ts); Pro price is intentionally not shown until billing exists. */
+import Link from "next/link";
+import { motion, useReducedMotion } from "framer-motion";
+import { IconCheckCircle } from "@/components/icons/Icons";
+import { btnPrimary, btnSecondary, Lede } from "@/components/landing/ui";
+import { DAILY_LIMITS as L } from "@/lib/limits";
+import { HISTORY_LIMITS } from "@/lib/history";
+
+const EASE = [0.22, 1, 0.36, 1] as const;
+
 const PLANS = [
   {
-    name: 'Free',
-    price: '$0',
-    note: 'forever',
-    features: ['All free SEO tools', '1 brand, 3 tracked prompts', '1 competitor', 'Weekly refresh'],
-    cta: 'Start free',
-    variant: 'primary' as const,
+    name: "No account",
+    price: "Free",
+    note: "Just open a tool",
+    href: "/tools/page-audit",
+    cta: "Audit a page",
+    items: [`${L["page-audit"].anon} page audits a day`, `${L["ai-crawlers"].anon} AI crawler checks a day`, "Unlimited browser tools", "PDF export on every result"],
   },
   {
-    name: 'Pro',
-    price: 'Soon',
-    note: 'pricing announced at launch',
-    features: ['Everything in Free', '10 tracked prompts', '2 competitors', 'Daily refresh'],
-    cta: 'Join the waitlist',
-    variant: 'secondary' as const,
+    name: "Free account",
+    price: "Free",
+    note: "Email or Google",
+    href: "/signup",
+    cta: "Create an account",
+    featured: true,
+    items: [`${L["page-audit"].free} page audits a day`, `${L["ai-crawlers"].free} AI crawler checks a day`, `Save up to ${HISTORY_LIMITS.free} reports`, "AI Visibility tracker, weekly"],
   },
-]
+  {
+    name: "Pro",
+    price: "Soon",
+    note: "Pricing to be announced",
+    href: "/app/billing",
+    cta: "Get notified",
+    items: [`${L["page-audit"].pro} page audits a day`, `${L["ai-crawlers"].pro} AI crawler checks a day`, "Full report history", "AI Visibility tracker, daily"],
+  },
+];
 
 export function Pricing() {
+  const reduce = useReducedMotion();
   return (
-    <Section id="pricing">
-      <Container>
-        <Reveal>
-          <SectionHeading title="Simple pricing" description="Start free. Upgrade when your tracking needs outgrow it." />
-        </Reveal>
-        <div className="mx-auto mt-12 grid max-w-[760px] gap-4 md:grid-cols-2">
-          {PLANS.map((p, i) => (
-            <Reveal key={p.name} delay={i * 0.08} className="h-full">
-            <Card className="flex h-full flex-col p-8">
-              <h3 className="text-[18px] font-medium text-ds-ink">{p.name}</h3>
-              <div className="mt-4 flex items-baseline gap-2">
-                <span className="text-[36px] font-normal leading-10 tracking-[-0.02em] text-ds-ink">{p.price}</span>
-                <span className="text-[14px] text-ds-ink-2">{p.note}</span>
-              </div>
-              <ul className="mt-6 flex-1 space-y-3">
-                {p.features.map((f) => (
-                  <li key={f} className="flex items-center gap-3 text-[16px] text-ds-ink">
-                    <Check className="h-4 w-4 shrink-0 text-ds-success" strokeWidth={2.5} />
-                    {f}
-                  </li>
-                ))}
-              </ul>
-              <ButtonLink
-                href="/tools/ai-visibility-tracker/signup"
-                variant={p.variant}
-                size="lg"
-                className="mt-8 w-full"
-              >
-                {p.cta}
-              </ButtonLink>
-            </Card>
-            </Reveal>
-          ))}
-        </div>
-      </Container>
-    </Section>
-  )
+    <section id="pricing" className="scroll-mt-24 pb-28 sm:pb-36">
+      <div className="mx-auto max-w-[1200px] px-4 text-center">
+        <h2 className="font-serif text-[46px] leading-[1.02] tracking-[-0.025em] sm:text-[64px] lg:text-[76px]">
+          <span className="block">Free to use,</span>
+          <span className="block italic">Pro for volume</span>
+        </h2>
+        <Lede className="mt-6">Pay only when you need higher limits and the full history of every report you&apos;ve run</Lede>
+      </div>
+      <div className="mx-auto mt-14 grid max-w-[1080px] gap-4 px-4 md:grid-cols-3">
+        {PLANS.map((p, i) => (
+          <motion.div
+            key={p.name}
+            initial={reduce ? false : { opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-60px" }}
+            transition={{ duration: 0.8, delay: i * 0.08, ease: EASE }}
+            className={`flex flex-col rounded-[18px] p-7 ${p.featured ? "bg-[#faf8f2] shadow-[0_30px_60px_-36px_rgba(43,41,39,0.45)] ring-1 ring-ds-accent/60" : "bg-[#ece7da]/60"}`}
+          >
+            <p className="text-[14px] text-ds-ink-2">{p.name}</p>
+            <p className={`mt-2 font-serif text-[56px] leading-none tracking-[-0.02em] ${p.price === "Soon" ? "italic" : ""}`}>{p.price}</p>
+            <p className="mt-1 text-[13px] text-ds-ink-3">{p.note}</p>
+            <ul className="mt-6 flex-1 space-y-2.5">
+              {p.items.map((it) => (
+                <li key={it} className="flex items-start gap-2.5 text-[14.5px] text-ds-ink">
+                  <IconCheckCircle className="mt-0.5 h-4 w-4 shrink-0 text-[#5c7c68]" /> {it}
+                </li>
+              ))}
+            </ul>
+            <Link href={p.href} className={`${p.featured ? btnPrimary : btnSecondary} mt-8 w-full`}>
+              {p.cta}
+            </Link>
+          </motion.div>
+        ))}
+      </div>
+    </section>
+  );
 }

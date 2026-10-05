@@ -124,7 +124,7 @@ export function SchemaWorkspace({ initialTypes = ["organization"], withReviews, 
           onSelectActive={setActiveType}
           onRemove={handleRemove}
           onAdd={handleAdd}
-          onBack={onBack}
+         
         />
 
         <div className="space-y-8">

@@ -62,6 +62,26 @@ function rulesFor(parsed: ParsedRobots, agent: string): { rules: RobotsRule[]; m
   return null;
 }
 
+function decidePath(rules: RobotsRule[], path: string): boolean {
+  let best: { len: number; allow: boolean } | null = null;
+  for (const r of rules) {
+    if (r.pattern === "") continue; // empty Disallow = allow all; empty Allow = no-op
+    const anchored = r.pattern.endsWith("$");
+    const re = anchored ? new RegExp(`${patternToRegex(r.pattern.slice(0, -1)).source}$`) : patternToRegex(r.pattern);
+    if (re.test(path)) {
+      const len = r.pattern.length;
+      if (!best || len > best.len || (len === best.len && r.allow)) best = { len, allow: r.allow };
+    }
+  }
+  return best ? best.allow : true;
+}
+
+/** True when `agent` may fetch `path` under these rules. */
+export function evaluatePath(parsed: ParsedRobots, agent: string, path: string): boolean {
+  const found = rulesFor(parsed, agent);
+  return found ? decidePath(found.rules, path) : true;
+}
+
 export type Access = "allowed" | "blocked" | "partial";
 
 export interface AgentVerdict {
@@ -75,19 +95,7 @@ export function evaluateAgent(parsed: ParsedRobots, agent: string): AgentVerdict
   const found = rulesFor(parsed, agent);
   if (!found) return { access: "allowed", basis: "none", detail: "No rules apply, so crawling is allowed." };
 
-  const decide = (path: string) => {
-    let best: { len: number; allow: boolean } | null = null;
-    for (const r of found.rules) {
-      if (r.pattern === "") continue; // empty Disallow = allow all; empty Allow = no-op
-      if (patternToRegex(r.pattern).test(path)) {
-        const len = r.pattern.length;
-        if (!best || len > best.len || (len === best.len && r.allow)) best = { len, allow: r.allow };
-      }
-    }
-    return best ? best.allow : true;
-  };
-
-  const rootAllowed = decide("/");
+  const rootAllowed = decidePath(found.rules, "/");
   const disallowsSomething = found.rules.some((r) => !r.allow && r.pattern !== "" && r.pattern !== "/");
   const basis = found.matched;
 

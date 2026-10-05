@@ -1,5 +1,6 @@
 import * as cheerio from "cheerio";
-import { safeFetch } from "@/lib/net/safeFetch";
+import { normalizeUrl, safeFetch } from "@/lib/net/safeFetch";
+import { evaluatePath, parseRobots } from "@/lib/tools/aiCrawlers/robots";
 
 export type Severity = "error" | "warning" | "info" | "pass";
 
@@ -35,7 +36,25 @@ export interface PageAuditReport {
     ogTags: Record<string, string>;
   };
   checks: AuditCheck[];
+  /** Separate lens: can AI answer engines reach, read and quote this page? */
+  ai: { score: number; checks: AiCheck[] };
+  /** The highest-impact problems across both lenses, in order. */
+  topFixes: { title: string; fix: string; severity: Severity; lens: "seo" | "ai" }[];
+  checkedAt: number;
 }
+
+export interface AiCheck {
+  id: string;
+  severity: Severity;
+  title: string;
+  detail: string;
+  fix?: string;
+  weight: number;
+}
+
+const AI_SEARCH_AGENTS = ["OAI-SearchBot", "ChatGPT-User", "Claude-SearchBot", "PerplexityBot", "Googlebot", "Bingbot"];
+const GENERIC_SCHEMA = /^(WebSite|WebPage|BreadcrumbList|SiteNavigationElement|ListItem|ImageObject|SearchAction|EntryPoint|ReadAction)$/;
+const QUESTION = /\?$|^(how|what|why|when|where|which|who|can|does|do|is|are|should)\b/i;
 
 const WEIGHT: Record<Severity, number> = { error: 12, warning: 5, info: 0, pass: 0 };
 
@@ -51,7 +70,13 @@ function collectSchemaTypes(node: unknown, out: Set<string>) {
 }
 
 export async function auditPage(input: string): Promise<PageAuditReport> {
-  const res = await safeFetch(input, { maxBytes: 2_000_000 });
+  const base = normalizeUrl(input);
+  const origin = `${base.protocol}//${base.host}`;
+  const [res, robotsRes, llmsRes] = await Promise.all([
+    safeFetch(base.href, { maxBytes: 2_000_000 }),
+    safeFetch(`${origin}/robots.txt`, { maxBytes: 300_000 }).catch(() => null),
+    safeFetch(`${origin}/llms.txt`, { maxBytes: 100_000 }).catch(() => null),
+  ]);
   const checks: AuditCheck[] = [];
   const add = (c: AuditCheck) => checks.push(c);
 
@@ -171,6 +196,69 @@ export async function auditPage(input: string): Promise<PageAuditReport> {
   else if (schemaTypes.size > 0) add({ id: "jsonld", category: "Structured data", severity: "pass", title: `Structured data: ${[...schemaTypes].slice(0, 6).join(", ")}`, detail: `${schemaTypes.size} schema type${schemaTypes.size > 1 ? "s" : ""} detected.` });
 
   const score = Math.max(0, 100 - checks.reduce((s, c) => s + WEIGHT[c.severity], 0));
+
+  // ---- AI-readiness lens
+  const ai: AiCheck[] = [];
+  const robotsOk = !!robotsRes && robotsRes.status === 200 && !/<html/i.test(robotsRes.body.slice(0, 500));
+  const parsedRobots = parseRobots(robotsOk ? robotsRes!.body : "");
+  let pagePath = "/";
+  try {
+    const u = new URL(res.finalUrl);
+    pagePath = `${u.pathname}${u.search}` || "/";
+  } catch { /* keep root */ }
+  const blocked = AI_SEARCH_AGENTS.filter((a) => !evaluatePath(parsedRobots, a, pagePath));
+  ai.push(blocked.length
+    ? { id: "ai-bots", severity: "error", weight: 30, title: `Blocked for ${blocked.join(", ")}`, detail: "robots.txt stops these crawlers from fetching this page, so their AI answers cannot cite it.", fix: "Allow AI search crawlers in robots.txt. The robots.txt & llms.txt generator has a safe preset." }
+    : { id: "ai-bots", severity: "pass", weight: 30, title: "AI search crawlers can fetch this page", detail: robotsOk ? "OAI-SearchBot, ChatGPT-User, Claude-SearchBot, PerplexityBot, Googlebot and Bingbot are allowed for this URL." : "No robots.txt found, so every crawler is allowed by default." });
+
+  ai.push(wordCount >= 300
+    ? { id: "ai-text", severity: "pass", weight: 20, title: `${wordCount} words readable without JavaScript`, detail: "The content is in the raw HTML, which is what most AI crawlers read." }
+    : wordCount >= 80
+      ? { id: "ai-text", severity: "warning", weight: 20, title: `Only ${wordCount} words in the raw HTML`, detail: "Many AI crawlers do not run JavaScript, so they see little to quote.", fix: "Server-render the main content, or add a substantive text summary to the HTML." }
+      : { id: "ai-text", severity: "error", weight: 20, title: `Almost no text in the raw HTML (${wordCount} words)`, detail: "If the content is rendered by JavaScript, most AI crawlers see an empty page.", fix: "Server-render or pre-render the page so its content is present in the HTML response." });
+
+  const usefulSchema = [...schemaTypes].filter((t) => !GENERIC_SCHEMA.test(t));
+  ai.push(usefulSchema.length
+    ? { id: "ai-schema", severity: "pass", weight: 15, title: `Entity markup: ${usefulSchema.slice(0, 4).join(", ")}`, detail: "Structured facts AI systems can extract without guessing." }
+    : { id: "ai-schema", severity: "warning", weight: 15, title: "No entity-level structured data", detail: schemaTypes.size ? "Only generic page or site markup was found." : "No JSON-LD found.", fix: "Add Organization, Product, Article, FAQPage or LocalBusiness JSON-LD with the Schema Generator." });
+
+  ai.push(description && description.length >= 50
+    ? { id: "ai-summary", severity: "pass", weight: 10, title: "Has a concise summary", detail: "The meta description gives AI answers and link previews a ready-made summary." }
+    : { id: "ai-summary", severity: "warning", weight: 10, title: "No usable one-line summary", detail: "Without a meta description, AI tools have to guess what the page is about.", fix: "Write a factual 70–160 character meta description stating what the page offers." });
+
+  const subheads = $("h2,h3").map((_, el) => $(el).text().trim().replace(/\s+/g, " ")).get().filter(Boolean);
+  const questions = subheads.filter((h) => QUESTION.test(h));
+  const hasFaq = [...schemaTypes].some((t) => /FAQPage|QAPage|HowTo/.test(t));
+  ai.push(questions.length >= 2 || hasFaq
+    ? { id: "ai-questions", severity: "pass", weight: 10, title: hasFaq ? "FAQ or Q&A markup present" : `${questions.length} question-style headings`, detail: "Question-and-answer structure maps directly onto the prompts people ask AI." }
+    : { id: "ai-questions", severity: "info", weight: 10, title: "Few question-style headings", detail: `${subheads.length} H2/H3 headings, ${questions.length} phrased as questions.`, fix: "Add a short FAQ that answers what customers actually ask, with FAQPage markup." });
+
+  const dated = $('meta[property="article:published_time"], meta[property="article:modified_time"], meta[itemprop="dateModified"], meta[itemprop="datePublished"], time[datetime]').length > 0 || /"date(Published|Modified)"/.test(res.body);
+  const authored = $('meta[name="author"], [rel="author"], [itemprop="author"]').length > 0 || /"author"\s*:/.test(res.body);
+  ai.push(dated || authored
+    ? { id: "ai-trust", severity: "pass", weight: 10, title: `${[dated && "Dates", authored && (dated ? "author" : "Author")].filter(Boolean).join(" and ")} declared`, detail: "Freshness and authorship signals help AI systems judge how current and credible a source is." }
+    : { id: "ai-trust", severity: "info", weight: 10, title: "No date or author signals", detail: "Nothing tells a machine when this was written or by whom.", fix: "Show an updated date and author, and add datePublished, dateModified and author to the JSON-LD." });
+
+  const llmsOk = !!llmsRes && llmsRes.status === 200 && !/<html/i.test(llmsRes.body.slice(0, 500)) && llmsRes.body.trim().length > 0;
+  ai.push(llmsOk
+    ? { id: "ai-llms", severity: "pass", weight: 5, title: "llms.txt found", detail: `${origin}/llms.txt gives AI assistants a curated map of the site.` }
+    : { id: "ai-llms", severity: "info", weight: 5, title: "No llms.txt", detail: "An emerging, optional convention. Adoption by AI vendors varies.", fix: "Publish a short /llms.txt with the llms.txt generator." });
+
+  const credit: Record<Severity, number> = { pass: 1, info: 0.5, warning: 0.35, error: 0 };
+  const aiMax = ai.reduce((s, c) => s + c.weight, 0);
+  const aiScore = Math.round((ai.reduce((s, c) => s + c.weight * credit[c.severity], 0) / aiMax) * 100);
+
+  const rank: Record<Severity, number> = { error: 0, warning: 1, info: 2, pass: 3 };
+  const topFixes = [
+    ...ai.filter((c) => c.severity !== "pass" && c.fix).map((c) => ({ title: c.title, fix: c.fix!, severity: c.severity, lens: "ai" as const, w: c.weight })),
+    ...checks
+      .filter((c) => (c.severity === "error" || c.severity === "warning") && c.fix)
+      .map((c) => ({ title: c.title, fix: c.fix!, severity: c.severity, lens: "seo" as const, w: WEIGHT[c.severity] })),
+  ]
+    .sort((a, b) => rank[a.severity] - rank[b.severity] || b.w - a.w)
+    .slice(0, 5)
+    .map((f) => ({ title: f.title, fix: f.fix, severity: f.severity, lens: f.lens }));
+
   return {
     url: input,
     finalUrl: res.finalUrl,
@@ -187,5 +275,8 @@ export async function auditPage(input: string): Promise<PageAuditReport> {
     },
     facts: { title, description, canonical, h1, lang, wordCount, images: { total: imgs.length, missingAlt }, links: { internal, external }, schemaTypes: [...schemaTypes], ogTags: og },
     checks,
+    ai: { score: aiScore, checks: ai },
+    topFixes,
+    checkedAt: Date.now(),
   };
 }

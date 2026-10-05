@@ -1,68 +1,115 @@
-/* OMNI SEO design tokens — see DESIGN-SYSTEM.md. Namespaced --ds-* so legacy styles are untouched. */
+/* seowise design system. Identity: warm cream + espresso ink + one loud orange.
+   Orange is for fills, large type and focus moments. Small orange text uses --ds-accent-ink (AA on cream). */
 :root {
-  --ds-canvas: #f6f5f3;
-  --ds-surface: #ffffff;
-  --ds-surface-muted: rgba(0, 0, 0, 0.04);
-  --ds-ink: #0b0b0b;
-  --ds-ink-2: #777777;
-  --ds-ink-3: #a3a3a3;
-  --ds-line: rgba(0, 0, 0, 0.08);
-  --ds-btn: #161616;
-  --ds-btn-text: #f7f7f7;
-  --ds-accent: #e86a00;
-  --ds-accent-hover: #cf5f00;
-  --ds-accent-soft: #fff1e6;
-  --ds-success: #0d9467;
-  --ds-warning: #d97706;
-  --ds-danger: #dc2626;
+  /* surfaces */
+  --ds-canvas: #f2efe5;
+  --ds-surface: #faf8f2;
+  --ds-surface-2: #ece7da;
+  --ds-surface-muted: rgba(43, 41, 39, 0.05);
+  --ds-night: #2b2927;
+  --ds-night-2: #3a3633;
+  --ds-night-line: rgba(255, 244, 230, 0.12);
+
+  /* text */
+  --ds-ink: #2b2927;
+  --ds-ink-2: #736e6a;
+  --ds-ink-3: #a8a29b;
+
+  /* lines + actions */
+  --ds-line: rgba(43, 41, 39, 0.09);
+  --ds-line-strong: rgba(43, 41, 39, 0.16);
+  --ds-btn: #2b2927;
+  --ds-btn-text: #faf8f2;
+
+  /* brand */
+  --ds-accent: #f2a97f;
+  --ds-accent-hover: #ec9a6c;
+  --ds-accent-ink: #a5552d;
+  --ds-accent-soft: #f9e0cf;
+  --ds-signal: #f2a97f;
+
+  /* status */
+  --ds-success: #5c7c68;
+  --ds-warning: #b7660a;
+  --ds-danger: #c92a2a;
 
   --ds-r-sm: 8px;
-  --ds-r-md: 10px;
-  --ds-r-lg: 16px;
+  --ds-r-md: 12px;
+  --ds-r-lg: 18px;
+  --ds-r-xl: 28px;
   --ds-r-full: 9999px;
 
-  --ds-shadow-pop: 0 8px 24px rgba(0, 0, 0, 0.08);
-  --ds-container: 1120px;
+  --ds-shadow-card: 0 1px 0 rgba(22, 17, 13, 0.04), 0 12px 32px -18px rgba(22, 17, 13, 0.25);
+  --ds-shadow-pop: 0 24px 60px -24px rgba(22, 17, 13, 0.35);
+  --ds-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --ds-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ds-container: 1200px;
 }
 
 @theme inline {
   --color-ds-canvas: var(--ds-canvas);
   --color-ds-surface: var(--ds-surface);
+  --color-ds-surface-2: var(--ds-surface-2);
   --color-ds-muted: var(--ds-surface-muted);
+  --color-ds-night: var(--ds-night);
+  --color-ds-night-2: var(--ds-night-2);
+  --color-ds-night-line: var(--ds-night-line);
   --color-ds-ink: var(--ds-ink);
   --color-ds-ink-2: var(--ds-ink-2);
   --color-ds-ink-3: var(--ds-ink-3);
   --color-ds-line: var(--ds-line);
+  --color-ds-line-strong: var(--ds-line-strong);
   --color-ds-btn: var(--ds-btn);
   --color-ds-accent: var(--ds-accent);
+  --color-ds-accent-ink: var(--ds-accent-ink);
   --color-ds-accent-soft: var(--ds-accent-soft);
+  --color-ds-signal: var(--ds-signal);
   --color-ds-success: var(--ds-success);
   --color-ds-warning: var(--ds-warning);
   --color-ds-danger: var(--ds-danger);
   --radius-ds-sm: var(--ds-r-sm);
   --radius-ds-md: var(--ds-r-md);
   --radius-ds-lg: var(--ds-r-lg);
+  --radius-ds-xl: var(--ds-r-xl);
+  --shadow-ds-card: var(--ds-shadow-card);
+  --shadow-ds-pop: var(--ds-shadow-pop);
 }
 
-/* Studio scope: remaps legacy theme variables (used by the tool workspaces) to design-system values,
-   so the tool UIs inherit the new look until each is rebuilt natively on --ds-* tokens. */
+/* Tool scope: older tool workspaces use legacy font variables; map them onto the grotesk. */
 .studio-scope {
-  --background: var(--ds-surface);
-  --surface: var(--ds-canvas);
-  --surface-deep: #eceae6;
-  --foreground: var(--ds-ink);
-  --muted: var(--ds-ink-2);
-  --border: var(--ds-line);
-  --orange-50: var(--ds-accent-soft);
-  --orange-500: var(--ds-accent);
-  --orange-600: var(--ds-accent-hover);
-  --font-fraunces: var(--font-geist-sans);
-  --font-instrument-sans: var(--font-geist-sans);
-  --font-inter-tight: var(--font-geist-sans);
+  --font-fraunces: var(--font-geist);
+  --font-instrument-sans: var(--font-geist);
 }
+/* Legacy workspaces (schema, sitemaps, density) re-dressed as glass without touching their markup. */
 .studio-scope .font-display {
+  font-family: var(--font-instrument), Georgia, serif;
   font-weight: 400;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.01em;
+}
+.studio-scope .bg-background {
+  background-color: rgba(255, 255, 255, 0.5);
+}
+.studio-scope [class~="bg-foreground/[0.03]"] {
+  background-color: rgba(255, 255, 255, 0.38);
+}
+.studio-scope [class~="border-foreground/10"] {
+  border-color: rgba(255, 255, 255, 0.78);
+}
+.studio-scope [class~="divide-foreground/10"] > :not(:last-child) {
+  border-color: rgba(255, 255, 255, 0.7);
+}
+.studio-scope .text-primary {
+  color: var(--ds-accent-ink);
+}
+.studio-scope input,
+.studio-scope textarea,
+.studio-scope select {
+  border-radius: 12px;
+}
+.studio-scope input:focus,
+.studio-scope textarea:focus,
+.studio-scope select:focus {
+  box-shadow: 0 0 0 4px rgba(242, 169, 127, 0.3);
 }
 .studio-scope .grid > * {
   min-width: 0;

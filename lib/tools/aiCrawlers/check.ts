@@ -10,6 +10,7 @@ export interface AiCrawlerReport {
   llmsTxt: { found: boolean; url: string; bytes: number };
   bots: BotResult[];
   findings: { level: "good" | "warn" | "bad"; text: string }[];
+  checkedAt: number;
   /** 0-100 AI-search readiness: share of AI-search/assistant bots that can reach the site, minus penalties. */
   score: number;
 }
@@ -82,5 +83,6 @@ export async function checkAiCrawlers(input: string): Promise<AiCrawlerReport> {
     bots,
     findings,
     score,
+    checkedAt: Date.now(),
   };
 }

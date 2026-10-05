@@ -13,7 +13,7 @@ async function fetchSuggestions(query: string, country: string, language: string
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), 6000);
   try {
-    const res = await fetch(url, { signal: ctrl.signal, headers: { "user-agent": "Mozilla/5.0 (compatible; OMNI-SEO/1.0)" } });
+    const res = await fetch(url, { signal: ctrl.signal, headers: { "user-agent": "Mozilla/5.0 (compatible; seowise/1.0)" } });
     if (!res.ok) return [];
     const data = (await res.json()) as [string, string[]];
     return Array.isArray(data?.[1]) ? data[1].filter((s) => typeof s === "string") : [];

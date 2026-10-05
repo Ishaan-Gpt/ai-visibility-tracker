@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Check, Copy } from "lucide-react";
+import { IconCopy as Copy, IconTick as Check } from "@/components/icons/Icons";
 import { Card, buttonClass } from "@/components/ds/primitives";
 
 const TITLE_PX = 600; // Google desktop title container is ~600px
@@ -24,14 +24,14 @@ function Bar({ value, max, warnAt }: { value: number; max: number; warnAt?: numb
   const over = value > max;
   const low = warnAt !== undefined && value < warnAt;
   return (
-    <div className="h-1.5 w-full overflow-hidden rounded-full bg-ds-muted">
+    <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/40">
       <div className={`h-full rounded-full transition-all ${over ? "bg-ds-danger" : low ? "bg-ds-warning" : "bg-ds-success"}`} style={{ width: `${pct}%` }} />
     </div>
   );
 }
 
 const field =
-  "w-full rounded-ds-md border border-ds-line bg-ds-surface px-3 py-2 text-[15px] text-ds-ink outline-none placeholder:text-ds-ink-3 focus:ring-2 focus:ring-ds-ink";
+  "w-full rounded-[12px] border border-white/70 bg-white/55 px-3 py-2 text-[15px] text-ds-ink outline-none placeholder:text-ds-ink-3 focus:ring-2 focus:ring-ds-accent/60";
 
 export function SerpPreviewWorkspace({ brandName, domain }: { brandName: string; domain: string }) {
   const [title, setTitle] = useState(`${brandName} | Your main value proposition`);
@@ -87,7 +87,7 @@ export function SerpPreviewWorkspace({ brandName, domain }: { brandName: string;
         </label>
         <label className="block">
           <span className="mb-1 block text-[14px] text-ds-ink-2">Page path</span>
-          <div className="flex items-center rounded-ds-md border border-ds-line bg-ds-surface focus-within:ring-2 focus-within:ring-ds-ink">
+          <div className="flex items-center rounded-[12px] border border-white/70 bg-white/55 focus-within:ring-2 focus-within:ring-ds-accent/60">
             <span className="pl-3 font-mono text-[13px] text-ds-ink-3">{domain}</span>
             <input value={path} onChange={(e) => setPath(e.target.value)} placeholder="/pricing" className="h-10 flex-1 bg-transparent px-1 font-mono text-[13px] outline-none" />
           </div>
@@ -102,13 +102,13 @@ export function SerpPreviewWorkspace({ brandName, domain }: { brandName: string;
         <Card>
           <div className="mb-3 flex items-center justify-between">
             <h3 className="text-[14px] text-ds-ink-2">Google preview (approximate)</h3>
-            <div className="inline-flex rounded-ds-md bg-ds-muted p-0.5 text-[13px]">
+            <div className="inline-flex rounded-[12px] bg-white/40 p-0.5 text-[13px]">
               {(["desktop", "mobile"] as const).map((d) => (
-                <button key={d} type="button" onClick={() => setDevice(d)} className={`rounded-[8px] px-3 py-1 capitalize ${device === d ? "bg-ds-surface text-ds-ink" : "text-ds-ink-2"}`}>{d}</button>
+                <button key={d} type="button" onClick={() => setDevice(d)} className={`rounded-[9px] px-3 py-1 capitalize ${device === d ? "bg-white/55 text-ds-ink" : "text-ds-ink-2"}`}>{d}</button>
               ))}
             </div>
           </div>
-          <div className={`mx-auto rounded-ds-md border border-ds-line bg-white p-4 font-[Arial,sans-serif] ${device === "mobile" ? "max-w-[360px]" : ""}`}>
+          <div className={`mx-auto rounded-[12px] border border-white/70 bg-white p-4 font-[Arial,sans-serif] ${device === "mobile" ? "max-w-[360px]" : ""}`}>
             <div className="flex items-center gap-2 text-[12px] text-[#202124]">
               <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#f1f3f4] text-[12px] font-medium uppercase">{domain[0]}</span>
               <div className="min-w-0">
@@ -126,8 +126,8 @@ export function SerpPreviewWorkspace({ brandName, domain }: { brandName: string;
 
         <Card>
           <h3 className="mb-3 text-[14px] text-ds-ink-2">Social share card</h3>
-          <div className="overflow-hidden rounded-ds-md border border-ds-line bg-white">
-            <div className="flex aspect-[1.91/1] items-center justify-center bg-ds-muted text-[13px] text-ds-ink-3">
+          <div className="overflow-hidden rounded-[12px] border border-white/70 bg-white">
+            <div className="flex aspect-[1.91/1] items-center justify-center bg-white/40 text-[13px] text-ds-ink-3">
               {ogImage ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={ogImage} alt="" className="h-full w-full object-cover" />
@@ -135,7 +135,7 @@ export function SerpPreviewWorkspace({ brandName, domain }: { brandName: string;
                 "No social image set"
               )}
             </div>
-            <div className="border-t border-ds-line p-3">
+            <div className="border-t border-white/70 p-3">
               <div className="text-[12px] uppercase text-ds-ink-3">{domain}</div>
               <div className="truncate text-[15px] font-medium text-ds-ink">{title}</div>
               <div className="line-clamp-2 text-[13px] text-ds-ink-2">{description}</div>
@@ -144,7 +144,7 @@ export function SerpPreviewWorkspace({ brandName, domain }: { brandName: string;
         </Card>
 
         <Card className="p-0">
-          <div className="flex items-center justify-between border-b border-ds-line px-4 py-2.5">
+          <div className="flex items-center justify-between border-b border-white/70 px-4 py-2.5">
             <span className="font-mono text-[13px] text-ds-ink-2">&lt;head&gt; tags</span>
             <button
               type="button"

@@ -1,48 +1,114 @@
-import { AlertCircle, AlertTriangle, CheckCircle2, Info } from "lucide-react";
+"use client";
 
-/** Circular score gauge. Color follows the design-system status tokens. */
-export function ScoreRing({ score, size = 112, label }: { score: number; size?: number; label?: string }) {
-  const r = (size - 12) / 2;
+import { useEffect, useRef, useState } from "react";
+import { IconAlert as AlertCircle, IconCheckCircle as CheckCircle2, IconInfo as Info, IconWarn as AlertTriangle } from "@/components/icons/Icons";
+import { useReducedMotion } from "framer-motion";
+
+export function toneFor(score: number) {
+  return score >= 80 ? "var(--ds-success)" : score >= 50 ? "var(--ds-warning)" : "var(--ds-danger)";
+}
+
+/** Counts up to `value` once mounted. Respects reduced motion. */
+export function CountUp({ value, duration = 900 }: { value: number; duration?: number }) {
+  const reduce = useReducedMotion();
+  const [n, setN] = useState(0);
+  const from = useRef(0);
+  useEffect(() => {
+    if (reduce) return;
+    const start = performance.now();
+    const a = from.current;
+    let raf = 0;
+    const tick = (t: number) => {
+      const p = Math.min(1, (t - start) / duration);
+      const eased = 1 - Math.pow(1 - p, 4);
+      setN(Math.round(a + (value - a) * eased));
+      if (p < 1) raf = requestAnimationFrame(tick);
+      else from.current = value;
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [value, duration, reduce]);
+  return <>{reduce ? value : n}</>;
+}
+
+/** Circular score gauge with an animated sweep. `dark` for use on espresso surfaces. */
+export function ScoreRing({
+  score,
+  size = 120,
+  label,
+  dark = false,
+  stroke = 8,
+}: {
+  score: number;
+  size?: number;
+  label?: string;
+  dark?: boolean;
+  stroke?: number;
+}) {
+  const reduce = useReducedMotion();
+  const [shown, setShown] = useState(reduce ? score : 0);
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setShown(score));
+    return () => cancelAnimationFrame(id);
+  }, [score]);
+  const r = (size - stroke - 4) / 2;
   const c = 2 * Math.PI * r;
-  const tone = score >= 80 ? "var(--ds-success)" : score >= 50 ? "var(--ds-warning)" : "var(--ds-danger)";
+  const clamped = Math.max(0, Math.min(100, shown));
   return (
-    <div className="relative inline-flex items-center justify-center" style={{ width: size, height: size }} role="img" aria-label={`${label ?? "Score"}: ${score} out of 100`}>
+    <div
+      className="relative inline-flex shrink-0 items-center justify-center"
+      style={{ width: size, height: size }}
+      role="img"
+      aria-label={`${label ?? "Score"}: ${score} out of 100`}
+    >
       <svg width={size} height={size} className="-rotate-90">
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--ds-line)" strokeWidth="8" />
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={dark ? "rgba(255,244,230,0.12)" : "var(--ds-line)"} strokeWidth={stroke} />
         <circle
           cx={size / 2}
           cy={size / 2}
           r={r}
           fill="none"
-          stroke={tone}
-          strokeWidth="8"
+          stroke={toneFor(score)}
+          strokeWidth={stroke}
           strokeLinecap="round"
           strokeDasharray={c}
-          strokeDashoffset={c - (c * Math.max(0, Math.min(100, score))) / 100}
-          style={{ transition: "stroke-dashoffset 700ms cubic-bezier(0.22,1,0.36,1)" }}
+          strokeDashoffset={c - (c * clamped) / 100}
+          style={{ transition: "stroke-dashoffset 1100ms var(--ds-ease)" }}
         />
       </svg>
       <div className="absolute text-center">
-        <div className="text-[32px] font-normal leading-8 tracking-[-0.02em] text-ds-ink">{score}</div>
-        {label && <div className="text-[12px] text-ds-ink-2">{label}</div>}
+        <div className={`font-medium tabular-nums tracking-[-0.04em] ${dark ? "text-[#fffcf6]" : "text-ds-ink"}`} style={{ fontSize: size * 0.3, lineHeight: 1 }}>
+          <CountUp value={score} />
+        </div>
+        {label && <div className={`mt-1 text-[11px] font-medium uppercase tracking-[0.12em] ${dark ? "text-white/55" : "text-ds-ink-2"}`}>{label}</div>}
       </div>
     </div>
   );
 }
 
 const SEVERITY = {
-  error: { icon: AlertCircle, cls: "text-ds-danger bg-ds-danger/10", label: "Error" },
-  warning: { icon: AlertTriangle, cls: "text-ds-warning bg-ds-warning/10", label: "Warning" },
-  info: { icon: Info, cls: "text-ds-ink-2 bg-ds-muted", label: "Info" },
-  pass: { icon: CheckCircle2, cls: "text-ds-success bg-ds-success/10", label: "Pass" },
+  error: { icon: AlertCircle, cls: "text-[#b23a2a] bg-[#f6d5cc]/70 ring-1 ring-white/70", label: "Error" },
+  warning: { icon: AlertTriangle, cls: "text-[#a56312] bg-[#f7e2c4]/70 ring-1 ring-white/70", label: "Warning" },
+  info: { icon: Info, cls: "text-ds-ink-2 bg-white/55 ring-1 ring-white/70", label: "Info" },
+  pass: { icon: CheckCircle2, cls: "text-[#4c6b57] bg-[#dbe6dc]/75 ring-1 ring-white/70", label: "Pass" },
 } as const;
 
-export function SeverityIcon({ severity }: { severity: keyof typeof SEVERITY }) {
+export type SeverityKey = keyof typeof SEVERITY;
+
+export function SeverityIcon({ severity, className = "" }: { severity: SeverityKey; className?: string }) {
   const { icon: Icon, cls, label } = SEVERITY[severity];
   return (
-    <span className={`inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${cls}`} title={label}>
-      <Icon className="h-4 w-4" strokeWidth={2} />
+    <span className={`inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${cls} ${className}`} title={label}>
+      <Icon className="h-4 w-4" />
       <span className="sr-only">{label}</span>
     </span>
   );
+}
+
+export function verdictFor(score: number, ai?: number) {
+  const s = ai === undefined ? score : Math.round(score * 0.6 + ai * 0.4);
+  if (s >= 85) return { head: "In great shape.", body: "Polish, don't rebuild. The remaining items are refinements." };
+  if (s >= 70) return { head: "A solid foundation.", body: "A handful of fixes will move the needle. Start at the top." };
+  if (s >= 50) return { head: "Needs work.", body: "Several issues are holding this back. The fixes below are ordered by impact." };
+  return { head: "Serious problems.", body: "Fix the top items before anything else. They block search or AI visibility outright." };
 }
