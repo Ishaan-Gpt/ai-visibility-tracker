@@ -5,7 +5,7 @@ import { HistoryView, OverviewView } from "@/components/studio/Views";
 import { BillingView } from "@/components/studio/Billing";
 import ScoreCard from "@/components/dashboard/ScoreCard";
 import CompetitorCompare from "@/components/dashboard/CompetitorCompare";
-import { Glass, Kicker, Masthead } from "@/components/studio/Glass";
+import { Glass, Masthead } from "@/components/studio/Glass";
 import TrendChart from "@/components/dashboard/TrendChart";
 import { planRows } from "@/lib/plan-rows";
 import type { HistoryItem } from "@/lib/history";
@@ -39,7 +39,9 @@ export default async function StudioPreview({ searchParams }: { searchParams: Pr
           <div className="grid gap-5 lg:grid-cols-3">
             <ScoreCard score={62} checkedPrompts={3} />
             <Glass className="p-6 lg:col-span-2">
-              <Kicker>Trend</Kicker>
+              <h2 className="mb-3 font-serif text-[28px] leading-none">
+                Visibility <span className="italic">over time</span>
+              </h2>
               <TrendChart
                 rollups={[40, 44, 51, 48, 57, 62].map((score, i) => ({ brandId: "x", date: `2026-09-${String(10 + i * 4).padStart(2, "0")}`, totalPrompts: 3, mentionedCount: 2, score, competitorMentionCounts: {} }))}
               />

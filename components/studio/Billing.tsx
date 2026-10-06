@@ -4,12 +4,12 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { IcCheck } from "@/components/icons/Studio";
 import { IconSpinner } from "@/components/icons/Icons";
-import { Glass, Kicker, Masthead } from "@/components/studio/Glass";
+import { Glass, Masthead } from "@/components/studio/Glass";
 import { Rise } from "@/components/studio/Views";
 
 const PERKS = ["Up to 12× higher daily limits on every fetch tool", "Full saved history of every report", "AI Visibility: 10 prompts, 2 competitors, checked daily"];
 
-function Ticket({ isPaid, billingConfigured }: { isPaid: boolean; billingConfigured: boolean }) {
+export function Ticket({ isPaid, billingConfigured }: { isPaid: boolean; billingConfigured: boolean }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -32,8 +32,7 @@ function Ticket({ isPaid, billingConfigured }: { isPaid: boolean; billingConfigu
       <div className="glass-strong ticket-mask relative grid overflow-hidden rounded-[26px] sm:grid-cols-[1fr_200px]">
         <div aria-hidden className="pointer-events-none absolute -left-16 -top-24 h-72 w-72 rounded-full bg-[radial-gradient(closest-side,rgba(242,169,127,.45),transparent)]" />
         <div className="relative p-7 sm:p-9">
-          <Kicker>{isPaid ? "Your pass" : "Admit one"}</Kicker>
-          <p className="mt-3 font-serif text-[46px] leading-none">
+          <p className="font-serif text-[46px] leading-none">
             seowise <span className="italic">Pro</span>
           </p>
           <ul className="mt-6 space-y-2.5">

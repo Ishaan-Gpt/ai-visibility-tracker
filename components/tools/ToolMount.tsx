@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { IconArrow as ArrowRight, IconLock as Lock, IconPdf as FileDown } from "@/components/icons/Icons";
 import { ArchWindow } from "@/components/studio/Pieces";
+import ScoreCard from "@/components/dashboard/ScoreCard";
 
 // Each tool page only downloads its own workspace.
 const loading = () => <div className="skeleton h-[420px] rounded-ds-xl" />;
@@ -70,18 +71,9 @@ function VisibilityCta() {
         </Link>
       </div>
       <ArchWindow className="min-h-[380px]">
-        <div className="glass-strong rounded-[16px] p-3 text-ds-ink">
-          {[
-            ["best bakery for wedding cakes", true],
-            ["gluten-free bakery near me", false],
-            ["who makes the best sourdough", true],
-          ].map(([p, hit]) => (
-            <div key={p as string} className="flex items-center justify-between gap-3 border-b border-white/60 px-1 py-2 text-[13px] last:border-0">
-              <span className="truncate">“{p}”</span>
-              <span className={`shrink-0 rounded-[8px] px-2 py-0.5 text-[11px] ${hit ? "bg-ds-accent" : "bg-white/60 text-ds-ink-2"}`}>{hit ? "Mentioned" : "Not yet"}</span>
-            </div>
-          ))}
-          <p className="px-1 pt-2 text-[11px] text-ds-ink-3">Illustration, not real data</p>
+        <div className="text-ds-ink">
+          <ScoreCard score={61} checkedPrompts={3} />
+          <p className="mt-2 text-right text-[11px] text-white/85">The real tracker card, on sample data</p>
         </div>
       </ArchWindow>
     </div>

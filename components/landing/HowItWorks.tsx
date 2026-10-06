@@ -5,6 +5,9 @@ import { AnimatePresence, motion, useInView, useReducedMotion } from "framer-mot
 import { useRef } from "react";
 import { IconCheckCircle } from "@/components/icons/Icons";
 import { PaintedSky } from "@/components/landing/Painted";
+import { Verdict } from "@/components/tools/page-audit/PageAuditWorkspace";
+import { LiveBots, LiveStages } from "@/components/landing/Live";
+import { SAMPLE_AUDIT } from "@/lib/samples";
 import { ScrollFill } from "@/components/landing/ScrollFill";
 import { Lede } from "@/components/landing/ui";
 
@@ -16,8 +19,6 @@ const STEPS = [
     title: "Paste a URL, nothing else",
     body: "No account, no crawl setup, no waiting on a queue.",
     points: ["Any public page or domain", "Results in about five seconds"],
-    chip: "Fetching page · robots.txt · llms.txt",
-    card: { k: "Fetched", v: "northside-dental.example", s: "HTTP 200 · 640 ms" },
 
 
   },
@@ -25,8 +26,6 @@ const STEPS = [
     title: "The verdict comes first, the detail second",
     body: "No forty-page export. A plain-English verdict, then fixes ranked by impact.",
     points: ["Top five fixes across SEO and AI", "Exact change to make for each"],
-    chip: "3 fixes · ordered by impact",
-    card: { k: "Verdict", v: "Needs work.", s: "SEO 72 · AI ready 58" },
 
 
   },
@@ -34,8 +33,6 @@ const STEPS = [
     title: "See the page the way AI search does",
     body: "Every tool also answers: can ChatGPT, Gemini and Perplexity reach, read and cite this?",
     points: ["AI crawler access, path by path", "Text readable without JavaScript"],
-    chip: "OAI-SearchBot · blocked",
-    card: { k: "AI lens", v: "1 crawler blocked", s: "Fix: one line in robots.txt" },
 
 
   },
@@ -43,8 +40,6 @@ const STEPS = [
     title: "Hand the client a report in one click",
     body: "A clean, branded PDF that explains itself, so the call is about the work, not the jargon.",
     points: ["Export from any result", "Save reports to your account"],
-    chip: "seowise-audit.pdf · ready",
-    card: { k: "Report", v: "Ready to send", s: "2 pages · A4" },
 
 
   },
@@ -63,7 +58,6 @@ export function HowItWorks() {
     return () => clearTimeout(t);
   }, [active, inView, paused, reduce]);
 
-  const s = STEPS[active];
 
   return (
     <section id="how" className="scroll-mt-24 py-28 sm:py-36">
@@ -109,42 +103,47 @@ export function HowItWorks() {
           })}
         </ol>
 
-        <div className="relative aspect-[5/4] overflow-hidden rounded-[20px] sm:aspect-[16/11]">
+        <div className="relative min-h-[460px] overflow-hidden rounded-[20px] sm:min-h-[500px]">
           <AnimatePresence mode="popLayout" initial={false}>
             <motion.div key={active} className="absolute inset-0" initial={{ opacity: 0, scale: 1.06 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} transition={{ duration: 1.1, ease: EASE }}>
               <PaintedSky name={`step-${active + 1}` as "step-1"} />
             </motion.div>
           </AnimatePresence>
-          <div className="absolute inset-x-0 top-5 z-10 flex items-center justify-between px-5">
+          <div className="relative z-10 flex h-full min-h-[460px] items-center justify-center p-4 sm:min-h-[500px] sm:p-8">
             <AnimatePresence mode="wait">
-              <motion.span key={`chip-${active}`} initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.4 }} className="rounded-md bg-[#faf8f2]/70 px-2.5 py-1 text-[11.5px] text-ds-ink-2 backdrop-blur">
-                {s.chip}
-              </motion.span>
+              <motion.div
+                key={`ui-${active}`}
+                initial={{ opacity: 0, y: 24 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -14 }}
+                transition={{ duration: 0.6, ease: EASE }}
+                className="w-full max-w-[600px]"
+              >
+                <StepUI step={active} />
+              </motion.div>
             </AnimatePresence>
-            <span className="inline-flex items-center gap-1.5 rounded-md bg-[#faf8f2]/70 px-2 py-1 text-[11.5px] text-ds-ink-2 backdrop-blur">
-              <span className="relative flex h-1.5 w-1.5">
-                <span className="absolute h-full w-full animate-ping rounded-full bg-[#5c7c68]/60" />
-                <span className="relative h-1.5 w-1.5 rounded-full bg-[#5c7c68]" />
-              </span>
-              Live
-            </span>
           </div>
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={`card-${active}`}
-              initial={{ opacity: 0, y: 24, filter: "blur(6px)" }}
-              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-              exit={{ opacity: 0, y: -12, filter: "blur(6px)" }}
-              transition={{ duration: 0.7, ease: EASE }}
-              className="absolute bottom-6 left-1/2 z-10 w-[78%] max-w-[360px] -translate-x-1/2 rounded-[14px] bg-[#faf8f2]/90 p-5 text-left shadow-[0_30px_60px_-30px_rgba(43,41,39,0.5)] backdrop-blur"
-            >
-              <p className="text-[11.5px] text-ds-ink-3">{s.card.k}</p>
-              <p className="mt-1 font-serif text-[28px] leading-none text-ds-ink">{s.card.v}</p>
-              <p className="mt-2 text-[12.5px] text-ds-ink-2">{s.card.s}</p>
-            </motion.div>
-          </AnimatePresence>
         </div>
       </div>
     </section>
   );
 }
+
+/** The real seowise components for each step, fed with sample data. */
+function StepUI({ step }: { step: number }) {
+  if (step === 0) return <LiveStages />;
+  if (step === 1) return <Verdict report={SAMPLE_AUDIT} demo />;
+  if (step === 2) return <LiveBots />;
+  return (
+    <div className="relative mx-auto max-w-[520px] rotate-[-2deg] rounded-[6px] bg-white p-5 shadow-[0_40px_80px_-36px_rgba(43,41,39,0.6)] transition-transform duration-700 ease-[var(--ds-ease)] hover:rotate-0">
+      <div className="mb-3 flex items-center justify-between border-b border-black/10 pb-2">
+        <span className="font-serif text-[18px] italic">seowise</span>
+        <span className="text-[10px] text-black/45">Page audit · northside-dental.example</span>
+      </div>
+      <div className="origin-top-left scale-[0.78] [width:128%]">
+        <Verdict report={SAMPLE_AUDIT} demo />
+      </div>
+    </div>
+  );
+}
+

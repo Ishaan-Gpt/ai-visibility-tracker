@@ -18,8 +18,7 @@ export default function ToolsHub() {
     <>
       <section className="pt-12 text-center sm:pt-16">
         <div className="mx-auto max-w-[1000px] px-4">
-          <span className="rounded-md bg-[#e9e3d5] px-2.5 py-1 text-[12.5px] text-ds-ink-2">{HERO_TOOLS.length + MORE_TOOLS.length} tools · all free</span>
-          <h1 className="mt-7 font-serif text-[50px] leading-[1] tracking-[-0.025em] sm:text-[80px] lg:text-[96px]">
+          <h1 className="font-serif text-[50px] leading-[1] tracking-[-0.025em] sm:text-[80px] lg:text-[96px]">
             <span className="block">Every tool, free.</span>
             <span className="block italic">No signup.</span>
           </h1>

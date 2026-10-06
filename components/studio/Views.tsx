@@ -8,7 +8,7 @@ import { IcOpen } from "@/components/icons/Studio";
 import { ToolGlyph } from "@/components/icons/ToolGlyphs";
 import { ReportList } from "@/components/app/ReportList";
 import { ArchWindow, InkWell, QuickAudit } from "@/components/studio/Pieces";
-import { Glass, Kicker, Masthead } from "@/components/studio/Glass";
+import { Glass, Masthead } from "@/components/studio/Glass";
 import { HERO_TOOLS, toolHref } from "@/lib/tools/registry";
 import type { HistoryItem } from "@/lib/history";
 
@@ -54,8 +54,10 @@ export function OverviewView({ name, usage, reports, reportLimit, brand }: Overv
           <Glass className="h-full p-6 sm:p-8">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <Kicker>Today&apos;s wells</Kicker>
-                <p className="mt-2 max-w-[300px] font-serif text-[26px] leading-[1.1]">Runs left before the wells refill at midnight UTC</p>
+                <h2 className="max-w-[320px] font-serif text-[30px] leading-[1.05]">
+                  Today&apos;s <span className="italic">runs</span>, left in the well
+                </h2>
+                <p className="mt-1 text-[13px] text-ds-ink-2">Refills at midnight UTC</p>
               </div>
               <span className="glass-inset rounded-full px-3 py-1 text-[12px] text-ds-ink-2">Browser tools · unlimited</span>
             </div>
@@ -70,7 +72,6 @@ export function OverviewView({ name, usage, reports, reportLimit, brand }: Overv
         <Rise i={2}>
           <Link href={brand ? "/app/visibility" : "/app/onboarding"} className="group block h-full min-h-[360px]">
             <ArchWindow className="h-full min-h-[360px]">
-              <Kicker className="text-white/80">AI Visibility</Kicker>
               {brand ? (
                 <>
                   <p className="mt-2 font-serif text-[34px] leading-[1.02]">

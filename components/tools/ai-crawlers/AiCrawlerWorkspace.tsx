@@ -11,7 +11,7 @@ import { ResultActions } from "@/components/tools/shell/ResultActions";
 import { ToolInputBar } from "@/components/tools/shell/ToolInputBar";
 import { useToolRun } from "@/components/tools/shell/useToolRun";
 import { PURPOSE_LABEL, type BotPurpose } from "@/lib/tools/aiCrawlers/bots";
-import type { AiCrawlerReport } from "@/lib/tools/aiCrawlers/check";
+import type { AiCrawlerReport, BotResult } from "@/lib/tools/aiCrawlers/check";
 
 const STAGES = ["Fetching robots.txt", "Looking for llms.txt", "Evaluating 16 crawlers"];
 const EASE = [0.22, 1, 0.36, 1] as const;
@@ -82,11 +82,11 @@ export function AiCrawlerWorkspace({ initialDomain = "" }: { initialDomain?: str
                 <p className="mt-2 font-mono text-[10.5px] uppercase tracking-[0.16em] text-ds-ink-2">AI ready</p>
               </div>
               <div className="min-w-0">
-                <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-ds-ink-2">{report.domain}</p>
-                <h2 className="mt-2 font-serif text-[44px] leading-[0.98] sm:text-[56px]">
+                <h2 className="font-serif text-[44px] leading-[0.98] sm:text-[56px]">
                   {headline.replace(/\.$/, "").split(" ").slice(0, -1).join(" ")} <span className="italic">{headline.replace(/\.$/, "").split(" ").slice(-1)}.</span>
                 </h2>
                 <p className="mt-3 text-[16px] text-ds-ink-2">
+                  <span className="font-medium text-ds-ink">{report.domain}</span> · 
                   {openSearch} of {searchBots.length} AI search and assistant crawlers can reach the site.
                   {report.llmsTxt.found ? " llms.txt is published." : " No llms.txt yet."}
                 </p>
@@ -130,33 +130,7 @@ export function AiCrawlerWorkspace({ initialDomain = "" }: { initialDomain?: str
           <div className="grid gap-4 lg:grid-cols-2">
             {(["ai-search", "ai-user", "ai-training", "search"] as const).map((p) => {
               const bots = report.bots.filter((b) => b.purpose === p);
-              return (
-                <section key={p} data-print-card className="glass rounded-[20px]">
-                  <div className="border-b border-white/60 px-5 py-4">
-                    <h4 className="font-serif text-[24px] leading-none">{PURPOSE_LABEL[p]}</h4>
-                    <p className="mt-0.5 text-[13px] leading-5 text-ds-ink-2">{PURPOSE_BLURB[p]}</p>
-                  </div>
-                  <ul className="divide-y divide-white/60">
-                    {bots.map((b) => {
-                      const A = ACCESS[b.access];
-                      return (
-                        <li key={b.agent} className="flex items-center justify-between gap-4 px-5 py-3">
-                          <div className="min-w-0">
-                            <div className="flex flex-wrap items-baseline gap-2">
-                              <span className="font-mono text-[14px] text-ds-ink">{b.agent}</span>
-                              <span className="text-[12px] text-ds-ink-3">{b.owner}</span>
-                            </div>
-                            <p className="text-[12px] leading-4 text-ds-ink-3">{b.detail}</p>
-                          </div>
-                          <span className={`inline-flex shrink-0 items-center gap-1 rounded-[9px] px-2.5 py-1 text-[12px] font-medium capitalize ${A.cls}`}>
-                            <A.icon className="h-3 w-3" /> {b.access}
-                          </span>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </section>
-              );
+              return <BotGroup key={p} purpose={p} bots={bots} />;
             })}
           </div>
 
@@ -169,5 +143,51 @@ export function AiCrawlerWorkspace({ initialDomain = "" }: { initialDomain?: str
         </motion.div>
       )}
     </div>
+  );
+}
+
+/** One purpose group of crawlers with their access pills. `onToggle` makes pills clickable (landing demo). */
+export function BotGroup({ purpose, bots, onToggle }: { purpose: BotPurpose; bots: BotResult[]; onToggle?: (agent: string) => void }) {
+  return (
+    <section data-print-card className="glass rounded-[20px]">
+      <div className="border-b border-white/60 px-5 py-4">
+        <h4 className="font-serif text-[24px] leading-none">{PURPOSE_LABEL[purpose]}</h4>
+        <p className="mt-0.5 text-[13px] leading-5 text-ds-ink-2">{PURPOSE_BLURB[purpose]}</p>
+      </div>
+      <ul className="divide-y divide-white/60">
+        {bots.map((b) => {
+          const A = ACCESS[b.access];
+          const pill = (
+            <motion.span
+              key={b.access}
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ type: "spring", stiffness: 500, damping: 24 }}
+              className={`inline-flex shrink-0 items-center gap-1 rounded-[9px] px-2.5 py-1 text-[12px] font-medium capitalize ${A.cls}`}
+            >
+              <A.icon className="h-3 w-3" /> {b.access}
+            </motion.span>
+          );
+          return (
+            <li key={b.agent} className="flex items-center justify-between gap-4 px-5 py-3">
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-baseline gap-2">
+                  <span className="font-mono text-[14px] text-ds-ink">{b.agent}</span>
+                  <span className="text-[12px] text-ds-ink-3">{b.owner}</span>
+                </div>
+                <p className="text-[12px] leading-4 text-ds-ink-3">{b.detail}</p>
+              </div>
+              {onToggle ? (
+                <button type="button" onClick={() => onToggle(b.agent)} aria-label={`Toggle ${b.agent}`} className="rounded-[10px] transition-transform active:scale-95">
+                  {pill}
+                </button>
+              ) : (
+                pill
+              )}
+            </li>
+          );
+        })}
+      </ul>
+    </section>
   );
 }

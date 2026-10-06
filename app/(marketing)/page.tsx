@@ -5,6 +5,8 @@ import { Cards } from "@/components/landing/Cards";
 import { Honest } from "@/components/landing/Honest";
 import { Pricing } from "@/components/landing/Pricing";
 import { Closing } from "@/components/landing/Closing";
+import { ScoreClimb } from "@/components/landing/ScoreClimb";
+import { RobotsPlayground } from "@/components/landing/RobotsPlayground";
 import { BRAND } from "@/lib/brand";
 import { siteUrl } from "@/lib/site";
 
@@ -27,7 +29,9 @@ export default function HomePage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
       <Hero />
       <HowItWorks />
+      <ScoreClimb />
       <Cards />
+      <RobotsPlayground />
       <Honest />
       <Pricing />
       <Closing />

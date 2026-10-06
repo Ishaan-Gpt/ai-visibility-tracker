@@ -39,9 +39,9 @@ export function ToolCard({ slug, index = 0, large = false }: { slug: string; ind
           <IcOpen className="h-4 w-4 text-ds-ink-3 transition-all duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-ds-ink" />
         </span>
         <span className="relative mt-auto pt-12">
-          <span className="font-mono text-[10.5px] uppercase tracking-[0.16em] text-ds-ink-2">{KIND_LABEL[tool.kind]}</span>
-          <span className={`mt-2 block font-serif leading-[1] text-ds-ink ${large ? "text-[40px]" : "text-[30px]"}`}>{tool.name}</span>
+          <span className={`block font-serif leading-[1] text-ds-ink ${large ? "text-[40px]" : "text-[30px]"}`}>{tool.name}</span>
           <span className="mt-2 block text-[14.5px] leading-6 text-ds-ink-2">{tool.tagline}</span>
+          <span className="mt-3 block text-[12.5px] text-ds-ink-3">{KIND_LABEL[tool.kind]}</span>
         </span>
       </Link>
     </motion.div>

@@ -1,5 +1,5 @@
 import type { BrandDoc, RollupDoc } from "@/lib/types";
-import { Glass, Kicker } from "@/components/studio/Glass";
+import { Glass } from "@/components/studio/Glass";
 
 /** Side-by-side share of prompts that mention each brand, drawn as glass tubes lying on their side. */
 function Lane({ label, value, total, ours }: { label: string; value: number; total: number; ours?: boolean }) {
@@ -25,8 +25,7 @@ export default function CompetitorCompare({ brand, latestRollup }: { brand: Bran
   const total = latestRollup?.totalPrompts ?? 0;
   return (
     <Glass className="h-full p-6">
-      <Kicker>Share of answers</Kicker>
-      <h2 className="mt-2 font-serif text-[28px] leading-none">
+      <h2 className="font-serif text-[28px] leading-none">
         You vs <span className="italic">them</span>
       </h2>
       {brand.competitors.length === 0 ? (

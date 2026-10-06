@@ -1,10 +1,12 @@
-import { Glass, Kicker } from "@/components/studio/Glass";
+import { Glass } from "@/components/studio/Glass";
 import { Dial } from "@/components/studio/Pieces";
 
 export default function ScoreCard({ score, checkedPrompts }: { score: number | null; checkedPrompts: number }) {
   return (
     <Glass className="flex h-full flex-col justify-between p-6">
-      <Kicker>Visibility score</Kicker>
+      <h2 className="font-serif text-[28px] leading-none">
+        Visibility <span className="italic">score</span>
+      </h2>
       <div className="mt-4 flex items-end justify-between gap-4">
         <p className="font-serif text-[72px] leading-[0.85] tabular-nums">
           {score === null ? <span className="italic text-ds-ink-3">–</span> : score}

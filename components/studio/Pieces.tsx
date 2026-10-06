@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, useReducedMotion } from "framer-motion";
 import { IconLoupe } from "@/components/icons/Icons";
-import { toneFor } from "@/components/ds/extras";
+import { CountUp, toneFor } from "@/components/ds/extras";
 
 /* eslint-disable @next/next/no-img-element -- decorative art */
 
@@ -60,7 +60,13 @@ export function InkWell({ label, used, limit, delay = 0 }: { label: string; used
 export function Dial({ value, size = 52, label }: { value: number | null; size?: number; label?: string }) {
   const r = size / 2 - 5;
   const c = 2 * Math.PI * r;
-  const v = value ?? 0;
+  const target = value ?? 0;
+  // Sweep from empty once mounted (and on every value change), counting the numeral up with it.
+  const [v, setV] = useState(0);
+  useEffect(() => {
+    const id = setTimeout(() => setV(target), 60);
+    return () => clearTimeout(id);
+  }, [target]);
   return (
     <div className="relative shrink-0" style={{ width: size, height: size }} title={label ? `${label}: ${value ?? "n/a"}` : undefined}>
       <svg width={size} height={size} className="-rotate-90" aria-hidden>
@@ -72,11 +78,24 @@ export function Dial({ value, size = 52, label }: { value: number | null; size?:
           return <line key={i} x1={q(size / 2 + Math.cos(a) * r1)} y1={q(size / 2 + Math.sin(a) * r1)} x2={q(size / 2 + Math.cos(a) * r2)} y2={q(size / 2 + Math.sin(a) * r2)} stroke="rgba(43,41,39,0.22)" strokeWidth="0.6" />;
         })}
         <circle cx={size / 2} cy={size / 2} r={r} fill="rgba(255,255,255,0.45)" stroke="rgba(43,41,39,0.08)" strokeWidth="2.4" />
-        {value !== null && <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={toneFor(v)} strokeWidth="2.4" strokeLinecap="round" strokeDasharray={Math.round(c * 100) / 100} strokeDashoffset={Math.round((c - (c * v) / 100) * 100) / 100} />}
+        {value !== null && (
+          <circle
+            cx={size / 2}
+            cy={size / 2}
+            r={r}
+            fill="none"
+            stroke={toneFor(target)}
+            strokeWidth="2.4"
+            strokeLinecap="round"
+            strokeDasharray={Math.round(c * 100) / 100}
+            strokeDashoffset={Math.round((c - (c * v) / 100) * 100) / 100}
+            style={{ transition: "stroke-dashoffset 1.2s var(--ds-ease), stroke 0.6s" }}
+          />
+        )}
       </svg>
       <span className="absolute inset-0 flex flex-col items-center justify-center">
         <span className="font-serif leading-none" style={{ fontSize: size * 0.36 }}>
-          {value ?? "–"}
+          {value === null ? "–" : <CountUp value={target} duration={1200} />}
         </span>
         {label && size >= 52 && <span className="mt-0.5 font-mono text-[8px] uppercase tracking-[0.12em] text-ds-ink-3">{label}</span>}
       </span>

@@ -4,7 +4,7 @@ import ScoreCard from "@/components/dashboard/ScoreCard";
 import TrendChart from "@/components/dashboard/TrendChart";
 import PromptList from "@/components/dashboard/PromptList";
 import CompetitorCompare from "@/components/dashboard/CompetitorCompare";
-import { Glass, Kicker, Masthead } from "@/components/studio/Glass";
+import { Glass, Masthead } from "@/components/studio/Glass";
 import { ArchWindow } from "@/components/studio/Pieces";
 import { Rise } from "@/components/studio/Views";
 import { IconArrow } from "@/components/icons/Icons";
@@ -49,9 +49,8 @@ export default async function VisibilityPage() {
           </Rise>
           <Rise i={2} className="lg:col-span-2">
             <Glass className="h-full p-6">
-              <Kicker>Trend</Kicker>
-              <h2 className="mb-3 mt-2 font-serif text-[28px] leading-none">
-                Over <span className="italic">time</span>
+              <h2 className="mb-3 font-serif text-[28px] leading-none">
+                Visibility <span className="italic">over time</span>
               </h2>
               <TrendChart rollups={rollups} />
             </Glass>

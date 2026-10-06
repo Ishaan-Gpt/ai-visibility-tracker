@@ -103,8 +103,9 @@ export function AuthLayout({ title, subtitle, children, footer }: { title: React
             <img src="/art/landscape.webp" alt="" aria-hidden className="absolute inset-0 h-full w-full object-cover" />
             <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,.1),transparent_40%,rgba(43,51,34,.55))]" />
             <div className="absolute inset-x-0 bottom-0 p-6 text-[#faf8f2] md:p-8">
-              <p className="font-mono text-[11px] uppercase tracking-[0.3em] text-white/85">Greetings from</p>
-              <p className="font-serif text-[64px] italic leading-[0.85] drop-shadow-[0_4px_20px_rgba(0,0,0,.25)] md:text-[96px]">seowise</p>
+              <p className="font-serif text-[40px] leading-[0.95] drop-shadow-[0_4px_20px_rgba(0,0,0,.25)] md:text-[64px]">
+                Greetings from <span className="block text-[64px] italic md:text-[96px]">seowise</span>
+              </p>
               <p className="mt-3 hidden max-w-[300px] text-[14px] leading-5 text-white/85 md:block">Higher limits, saved client reports and AI visibility tracking. Free, no card.</p>
             </div>
           </div>

@@ -223,3 +223,13 @@ body {
       radial-gradient(circle 13px at calc(100% - 200px) 100%, transparent 12.5px, #000 13px) bottom / 100% 51% no-repeat;
   }
 }
+
+/* Intro is hidden before first paint when it has already played (or motion is reduced). */
+html[data-intro="done"] .sw-intro {
+  display: none;
+}
+@media print {
+  .sw-intro {
+    display: none !important;
+  }
+}

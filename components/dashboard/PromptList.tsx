@@ -1,6 +1,6 @@
 import type { PromptDoc, RunDoc } from "@/lib/types";
 import { addPrompt, togglePrompt } from "@/app/app/onboarding/actions";
-import { Glass, Kicker } from "@/components/studio/Glass";
+import { Glass } from "@/components/studio/Glass";
 import { IcPause, IcPlay, IcPlus } from "@/components/icons/Studio";
 
 function latestRunFor(promptId: string, runs: RunDoc[]): RunDoc | undefined {
@@ -29,8 +29,7 @@ export default function PromptList({ prompts, runs, maxPrompts }: { prompts: Pro
     <Glass className="h-full p-6">
       <div className="flex items-end justify-between">
         <div>
-          <Kicker>Tracked prompts</Kicker>
-          <h2 className="mt-2 font-serif text-[28px] leading-none">
+          <h2 className="font-serif text-[28px] leading-none">
             What people <span className="italic">ask</span>
           </h2>
         </div>

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
-import Link from "next/link";
 import { AnimatePresence, motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
 import { ToolGlyph } from "@/components/icons/ToolGlyphs";
 import { IconChevron } from "@/components/icons/Icons";
@@ -17,7 +16,7 @@ const CHIPS: Record<ToolKind, string[]> = {
 };
 
 /** Centered serif hero: the tool's own glyph sits in a glass medallion above the headline. */
-export function ToolHero({ slug, name, headline, tagline, kind }: { slug: string; name: string; headline: string; tagline: string; kind: ToolKind }) {
+export function ToolHero({ slug, headline, tagline, kind }: { slug: string; name?: string; headline: string; tagline: string; kind: ToolKind }) {
   const reduce = useReducedMotion();
   const fade = (d: number) => ({
     initial: reduce ? false : { opacity: 0, y: 14, filter: "blur(6px)" },
@@ -27,14 +26,7 @@ export function ToolHero({ slug, name, headline, tagline, kind }: { slug: string
   return (
     <section className="no-print relative pt-12 sm:pt-16" data-print-hide>
       <div className="mx-auto max-w-[1000px] px-4 text-center">
-        <motion.div {...fade(0)} className="flex items-center justify-center gap-3">
-          <Link href="/tools" className="rounded-md bg-[#e9e3d5] px-2.5 py-1 text-[12.5px] text-ds-ink-2 transition-colors hover:text-ds-ink">
-            Tools
-          </Link>
-          <span className="text-ds-ink-3">/</span>
-          <span className="rounded-md bg-[#e9e3d5] px-2.5 py-1 text-[12.5px] text-ds-ink">{name}</span>
-        </motion.div>
-        <motion.div {...fade(0.1)} className="mx-auto mt-8 flex h-[76px] w-[76px] items-center justify-center rounded-full">
+        <motion.div {...fade(0.1)} className="mx-auto flex h-[76px] w-[76px] items-center justify-center rounded-full">
           <span className="glass-strong relative flex h-[76px] w-[76px] items-center justify-center rounded-full">
             <svg viewBox="0 0 76 76" className="absolute inset-0 h-full w-full animate-[spin_40s_linear_infinite]" aria-hidden>
               {Array.from({ length: 36 }, (_, i) => (

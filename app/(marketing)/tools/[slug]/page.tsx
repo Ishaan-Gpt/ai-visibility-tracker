@@ -5,7 +5,6 @@ import { ToolMount } from "@/components/tools/ToolMount";
 import { ToolStage, ToolHero, ToolFaq } from "@/components/tools/ToolFrame";
 import { ToolGlyph } from "@/components/icons/ToolGlyphs";
 import { IcOpen } from "@/components/icons/Studio";
-import { IconSpark } from "@/components/icons/Icons";
 import { TOOLS, toolBySlug, toolHref } from "@/lib/tools/registry";
 import { siteUrl } from "@/lib/site";
 import { BRAND } from "@/lib/brand";
@@ -73,10 +72,7 @@ export default async function ToolPage({ params }: PageProps<"/tools/[slug]">) {
       <section className="no-print py-24 sm:py-32" data-print-hide>
         <div className="mx-auto max-w-[1200px] px-4 sm:px-6">
           <div className="text-center">
-            <p className="inline-flex items-center gap-2 rounded-md bg-[#e9e3d5] px-2.5 py-1 text-[12.5px] text-ds-ink-2">
-              <IconSpark className="h-3.5 w-3.5 text-ds-accent-ink" /> The AI-search lens
-            </p>
-            <h2 className="mt-5 font-serif text-[44px] leading-[1.02] tracking-[-0.025em] sm:text-[64px]">
+            <h2 className="font-serif text-[44px] leading-[1.02] tracking-[-0.025em] sm:text-[64px]">
               <span className="block">Ready for ChatGPT, Gemini</span>
               <span className="block italic">and Perplexity?</span>
             </h2>

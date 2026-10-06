@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
-import { IconChevron as ChevronDown, IconSpark as Sparkles } from "@/components/icons/Icons";
+import { IconChevron as ChevronDown } from "@/components/icons/Icons";
 import { IcOpen as ArrowUpRight } from "@/components/icons/Studio";
 import { Dial } from "@/components/studio/Pieces";
 import { SeverityIcon, verdictFor } from "@/components/ds/extras";
@@ -85,26 +85,25 @@ export function PageAuditWorkspace({ initialUrl = "" }: { initialUrl?: string } 
 }
 
 /** Verdict as a glass certificate: two bezel dials, a serif verdict, the facts as small engraved chips. */
-function Verdict({ report, savedId, onRerun }: { report: PageAuditReport; savedId: string | null; onRerun: () => void }) {
+export function Verdict({ report, savedId = null, onRerun, demo = false, compact = false }: { report: PageAuditReport; savedId?: string | null; onRerun?: () => void; demo?: boolean; compact?: boolean }) {
   const v = verdictFor(report.score, report.ai.score);
   return (
     <section data-print-card className="glass-strong relative overflow-hidden rounded-[28px] p-6 sm:p-9">
       <div aria-hidden className="pointer-events-none absolute -right-24 -top-28 h-80 w-80 rounded-full bg-[radial-gradient(closest-side,rgba(242,169,127,.5),transparent)] print:hidden" />
       <div aria-hidden className="pointer-events-none absolute -bottom-32 -left-20 h-72 w-72 rounded-full bg-[radial-gradient(closest-side,rgba(201,214,219,.6),transparent)] print:hidden" />
-      <div className="relative grid gap-8 lg:grid-cols-[auto_1fr] lg:items-center">
+      <div className={`relative grid gap-8 ${compact ? "" : "lg:grid-cols-[auto_1fr] lg:items-center"}`}>
         <div className="flex gap-4 sm:gap-6">
           <div className="text-center">
-            <Dial value={report.score} size={128} />
+            <Dial value={report.score} size={compact ? 108 : 128} />
             <p className="mt-2 font-mono text-[10.5px] uppercase tracking-[0.16em] text-ds-ink-2">SEO score</p>
           </div>
           <div className="text-center">
-            <Dial value={report.ai.score} size={128} />
+            <Dial value={report.ai.score} size={compact ? 108 : 128} />
             <p className="mt-2 font-mono text-[10.5px] uppercase tracking-[0.16em] text-ds-ink-2">AI ready</p>
           </div>
         </div>
         <div className="min-w-0">
-          <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-ds-ink-2">Verdict</p>
-          <h2 className="mt-2 font-serif text-[44px] leading-[0.98] sm:text-[56px]">
+          <h2 className="font-serif text-[44px] leading-[0.98] sm:text-[56px]">
             {v.head.replace(/\.$/, "").split(" ").slice(0, -1).join(" ")} <span className="italic">{v.head.replace(/\.$/, "").split(" ").slice(-1)}.</span>
           </h2>
           <p className="mt-3 max-w-[560px] text-[16px] leading-6 text-ds-ink-2">{v.body}</p>
@@ -124,7 +123,7 @@ function Verdict({ report, savedId, onRerun }: { report: PageAuditReport; savedI
               </span>
             ))}
           </div>
-          <div className="mt-6">
+          {!demo && <div className="mt-6">
             <ResultActions
               tool="page-audit"
               title={report.facts.title ?? hostOf(report.finalUrl)}
@@ -136,14 +135,15 @@ function Verdict({ report, savedId, onRerun }: { report: PageAuditReport; savedI
               onRerun={onRerun}
               initialSavedId={savedId}
             />
-          </div>
+          </div>}
         </div>
       </div>
     </section>
   );
 }
 
-function TopFixes({ report }: { report: PageAuditReport }) {
+/** `fixed` + `onToggle` turn the list into the interactive demo used on the landing page. */
+export function TopFixes({ report, fixed, onToggle }: { report: PageAuditReport; fixed?: Set<number>; onToggle?: (i: number) => void }) {
   if (report.topFixes.length === 0) {
     return (
       <section data-print-card className="glass rounded-[24px] p-6">
@@ -165,10 +165,29 @@ function TopFixes({ report }: { report: PageAuditReport }) {
           <motion.li
             key={f.title}
             initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.15 + i * 0.07, ease: EASE }}
-            className="group grid grid-cols-[auto_1fr] gap-4 glass rounded-[20px] p-4 transition-transform duration-500 ease-[var(--ds-ease)] hover:-translate-y-0.5 sm:p-5"
+            animate={{ opacity: fixed?.has(i) ? 0.62 : 1, y: 0 }}
+            transition={{ duration: 0.5, delay: fixed ? 0 : 0.15 + i * 0.07, ease: EASE }}
+            onClick={onToggle ? () => onToggle(i) : undefined}
+            role={onToggle ? "button" : undefined}
+            aria-pressed={onToggle ? !!fixed?.has(i) : undefined}
+            tabIndex={onToggle ? 0 : undefined}
+            onKeyDown={onToggle ? (e) => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), onToggle(i)) : undefined}
+            className={`group relative grid grid-cols-[auto_1fr] gap-4 glass rounded-[20px] p-4 transition-transform duration-500 ease-[var(--ds-ease)] hover:-translate-y-0.5 sm:p-5 ${onToggle ? "cursor-pointer select-none" : ""}`}
           >
+            {onToggle && (
+              <motion.span
+                initial={false}
+                animate={{ scale: fixed?.has(i) ? 1 : 0.6, opacity: fixed?.has(i) ? 1 : 0.35 }}
+                transition={{ type: "spring", stiffness: 500, damping: 22 }}
+                className={`absolute right-4 top-4 flex h-7 w-7 items-center justify-center rounded-full ${fixed?.has(i) ? "bg-[#5c7c68] text-white" : "border border-dashed border-ds-ink-3"}`}
+              >
+                {fixed?.has(i) && (
+                  <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                    <path d="m5 12.6 4.3 4L19.2 6.8" />
+                  </svg>
+                )}
+              </motion.span>
+            )}
             <span className="font-serif text-[40px] italic leading-none text-ds-ink-3 transition-colors group-hover:text-ds-accent-ink">{String(i + 1).padStart(2, "0")}</span>
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
@@ -178,7 +197,7 @@ function TopFixes({ report }: { report: PageAuditReport }) {
                 <span className={`h-1.5 w-1.5 rounded-full ${f.severity === "error" ? "bg-ds-danger" : f.severity === "warning" ? "bg-ds-warning" : "bg-ds-ink-3"}`} />
                 <span className="text-[13px] capitalize text-ds-ink-3">{f.severity === "info" ? "opportunity" : f.severity}</span>
               </div>
-              <p className="mt-1.5 text-[16px] font-medium leading-6 text-ds-ink">{f.title}</p>
+              <p className={`mt-1.5 pr-8 text-[16px] font-medium leading-6 text-ds-ink transition-all ${fixed?.has(i) ? "line-through decoration-ds-accent decoration-2" : ""}`}>{f.title}</p>
               <p className="mt-1 text-[15px] leading-6 text-ds-ink-2">{f.fix}</p>
             </div>
           </motion.li>
@@ -188,16 +207,13 @@ function TopFixes({ report }: { report: PageAuditReport }) {
   );
 }
 
-function AiLens({ report }: { report: PageAuditReport }) {
+export function AiLens({ report }: { report: PageAuditReport }) {
   const max = report.ai.checks.reduce((s, c) => s + c.weight, 0);
   return (
     <section data-print-card className="glass rounded-[24px] p-5 sm:p-7">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <p className="inline-flex items-center gap-2 font-mono text-[12px] uppercase tracking-[0.14em] text-ds-accent-ink">
-            <Sparkles className="h-3.5 w-3.5" /> AI-search lens
-          </p>
-          <h3 className="mt-2 font-serif text-[34px] leading-[1.02]">
+          <h3 className="font-serif text-[34px] leading-[1.02]">
             Can ChatGPT, Gemini and Perplexity <span className="italic">use</span> this page?
           </h3>
         </div>

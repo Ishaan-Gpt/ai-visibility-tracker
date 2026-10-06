@@ -35,8 +35,7 @@ export default async function OnboardingPage({ searchParams }: { searchParams: P
       <main className="relative z-10 flex flex-1 items-center justify-center px-4 py-10">
         <div className="glass-strong grid w-full max-w-[960px] gap-3 rounded-[28px] p-3 md:grid-cols-[0.8fr_1fr]">
           <ArchWindow className="hidden min-h-[560px] md:block">
-            <p className="font-mono text-[11px] uppercase tracking-[0.3em] text-white/85">AI Visibility</p>
-            <p className="mt-2 font-serif text-[38px] leading-[1]">
+            <p className="font-serif text-[38px] leading-[1]">
               Be the <span className="italic">answer</span>
             </p>
             <p className="mt-2 max-w-[260px] text-[13.5px] leading-5 text-white/85">We ask Gemini, with live Google Search grounding, whether it names you, on a schedule.</p>

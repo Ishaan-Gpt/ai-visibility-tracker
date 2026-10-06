@@ -22,7 +22,7 @@ function when(ts: number, now: number | null) {
   return new Date(ts).toLocaleDateString(undefined, { day: "numeric", month: "short" });
 }
 
-export function ReportList({ items, compact = false }: { items: HistoryItem[]; compact?: boolean }) {
+export function ReportList({ items, compact = false, demo = false }: { items: HistoryItem[]; compact?: boolean; demo?: boolean }) {
   const router = useRouter();
   const [rows, setRows] = useState(items);
   const [filter, setFilter] = useState<"all" | HistoryTool>("all");
@@ -86,7 +86,7 @@ export function ReportList({ items, compact = false }: { items: HistoryItem[]; c
                 className="group relative flex items-center gap-3 border-b border-white/60 px-4 py-4 last:border-b-0 sm:gap-5 sm:px-6"
               >
                 <span className="pointer-events-none absolute inset-0 bg-white/0 transition-colors duration-300 group-hover:bg-white/35" />
-                <Link href={`/tools/${meta.slug}?report=${r.id}`} className="relative flex min-w-0 flex-1 items-center gap-4 sm:gap-5">
+                <Link href={demo ? `/tools/${meta.slug}` : `/tools/${meta.slug}?report=${r.id}`} className="relative flex min-w-0 flex-1 items-center gap-4 sm:gap-5">
                   <span className="glass-inset hidden h-11 w-11 shrink-0 items-center justify-center rounded-[14px] sm:flex">
                     <ToolGlyph slug={meta.slug} className="h-5 w-5" />
                   </span>
@@ -103,7 +103,7 @@ export function ReportList({ items, compact = false }: { items: HistoryItem[]; c
                   <span className="hidden w-[84px] shrink-0 text-right text-[12.5px] text-ds-ink-2 md:block">{when(r.createdAt, now)}</span>
                   <IcOpen className="hidden h-4 w-4 shrink-0 text-ds-ink-3 transition-all duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-ds-ink sm:block" />
                 </Link>
-                <button
+                {!demo && <button
                   type="button"
                   onClick={() => remove(r.id)}
                   disabled={busy === r.id}
@@ -111,7 +111,7 @@ export function ReportList({ items, compact = false }: { items: HistoryItem[]; c
                   className="group/bin relative rounded-[12px] p-2 text-ds-ink-3 transition-colors hover:bg-[#c92a2a]/10 hover:text-[#c92a2a]"
                 >
                   {busy === r.id ? <IconSpinner className="h-[18px] w-[18px] animate-spin" /> : <IcBin className="h-[18px] w-[18px]" />}
-                </button>
+                </button>}
               </motion.li>
             );
           })}
