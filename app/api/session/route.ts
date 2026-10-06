@@ -43,8 +43,25 @@ export async function POST(req: NextRequest) {
   return res;
 }
 
-export async function DELETE() {
-  const res = NextResponse.json({ ok: true });
-  res.cookies.delete(SESSION_COOKIE_NAME);
+export async function DELETE(req: NextRequest) {
+  // Revoke server-side too, so a copied cookie stops working after sign-out.
+  const cookie = req.cookies.get(SESSION_COOKIE_NAME)?.value;
+  if (cookie) {
+    try {
+      const decoded = await adminAuth().verifySessionCookie(cookie);
+      await adminAuth().revokeRefreshTokens(decoded.sub);
+    } catch {
+      /* already invalid: nothing to revoke */
+    }
+  }
+  const res = NextResponse.json({ ok: true }, { headers: { "Cache-Control": "no-store" } });
+  // Must match the attributes it was set with (Path=/), or the browser keeps the original cookie.
+  res.cookies.set(SESSION_COOKIE_NAME, "", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+    maxAge: 0,
+  });
   return res;
 }

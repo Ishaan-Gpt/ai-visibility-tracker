@@ -1,18 +1,20 @@
 import "server-only";
+import { cache } from "react";
 import { adminDb } from "@/lib/firebase/admin";
 import { PLAN_LIMITS, type BrandDoc, type PromptDoc, type RunDoc, type RollupDoc, type UserDoc } from "@/lib/types";
 
-export async function getUser(uid: string): Promise<UserDoc | null> {
+/** Cached per request: the layout, page and quota helpers all ask for the same user doc. */
+export const getUser = cache(async (uid: string): Promise<UserDoc | null> => {
   const snap = await adminDb().collection("users").doc(uid).get();
   return snap.exists ? (snap.data() as UserDoc) : null;
-}
+});
 
-export async function getBrandForUser(uid: string): Promise<BrandDoc | null> {
+export const getBrandForUser = cache(async (uid: string): Promise<BrandDoc | null> => {
   const snap = await adminDb().collection("brands").where("ownerUid", "==", uid).limit(1).get();
   if (snap.empty) return null;
   const doc = snap.docs[0];
   return { id: doc.id, ...(doc.data() as Omit<BrandDoc, "id">) };
-}
+});
 
 export async function getPrompts(brandId: string): Promise<PromptDoc[]> {
   const snap = await adminDb()

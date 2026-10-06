@@ -2,15 +2,14 @@
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { signOut } from "firebase/auth";
-import { auth } from "@/lib/firebase/client";
 import { LogoMark } from "@/components/brand/Logo";
 import { IcCompass, IcDoor, IcDossier, IcSeer, IcTicket, IcWindow } from "@/components/icons/Studio";
 import { ToolGlyph } from "@/components/icons/ToolGlyphs";
+import { IconSpinner } from "@/components/icons/Icons";
 import { Backdrop } from "@/components/studio/Backdrop";
-import { resetViewerCache } from "@/components/viewer/useViewer";
+import { signOutEverywhere } from "@/components/viewer/signOut";
 import { TOOLS, toolHref } from "@/lib/tools/registry";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
@@ -89,7 +88,7 @@ function ToolsPopover({ vertical }: { vertical: boolean }) {
   );
 }
 
-function Account({ email, planLabel, vertical, onSignOut }: { email: string; planLabel: string; vertical: boolean; onSignOut: () => void }) {
+function Account({ email, planLabel, vertical, onSignOut, signingOut }: { email: string; planLabel: string; vertical: boolean; onSignOut: () => void; signingOut: boolean }) {
   const [open, setOpen] = useState(false);
   const ref = useOutside(open, () => setOpen(false));
   return (
@@ -117,8 +116,14 @@ function Account({ email, planLabel, vertical, onSignOut }: { email: string; pla
               <p className="text-[12.5px] text-ds-ink-2">{planLabel} plan</p>
             </div>
             <div className="my-1 h-px bg-ds-line" />
-            <button type="button" onClick={onSignOut} className="group flex w-full items-center gap-2.5 rounded-[12px] px-3 py-2 text-left text-[14px] text-ds-ink transition-colors hover:bg-white/60">
-              <IcDoor className="h-[18px] w-[18px]" /> Sign out
+            <Link href="/" onClick={() => setOpen(false)} className="flex w-full items-center gap-2.5 rounded-[12px] px-3 py-2 text-[14px] text-ds-ink transition-colors hover:bg-white/60">
+              <LogoMark className="h-[18px] w-[18px]" /> seowise home
+            </Link>
+            <Link href="/tools" onClick={() => setOpen(false)} className="flex w-full items-center gap-2.5 rounded-[12px] px-3 py-2 text-[14px] text-ds-ink transition-colors hover:bg-white/60">
+              <IcCompass className="h-[18px] w-[18px]" /> All tools
+            </Link>
+            <button type="button" onClick={onSignOut} disabled={signingOut} className="group flex w-full items-center gap-2.5 rounded-[12px] px-3 py-2 text-left text-[14px] text-ds-ink transition-colors hover:bg-white/60 disabled:opacity-60">
+              {signingOut ? <IconSpinner className="h-[18px] w-[18px] animate-spin" /> : <IcDoor className="h-[18px] w-[18px]" />} {signingOut ? "Signing out…" : "Sign out"}
             </button>
           </motion.div>
         )}
@@ -130,15 +135,12 @@ function Account({ email, planLabel, vertical, onSignOut }: { email: string; pla
 export function AppShell({ email, planLabel, children, previewPath }: { email: string; planLabel: string; isPaid?: boolean; children: ReactNode; previewPath?: string }) {
   const realPath = usePathname();
   const pathname = previewPath ?? realPath;
-  const router = useRouter();
   const isActive = (href: string) => (href === "/app" ? pathname === "/app" : pathname.startsWith(href));
 
+  const [signingOut, setSigningOut] = useState(false);
   async function logout() {
-    await signOut(auth).catch(() => {});
-    await fetch("/api/session", { method: "DELETE" });
-    resetViewerCache();
-    router.push("/");
-    router.refresh();
+    setSigningOut(true);
+    await signOutEverywhere("/");
   }
 
   return (
@@ -154,8 +156,11 @@ export function AppShell({ email, planLabel, children, previewPath }: { email: s
         className="no-print glass fixed left-5 top-1/2 z-40 hidden -translate-y-1/2 flex-col items-center gap-1.5 rounded-[26px] p-2.5 lg:flex"
         data-print-hide
       >
-        <Link href="/" aria-label="seowise home" className="mb-2 flex h-12 w-12 items-center justify-center text-ds-ink transition-transform duration-500 hover:rotate-[-12deg]">
-          <LogoMark className="h-6 w-6" />
+        <Link href="/" aria-label="seowise home" className="group relative mb-2 flex h-12 w-12 items-center justify-center text-ds-ink">
+          <LogoMark className="h-6 w-6 transition-transform duration-500 group-hover:rotate-[-12deg]" />
+          <span className="glass-strong pointer-events-none absolute left-[calc(100%+14px)] top-1/2 -translate-y-1/2 translate-x-[-6px] whitespace-nowrap rounded-[10px] px-2.5 py-1.5 text-[13px] opacity-0 transition-[opacity,transform] duration-300 group-hover:translate-x-0 group-hover:opacity-100">
+            Back to home
+          </span>
         </Link>
         {NAV.map((n) => (
           <DockItem key={n.href} {...n} active={isActive(n.href)} vertical />
@@ -163,7 +168,7 @@ export function AppShell({ email, planLabel, children, previewPath }: { email: s
         <span className="my-1.5 h-px w-7 bg-ds-ink/10" />
         <ToolsPopover vertical />
         <div className="mt-2">
-          <Account email={email} planLabel={planLabel} vertical onSignOut={logout} />
+          <Account email={email} planLabel={planLabel} vertical onSignOut={logout} signingOut={signingOut} />
         </div>
       </motion.nav>
 
@@ -173,7 +178,7 @@ export function AppShell({ email, planLabel, children, previewPath }: { email: s
           <LogoMark className="h-5 w-5" />
           <span className="font-serif text-[20px] italic leading-none">seowise</span>
         </Link>
-        <Account email={email} planLabel={planLabel} vertical={false} onSignOut={logout} />
+        <Account email={email} planLabel={planLabel} vertical={false} onSignOut={logout} signingOut={signingOut} />
       </div>
       <nav aria-label="Studio" className="no-print glass fixed bottom-4 left-1/2 z-40 flex -translate-x-1/2 items-center gap-1 rounded-[24px] p-2 lg:hidden" data-print-hide>
         {NAV.map((n) => (

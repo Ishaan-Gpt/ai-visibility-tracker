@@ -233,3 +233,8 @@ html[data-intro="done"] .sw-intro {
     display: none !important;
   }
 }
+
+@keyframes scan {
+  0%, 100% { left: 0%; transform: translateX(-50%); }
+  50% { left: 100%; transform: translateX(-50%); }
+}

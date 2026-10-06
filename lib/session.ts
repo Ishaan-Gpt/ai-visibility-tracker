@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import { cookies } from "next/headers";
 import { adminAuth } from "@/lib/firebase/admin";
 
@@ -9,15 +10,18 @@ export async function createSessionCookie(idToken: string): Promise<string> {
   return adminAuth().createSessionCookie(idToken, { expiresIn: SESSION_MAX_AGE_MS });
 }
 
-/** Verifies the session cookie server-side. Returns null if missing/invalid — never throws. */
-export async function getCurrentUser() {
+/**
+ * Verifies the session cookie server-side. Returns null if missing/invalid — never throws.
+ * Cached per request so the layout, page and helpers share one verification. Revocation is checked
+ * (sign-out revokes tokens), which costs one Firebase call per request rather than per component.
+ */
+export const getCurrentUser = cache(async () => {
   const cookieStore = await cookies();
   const sessionCookie = cookieStore.get(SESSION_COOKIE_NAME)?.value;
   if (!sessionCookie) return null;
   try {
-    const decoded = await adminAuth().verifySessionCookie(sessionCookie, true);
-    return decoded;
+    return await adminAuth().verifySessionCookie(sessionCookie, true);
   } catch {
     return null;
   }
-}
+});

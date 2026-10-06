@@ -11,7 +11,7 @@ import { toolBySlug } from "@/lib/tools/registry";
  */
 
 const EASE = [0.76, 0, 0.24, 1] as const;
-const COVER_MS = 620;
+const COVER_MS = 420;
 
 function titleFor(path: string): string {
   if (path === "/") return "seowise";
@@ -37,41 +37,70 @@ export function PageTransition() {
   const reduce = useReducedMotion();
   const [phase, setPhase] = useState<"idle" | "cover" | "reveal">("idle");
   const [title, setTitle] = useState("");
-  const pending = useRef<string | null>(null);
+  const [slow, setSlow] = useState(false);
+  const started = useRef(0);
+  const target = useRef<string | null>(null);
+  const from = useRef<string | null>(null);
 
-  // Intercept internal navigations so the sheet can cover first.
   useEffect(() => {
-    if (reduce) return;
-    const onClick = (e: MouseEvent) => {
-      if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    const internal = (e: Event) => {
       const a = (e.target as Element | null)?.closest?.("a");
-      if (!a || a.target === "_blank" || a.hasAttribute("download")) return;
-      const href = a.getAttribute("href");
-      if (!href || !href.startsWith("/") || href.startsWith("//")) return;
-      const url = new URL(href, location.href);
-      if (url.pathname === location.pathname) return; // same page (hash links etc.)
-      e.preventDefault();
-      setTitle(titleFor(url.pathname));
-      setPhase("cover");
-      pending.current = url.pathname;
-      setTimeout(() => router.push(url.pathname + url.search + url.hash), COVER_MS);
+      const href = a?.getAttribute("href");
+      if (!a || !href || !href.startsWith("/") || href.startsWith("//") || a.target === "_blank" || a.hasAttribute("download")) return null;
+      return new URL(href, location.href);
     };
+    // Warm the route before the click lands.
+    const warm = (e: Event) => {
+      const url = internal(e);
+      if (url && url.pathname !== location.pathname) router.prefetch(url.pathname + url.search);
+    };
+    // Navigate immediately; the sheet only dresses the wait, it never adds to it.
+    const onClick = (e: MouseEvent) => {
+      if (reduce || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      const url = internal(e);
+      if (!url || url.pathname === location.pathname) return;
+      e.preventDefault();
+      target.current = url.pathname;
+      from.current = location.pathname;
+      started.current = performance.now();
+      setTitle(titleFor(url.pathname));
+      setSlow(false);
+      setPhase("cover");
+      router.push(url.pathname + url.search + url.hash);
+    };
+    document.addEventListener("pointerenter", warm, true);
+    document.addEventListener("touchstart", warm, { capture: true, passive: true });
+    document.addEventListener("focusin", warm, true);
     document.addEventListener("click", onClick, true);
-    return () => document.removeEventListener("click", onClick, true);
+    return () => {
+      document.removeEventListener("pointerenter", warm, true);
+      document.removeEventListener("touchstart", warm, true);
+      document.removeEventListener("focusin", warm, true);
+      document.removeEventListener("click", onClick, true);
+    };
   }, [router, reduce]);
 
-  // Once the destination is on screen, lift the sheet. A fallback lifts it even if navigation is redirected.
+  // Lift as soon as the new route has rendered and the sheet has fully risen. Mark "slow" if it takes a while.
   useEffect(() => {
     if (phase !== "cover") return;
-    const arrived = pending.current !== null && pathname !== null && pathname !== "" && (pathname === pending.current || pathname !== location.pathname);
-    const t = setTimeout(() => setPhase("reveal"), arrived ? 220 : 4000);
-    return () => clearTimeout(t);
+    // Arrived = the route changed away from where the click happened (covers redirects too).
+    if (from.current !== null && pathname !== from.current) {
+      const wait = Math.max(0, COVER_MS + 60 - (performance.now() - started.current));
+      const t = setTimeout(() => setPhase("reveal"), wait);
+      return () => clearTimeout(t);
+    }
+    const slowT = setTimeout(() => setSlow(true), COVER_MS + 500);
+    const giveUp = setTimeout(() => setPhase("reveal"), 12000);
+    return () => {
+      clearTimeout(slowT);
+      clearTimeout(giveUp);
+    };
   }, [pathname, phase]);
 
   useEffect(() => {
     if (phase !== "reveal") return;
-    pending.current = null;
-    const t = setTimeout(() => setPhase("idle"), 900);
+    target.current = null;
+    const t = setTimeout(() => setPhase("idle"), 600);
     return () => clearTimeout(t);
   }, [phase]);
 
@@ -88,14 +117,14 @@ export function PageTransition() {
               ? { y: "0%", borderTopLeftRadius: "0% 0px", borderTopRightRadius: "0% 0px", borderBottomLeftRadius: "0% 0px", borderBottomRightRadius: "0% 0px" }
               : { y: "-100%", borderBottomLeftRadius: "50% 140px", borderBottomRightRadius: "50% 140px" }
           }
-          transition={{ duration: phase === "cover" ? COVER_MS / 1000 : 0.85, ease: EASE }}
+          transition={{ duration: phase === "cover" ? COVER_MS / 1000 : 0.55, ease: EASE }}
         >
           <div aria-hidden className="absolute inset-0 bg-[radial-gradient(70%_60%_at_50%_100%,rgba(242,169,127,0.28),transparent)]" />
           <div className="relative w-[min(560px,80vw)] text-center">
             <motion.p
               initial={{ opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.25, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+              transition={{ delay: 0.15, duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
               className="font-serif text-[56px] italic leading-none text-ds-ink sm:text-[80px]"
             >
               {title}
@@ -105,8 +134,9 @@ export function PageTransition() {
                 className="absolute left-0 top-1/2 h-px bg-ds-ink/25"
                 initial={{ width: "0%" }}
                 animate={{ width: "100%" }}
-                transition={{ delay: 0.2, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+                transition={{ delay: 0.15, duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
               />
+              {slow && <p className="absolute left-0 right-0 top-9 text-center text-[13px] text-ds-ink-2">Loading…</p>}
               <motion.svg
                 viewBox="0 0 24 24"
                 className="absolute top-0 h-6 w-6 -translate-x-1/2 text-ds-ink"
@@ -115,8 +145,8 @@ export function PageTransition() {
                 strokeWidth="1.6"
                 strokeLinecap="round"
                 initial={{ left: "0%" }}
-                animate={{ left: "100%" }}
-                transition={{ delay: 0.2, duration: 0.9, ease: [0.65, 0, 0.35, 1] }}
+                animate={slow ? { left: ["100%", "0%", "100%"] } : { left: "100%" }}
+                transition={slow ? { duration: 1.8, ease: "easeInOut", repeat: Infinity } : { delay: 0.15, duration: 0.7, ease: [0.65, 0, 0.35, 1] }}
               >
                 <circle cx="10.5" cy="10.5" r="6" fill="#f2a97f" fillOpacity=".35" />
                 <path d="m15 15 4.6 4.6" strokeWidth="2.2" />
