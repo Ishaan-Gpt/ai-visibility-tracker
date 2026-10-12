@@ -93,20 +93,40 @@ export function normalizeUrl(input: string): URL {
   return url;
 }
 
-function once(url: URL, timeoutMs: number, maxBytes: number): Promise<Omit<SafeResponse, "redirects" | "finalUrl">> {
+export const DEFAULT_UA = "Mozilla/5.0 (compatible; seowise-Bot/1.0; +https://tools.eegnite.com/bot)";
+/** A current desktop Chrome UA, used as the "normal visitor" baseline when comparing how a server treats bots. */
+export const BROWSER_UA =
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36";
+
+export interface SafeFetchOptions {
+  timeoutMs?: number;
+  maxBytes?: number;
+  maxRedirects?: number;
+  /** HEAD skips the body; some servers mishandle it, so callers fall back to GET on 405/501. */
+  method?: "GET" | "HEAD";
+  userAgent?: string;
+  headers?: Record<string, string>;
+}
+
+type OnceOptions = Required<Pick<SafeFetchOptions, "timeoutMs" | "maxBytes" | "method" | "userAgent">> & { headers?: Record<string, string> };
+
+function once(url: URL, o: OnceOptions): Promise<Omit<SafeResponse, "redirects" | "finalUrl">> {
+  const { timeoutMs, maxBytes } = o;
   return new Promise((resolve, reject) => {
     const started = Date.now();
     const lib = url.protocol === "https:" ? https : http;
     const req = lib.request(
       url,
       {
-        method: "GET",
+        method: o.method,
         lookup: guardedLookup as unknown as net.LookupFunction,
         timeout: timeoutMs,
         headers: {
-          "user-agent": "Mozilla/5.0 (compatible; seowise-Bot/1.0; +https://tools.eegnite.com/bot)",
+          "user-agent": o.userAgent,
           accept: "text/html,application/xhtml+xml,text/plain;q=0.9,*/*;q=0.5",
           "accept-encoding": "gzip, br, deflate",
+          "accept-language": "en-US,en;q=0.9",
+          ...o.headers,
         },
       },
       (res) => {
@@ -163,17 +183,15 @@ function once(url: URL, timeoutMs: number, maxBytes: number): Promise<Omit<SafeR
   });
 }
 
-export async function safeFetch(
-  input: string,
-  opts: { timeoutMs?: number; maxBytes?: number; maxRedirects?: number } = {},
-): Promise<SafeResponse> {
-  const { timeoutMs = 10_000, maxBytes = 2_000_000, maxRedirects = 5 } = opts;
+export async function safeFetch(input: string, opts: SafeFetchOptions = {}): Promise<SafeResponse> {
+  const { timeoutMs = 10_000, maxBytes = 2_000_000, maxRedirects = 5, method = "GET", userAgent = DEFAULT_UA, headers } = opts;
   let url = normalizeUrl(input);
   const redirects: string[] = [];
   for (let hop = 0; hop <= maxRedirects; hop++) {
-    const res = await once(url, timeoutMs, maxBytes);
+    const res = await once(url, { timeoutMs, maxBytes, method, userAgent, headers });
     const loc = res.headers["location"];
-    if (res.status >= 300 && res.status < 400 && loc) {
+    // maxRedirects: 0 means "report the redirect itself" (used to inspect hops), not "fail".
+    if (res.status >= 300 && res.status < 400 && loc && maxRedirects > 0) {
       redirects.push(`${res.status} ${url.href}`);
       url = normalizeUrl(new URL(loc, url).href);
       continue;

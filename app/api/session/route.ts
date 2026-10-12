@@ -3,7 +3,7 @@ import { createSessionCookie, SESSION_COOKIE_NAME } from "@/lib/session";
 import { adminDb, adminAuth } from "@/lib/firebase/admin";
 
 export async function POST(req: NextRequest) {
-  const { idToken } = await req.json();
+  const { idToken } = ((await req.json().catch(() => ({}))) ?? {}) as { idToken?: unknown };
   if (!idToken || typeof idToken !== "string") {
     return NextResponse.json({ error: "Missing idToken" }, { status: 400 });
   }

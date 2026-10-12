@@ -85,3 +85,25 @@ export async function consumeQuota(
   }
   return { ok: true, quota: { tier: viewer.tier, limit, used, remaining: limit - used } };
 }
+
+/**
+ * Gives back a run consumed by `consumeQuota` when the failure was not the user's result to keep (the site was
+ * unreachable, a typo'd domain, our own error). Best-effort: never throws. Returns the corrected quota.
+ */
+export async function refundQuota(req: NextRequest, tool: QuotaTool, viewer: Viewer, quota: Quota): Promise<Quota> {
+  const day = new Date().toISOString().slice(0, 10);
+  const subject = viewer.uid ? `u_${viewer.uid}` : `ip_${ipKey(clientIp(req))}`;
+  const id = `${subject}_${tool}_${day}`;
+  try {
+    const ref = adminDb().collection("quota").doc(id);
+    await adminDb().runTransaction(async (tx) => {
+      const current = ((await tx.get(ref)).data()?.count as number | undefined) ?? 0;
+      if (current > 0) tx.set(ref, { count: FieldValue.increment(-1) }, { merge: true });
+    });
+  } catch {
+    const used = memory.get(id) ?? 0;
+    if (used > 0) memory.set(id, used - 1);
+  }
+  const used = Math.max(0, quota.used - 1);
+  return { ...quota, used, remaining: quota.limit - used };
+}

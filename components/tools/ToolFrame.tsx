@@ -15,6 +15,17 @@ const CHIPS: Record<ToolKind, string[]> = {
   account: ["Free plan", "Scheduled checks", "Account required"],
 };
 
+/** Tools whose third chip would mislead with the generic wording for their kind. */
+const CHIP_OVERRIDE: Record<string, string[]> = {
+  "page-audit": ["Free", "No signup", "One page or the whole site"],
+  "keyword-research": ["Free", "No signup", "6 autocomplete sources"],
+  "schema-generator": ["Free", "No signup", "Build or test any URL"],
+  "meta-tag-preview": ["Free", "No signup", "Write tags or load a URL"],
+  "keyword-density-checker": ["Free", "No signup", "Paste text or load a URL"],
+  "sitemap-xml-generator": ["Free", "No signup", "Crawls your site"],
+  "sitemap-html-generator": ["Free", "No signup", "Crawls your site"],
+};
+
 /** Centered serif hero: the tool's own glyph sits in a glass medallion above the headline. */
 export function ToolHero({ slug, headline, tagline, kind }: { slug: string; name?: string; headline: string; tagline: string; kind: ToolKind }) {
   const reduce = useReducedMotion();
@@ -47,7 +58,7 @@ export function ToolHero({ slug, headline, tagline, kind }: { slug: string; name
           {tagline}
         </motion.p>
         <motion.ul {...fade(0.45)} className="mt-6 flex flex-wrap justify-center gap-2">
-          {CHIPS[kind].map((c) => (
+          {(CHIP_OVERRIDE[slug] ?? CHIPS[kind]).map((c) => (
             <li key={c} className="glass-inset inline-flex items-center gap-1.5 rounded-[10px] px-2.5 py-1 text-[12.5px] text-ds-ink-2">
               <span className="h-1.5 w-1.5 rounded-full bg-ds-accent" /> {c}
             </li>
@@ -64,7 +75,7 @@ export function ToolStage({ children }: { children: ReactNode }) {
   const { scrollY } = useScroll();
   const leaf = useTransform(scrollY, [0, 1200], [0, reduce ? 0 : -120]);
   return (
-    <section className="relative mt-14 px-2 sm:px-5 print:mt-0 print:px-0">
+    <section className="relative mt-14 overflow-x-clip px-2 sm:px-5 print:mt-0 print:px-0">
       <motion.div style={{ y: leaf }} className="no-print pointer-events-none absolute -left-10 -top-36 z-0 hidden h-[640px] w-[260px] overflow-hidden [mask-image:linear-gradient(#000_70%,transparent)] sm:block lg:w-[320px]" data-print-hide>
         <PaintedFoliage variant="a" side="left" priority />
       </motion.div>

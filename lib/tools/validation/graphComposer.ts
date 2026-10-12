@@ -21,7 +21,8 @@ const CANONICAL_ID: Partial<Record<SchemaType, string>> = {
  */
 export function composeGraph(entities: GraphEntity[]): object {
   const nodes = entities.map(({ type, json }) => {
-    const { "@context": _context, ...rest } = json;
+    const rest: Record<string, unknown> = { ...json };
+    delete rest["@context"];
     const id = CANONICAL_ID[type];
     return id ? { "@id": id, ...rest } : rest;
   });

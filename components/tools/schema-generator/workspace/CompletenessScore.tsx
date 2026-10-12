@@ -27,9 +27,10 @@ export function CompletenessScore({ score }: { score: SchemaScore }) {
 
       {score.eligible ? (
         <p className="mb-3 flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 font-body text-xs text-primary">
-          <CheckRingIcon className="h-3.5 w-3.5" /> Rich result eligible
+          <CheckRingIcon className="h-3.5 w-3.5" /> {score.notice ? "Valid markup" : "Rich result eligible"}
         </p>
       ) : null}
+      {score.notice ? <p className="mb-3 font-body text-xs leading-5 text-foreground/60">{score.notice}</p> : null}
 
       <ul className="space-y-1.5">
         {score.rules.map((rule) => (

@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { IconArrow } from "@/components/icons/Icons";
+import { IconArrow, IconSpark, IconSpinner } from "@/components/icons/Icons";
 import { useFormStatus } from "react-dom";
-import { createBrand } from "@/app/app/onboarding/actions";
+import { createBrand, suggestOnboardingPrompts } from "@/app/app/onboarding/actions";
 const inputClass =
   "glass-inset h-12 w-full rounded-[12px] px-4 text-[15.5px] text-ds-ink outline-none transition-[box-shadow,background-color] duration-300 placeholder:text-ds-ink-3 focus:bg-white/70 focus:shadow-[0_0_0_4px_rgba(242,169,127,0.35)]";
 
@@ -27,7 +27,31 @@ export default function OnboardingWizard({ maxPrompts, defaultDomain = "" }: { m
   const [step, setStep] = useState<1 | 2>(1);
   const [name, setName] = useState("");
   const [domain, setDomain] = useState(defaultDomain);
+  const [category, setCategory] = useState("");
+  const [prompts, setPrompts] = useState<string[]>(() => Array.from({ length: maxPrompts }, () => ""));
+  const [suggesting, setSuggesting] = useState(false);
+  const [suggestError, setSuggestError] = useState<string | null>(null);
   const canContinue = name.trim().length > 0 && domain.trim().length > 3;
+
+  // Fills the empty prompt fields with drafted customer questions; anything typed is kept.
+  const suggest = async () => {
+    setSuggesting(true);
+    setSuggestError(null);
+    try {
+      const res = await suggestOnboardingPrompts({ name, domain, category });
+      if (!res.ok) {
+        setSuggestError(res.error);
+        return;
+      }
+      if (!category && res.category) setCategory(res.category);
+      const queue = res.prompts.map((p) => p.text).filter((t) => !prompts.includes(t));
+      setPrompts((cur) => cur.map((v) => (v.trim() ? v : (queue.shift() ?? ""))));
+    } catch {
+      setSuggestError("Couldn't draft prompts right now. Write your own, or try again.");
+    } finally {
+      setSuggesting(false);
+    }
+  };
 
   return (
     <form action={createBrand} className="space-y-8">
@@ -48,7 +72,7 @@ export default function OnboardingWizard({ maxPrompts, defaultDomain = "" }: { m
           <h1 className="font-serif text-[40px] leading-[1.02] tracking-[-0.02em]">
             Which <span className="italic">brand</span> should we track?
           </h1>
-          <p className="mt-2 text-[15px] leading-6 text-ds-ink-2">We ask Gemini, with live Google Search grounding, whether this brand shows up for the prompts you care about.</p>
+          <p className="mt-2 text-[15px] leading-6 text-ds-ink-2">We ask AI engines, with live web search, whether this brand shows up for the prompts you care about. The first check runs as soon as you finish.</p>
         </div>
         <div className="space-y-4">
           <label className="block">
@@ -58,6 +82,10 @@ export default function OnboardingWizard({ maxPrompts, defaultDomain = "" }: { m
           <label className="block">
             <span className="mb-1.5 block text-[13px] font-medium text-ds-ink-2">Domain</span>
             <input name="domain" required value={domain} onChange={(e) => setDomain(e.target.value)} placeholder="acmedental.com" className={`${inputClass} font-mono text-[15px]`} />
+          </label>
+          <label className="block">
+            <span className="mb-1.5 block text-[13px] font-medium text-ds-ink-2">What you do (optional)</span>
+            <input name="category" value={category} onChange={(e) => setCategory(e.target.value)} maxLength={80} placeholder="family dental clinic in Austin" className={inputClass} />
           </label>
         </div>
         <div className="flex justify-end">
@@ -79,19 +107,34 @@ export default function OnboardingWizard({ maxPrompts, defaultDomain = "" }: { m
               <h1 className="font-serif text-[40px] leading-[1.02] tracking-[-0.02em]">
                 What would a customer <span className="italic">ask</span>?
               </h1>
-              <p className="mt-2 text-[15px] leading-6 text-ds-ink-2">Up to {maxPrompts} prompts on your plan, plus one competitor to compare against.</p>
+              <p className="mt-2 text-[15px] leading-6 text-ds-ink-2">Up to {maxPrompts} prompts on your plan, plus one competitor to compare against. Questions that don&apos;t name you show real visibility.</p>
             </motion.div>
           )}
         </AnimatePresence>
         <div className="space-y-3">
-          {Array.from({ length: maxPrompts }).map((_, i) => (
+          {prompts.map((value, i) => (
             <input
               key={i}
               name="prompts"
+              value={value}
+              maxLength={300}
+              onChange={(e) => setPrompts((cur) => cur.map((v, j) => (j === i ? e.target.value : v)))}
               placeholder={["best dentist for kids near me", "how much does teeth whitening cost", "invisalign vs braces for adults"][i] ?? "Another prompt"}
               className={inputClass}
             />
           ))}
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              onClick={suggest}
+              disabled={suggesting || !canContinue || prompts.every((p) => p.trim())}
+              className="inline-flex h-10 items-center gap-2 rounded-[12px] px-3 text-[14px] font-medium text-ds-ink-2 transition hover:bg-white/60 hover:text-ds-ink disabled:opacity-40"
+            >
+              {suggesting ? <IconSpinner className="h-4 w-4 animate-spin" /> : <IconSpark className="h-4 w-4" />}
+              {suggesting ? "Drafting prompts…" : "Suggest prompts for me"}
+            </button>
+            {suggestError && <span className="text-[13px] text-ds-danger">{suggestError}</span>}
+          </div>
         </div>
         <div className="glass-inset rounded-[16px] p-4">
           <p className="text-[13px] font-medium text-ds-ink-2">Competitor (optional)</p>

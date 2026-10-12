@@ -17,6 +17,16 @@ import { CodePreviewPanel } from "@/components/tools/schema-generator/workspace/
 import { CompletenessScore } from "@/components/tools/schema-generator/workspace/CompletenessScore";
 import { RichResultPreview } from "@/components/tools/schema-generator/workspace/RichResultPreview";
 import { CheckRingIcon } from "@/components/tools/shared/icons/SchemaIcons";
+import { ModeSwitch } from "@/components/tools/schema-generator/workspace/ModeSwitch";
+import { SchemaValidator, type LoadIntoGenerator } from "@/components/tools/schema-generator/workspace/validator/SchemaValidator";
+
+type WorkspaceMode = "build" | "url" | "code";
+
+const MODES: { value: WorkspaceMode; label: string; hint: string }[] = [
+  { value: "build", label: "Build markup", hint: "Generate JSON-LD from a form" },
+  { value: "url", label: "Test a URL", hint: "Validate the structured data on a live page" },
+  { value: "code", label: "Paste code", hint: "Validate JSON-LD, microdata or RDFa you paste" },
+];
 
 type SchemaWorkspaceProps = {
   initialTypes?: SchemaType[];
@@ -56,20 +66,29 @@ function seedData(initialTypes: SchemaType[], withReviews?: boolean, brand?: { n
   };
 }
 
-export function SchemaWorkspace({ initialTypes = ["organization"], withReviews, restoredSession, onBack = () => {}, brand }: SchemaWorkspaceProps) {
+export function SchemaWorkspace({ initialTypes = ["organization"], withReviews, restoredSession, brand }: SchemaWorkspaceProps) {
   const typesToUse = restoredSession?.types ?? initialTypes;
   const [types, setTypes] = useState<SchemaType[]>(typesToUse);
   const [activeType, setActiveType] = useState<SchemaType>(restoredSession?.activeType ?? (typesToUse[0] || "organization"));
   const [formData, setFormData] = useState<SchemaFormData>(
     () => restoredSession?.formData ?? seedData(initialTypes, withReviews, brand),
   );
-  const [showRestoredToast, setShowRestoredToast] = useState(!!restoredSession);
+  const [mode, setMode] = useState<WorkspaceMode>("build");
+  const [toast, setToast] = useState<string | null>(restoredSession ? "Restored your last session" : null);
 
   useEffect(() => {
-    if (!showRestoredToast) return;
-    const timeout = setTimeout(() => setShowRestoredToast(false), 3200);
+    if (!toast) return;
+    const timeout = setTimeout(() => setToast(null), 3200);
     return () => clearTimeout(timeout);
-  }, [showRestoredToast]);
+  }, [toast]);
+
+  const loadIntoGenerator: LoadIntoGenerator = (type, data, label) => {
+    setFormData((prev) => ({ ...prev, [type]: data }));
+    setTypes((prev) => (prev.includes(type) ? prev : [...prev, type]));
+    setActiveType(type);
+    setMode("build");
+    setToast(`Loaded “${label.length > 40 ? `${label.slice(0, 40)}…` : label}” into the generator`);
+  };
 
   useEffect(() => {
     const timeout = setTimeout(() => saveSession({ types, activeType, formData }), 300);
@@ -104,7 +123,7 @@ export function SchemaWorkspace({ initialTypes = ["organization"], withReviews, 
       className="w-full"
     >
       <AnimatePresence>
-        {showRestoredToast ? (
+        {toast ? (
           <motion.div
             initial={{ opacity: 0, y: -12 }}
             animate={{ opacity: 1, y: 0 }}
@@ -112,11 +131,21 @@ export function SchemaWorkspace({ initialTypes = ["organization"], withReviews, 
             className="fixed left-1/2 top-20 z-50 flex -translate-x-1/2 items-center gap-2 rounded-full bg-foreground px-4 py-2 text-background shadow-lg"
           >
             <CheckRingIcon className="h-4 w-4 text-primary" />
-            <span className="font-body text-xs">Restored your last session</span>
+            <span className="font-body text-xs">{toast}</span>
           </motion.div>
         ) : null}
       </AnimatePresence>
 
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <ModeSwitch value={mode} onChange={setMode} options={MODES} label="Schema tool mode" />
+        {mode !== "build" && (
+          <p className="text-[13px] text-ds-ink-2">Like Google&apos;s Rich Results Test and the Schema Markup Validator, in one report.</p>
+        )}
+      </div>
+
+      {mode !== "build" ? (
+        <SchemaValidator mode={mode} onLoadIntoGenerator={loadIntoGenerator} />
+      ) : (
       <div className="grid gap-6 xl:grid-cols-[190px_1fr_340px]">
         <WorkspaceSidebar
           types={types}
@@ -141,6 +170,7 @@ export function SchemaWorkspace({ initialTypes = ["organization"], withReviews, 
           <CodePreviewPanel json={output} />
         </div>
       </div>
+      )}
     </motion.div>
   );
 }

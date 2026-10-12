@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { minifyXml, type GeneratedSitemap } from "@/lib/tools/sitemap/sitemapGenerator";
+import { canGzip, gzipText, minifyXml, type GeneratedSitemap } from "@/lib/tools/sitemap/sitemapGenerator";
 import { CheckRingIcon } from "@/components/tools/shared/icons/SchemaIcons";
 
-export function XmlPreviewPanel({ generated }: { generated: GeneratedSitemap }) {
+export function XmlPreviewPanel({ generated, gzip = false, onGzipChange }: { generated: GeneratedSitemap; gzip?: boolean; onGzipChange?: (v: boolean) => void }) {
   const allFiles = generated.index ? [generated.index, ...generated.files] : generated.files;
   const [activeFile, setActiveFile] = useState(0);
   const [minified, setMinified] = useState(false);
@@ -12,6 +12,10 @@ export function XmlPreviewPanel({ generated }: { generated: GeneratedSitemap }) 
 
   const file = allFiles[activeFile] ?? allFiles[0];
   const output = minified ? minifyXml(file.xml) : file.xml;
+  // Rendering megabytes in a <pre> freezes the tab; copy and download still use the full file.
+  const shown = output.length > 250_000 ? `${output.slice(0, 250_000)}
+
+<!-- Preview cut at 250 KB. Copy and Download include the whole file. -->` : output;
 
   function handleCopy() {
     navigator.clipboard.writeText(output);
@@ -19,14 +23,16 @@ export function XmlPreviewPanel({ generated }: { generated: GeneratedSitemap }) 
     setTimeout(() => setCopied(false), 1800);
   }
 
-  function downloadFile(filename: string, content: string) {
-    const blob = new Blob([content], { type: "application/xml" });
+  async function downloadFile(filename: string, content: string) {
+    // Files named .gz are compressed in the browser; the index stays plain XML.
+    const gz = filename.endsWith(".gz") ? await gzipText(content) : null;
+    const blob = gz ?? new Blob([content], { type: "application/xml" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
     a.download = filename;
     a.click();
-    URL.revokeObjectURL(url);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
 
   function handleDownload() {
@@ -69,6 +75,12 @@ export function XmlPreviewPanel({ generated }: { generated: GeneratedSitemap }) 
           <button onClick={handleDownload} className="font-body text-xs text-foreground/60 hover:text-foreground">
             Download
           </button>
+          {onGzipChange && canGzip() ? (
+            <label className="flex cursor-pointer items-center gap-1.5 font-body text-xs text-foreground/60 hover:text-foreground" title="Download compressed .xml.gz files (smaller; search engines accept them)">
+              <input type="checkbox" checked={gzip} onChange={(e) => onGzipChange(e.target.checked)} className="h-3.5 w-3.5 accent-[#f2a97f]" />
+              .gz
+            </label>
+          ) : null}
           {allFiles.length > 1 ? (
             <button onClick={handleDownloadAll} className="font-body text-xs text-primary hover:underline">
               Download all ({allFiles.length})
@@ -85,7 +97,7 @@ export function XmlPreviewPanel({ generated }: { generated: GeneratedSitemap }) 
         </div>
       </div>
       <pre className="max-h-[420px] overflow-auto bg-background p-4 font-mono text-[12.5px] leading-relaxed text-foreground/80">
-        {output}
+        {shown}
       </pre>
     </div>
   );

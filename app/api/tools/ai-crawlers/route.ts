@@ -3,11 +3,13 @@ import { consumeQuota, getViewer } from "@/lib/usage";
 import { SafeFetchError } from "@/lib/net/safeFetch";
 import { checkAiCrawlers } from "@/lib/tools/aiCrawlers/check";
 
-export const maxDuration = 30;
+// Live probing sends ~35 requests with a 24s internal budget; leave headroom.
+export const maxDuration = 60;
 
 export async function POST(req: NextRequest) {
-  const body = (await req.json().catch(() => ({}))) as { url?: unknown };
-  const url = typeof body.url === "string" ? body.url.trim().slice(0, 300) : "";
+  const body = (await req.json().catch(() => ({}))) as { url?: unknown; path?: unknown };
+  const url = typeof body.url === "string" ? body.url.trim().slice(0, 500) : "";
+  const path = typeof body.path === "string" ? body.path.trim().slice(0, 500) : "";
   if (!url) return NextResponse.json({ error: "Enter a domain, e.g. example.com." }, { status: 400 });
 
   const viewer = await getViewer();
@@ -15,7 +17,7 @@ export async function POST(req: NextRequest) {
   if (!usage.ok) return NextResponse.json({ error: usage.message, quota: usage.quota, limited: true }, { status: 429 });
 
   try {
-    return NextResponse.json({ ...(await checkAiCrawlers(url)), quota: usage.quota });
+    return NextResponse.json({ ...(await checkAiCrawlers(url, { path: path || null })), quota: usage.quota });
   } catch (err) {
     if (err instanceof SafeFetchError) return NextResponse.json({ error: err.message, quota: usage.quota }, { status: 400 });
     const code = (err as { code?: string })?.code;

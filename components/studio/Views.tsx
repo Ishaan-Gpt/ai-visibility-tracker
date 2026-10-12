@@ -1,5 +1,6 @@
 "use client";
 
+import { QUOTA_LABELS } from "@/lib/limits";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
@@ -13,7 +14,7 @@ import { HERO_TOOLS, toolHref } from "@/lib/tools/registry";
 import type { HistoryItem } from "@/lib/history";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
-const USAGE_LABEL: Record<string, string> = { "page-audit": "Page audits", "ai-crawlers": "AI crawler checks", keywords: "Keyword research" };
+const USAGE_LABEL: Record<string, string> = QUOTA_LABELS;
 
 function Rise({ children, i = 0, className = "" }: { children: React.ReactNode; i?: number; className?: string }) {
   const reduce = useReducedMotion();

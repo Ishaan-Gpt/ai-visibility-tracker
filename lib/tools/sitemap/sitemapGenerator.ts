@@ -22,12 +22,23 @@ function entryToXml(entry: SitemapUrlEntry): string {
   if (entry.lastmod) parts.push(`    <lastmod>${escapeXml(entry.lastmod)}</lastmod>`);
   if (entry.changefreq) parts.push(`    <changefreq>${entry.changefreq}</changefreq>`);
   if (entry.priority) parts.push(`    <priority>${escapeXml(entry.priority)}</priority>`);
+  for (const alt of entry.alternates ?? []) {
+    parts.push(`    <xhtml:link rel="alternate" hreflang="${escapeXml(alt.hreflang)}" href="${escapeXml(alt.href)}"/>`);
+  }
+  // Google reads up to 1,000 images per URL.
+  for (const img of (entry.images ?? []).slice(0, 1000)) {
+    parts.push(`    <image:image>\n      <image:loc>${escapeXml(img)}</image:loc>\n    </image:image>`);
+  }
   return `  <url>\n${parts.join("\n")}\n  </url>`;
 }
 
+/** Only declares the image / xhtml namespaces when an entry actually uses them. */
 function buildUrlsetXml(entries: SitemapUrlEntry[]): string {
   const body = entries.map(entryToXml).join("\n");
-  return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${body}\n</urlset>`;
+  const ns = ['xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"'];
+  if (entries.some((e) => e.alternates?.length)) ns.push('xmlns:xhtml="http://www.w3.org/1999/xhtml"');
+  if (entries.some((e) => e.images?.length)) ns.push('xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"');
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset ${ns.join("\n        ")}>\n${body}\n</urlset>`;
 }
 
 function buildIndexXml(filenames: string[], baseUrl: string): string {
@@ -70,25 +81,38 @@ function inferBaseUrl(entries: SitemapUrlEntry[]): string {
  * Search Central limits (50,000 URLs or 50MB per file) are exceeded — the
  * exact case free generators either cap out on or handle by truncating data.
  */
-export function generateSitemap(entries: SitemapUrlEntry[], baseUrl?: string): GeneratedSitemap {
+export function generateSitemap(entries: SitemapUrlEntry[], baseUrl?: string, opts: { gzip?: boolean } = {}): GeneratedSitemap {
+  const ext = opts.gzip ? ".xml.gz" : ".xml";
   const valid = entries.filter((e) => e.loc.trim() !== "");
 
   if (valid.length === 0) {
-    return { files: [{ filename: "sitemap.xml", xml: buildUrlsetXml([]) }] };
+    return { files: [{ filename: `sitemap${ext}`, xml: buildUrlsetXml([]) }] };
   }
 
   const countChunks = chunkByCount(valid, SITEMAP_LIMITS.maxUrlsPerFile);
   const finalChunks = countChunks.flatMap((chunk) => splitBySize(chunk));
 
   if (finalChunks.length === 1) {
-    return { files: [{ filename: "sitemap.xml", xml: buildUrlsetXml(finalChunks[0]) }] };
+    return { files: [{ filename: `sitemap${ext}`, xml: buildUrlsetXml(finalChunks[0]) }] };
   }
 
-  const files = finalChunks.map((chunk, i) => ({ filename: `sitemap-${i + 1}.xml`, xml: buildUrlsetXml(chunk) }));
+  const files = finalChunks.map((chunk, i) => ({ filename: `sitemap-${i + 1}${ext}`, xml: buildUrlsetXml(chunk) }));
+  // The index itself stays uncompressed so it is easy to inspect and reference from robots.txt.
   const index = { filename: "sitemap-index.xml", xml: buildIndexXml(files.map((f) => f.filename), baseUrl ?? inferBaseUrl(valid)) };
   return { files, index };
 }
 
 export function minifyXml(xml: string): string {
   return xml.replace(/>\s+</g, "><").trim();
+}
+
+/** gzip in the browser via the native CompressionStream (Chrome 80+, Safari 16.4+, Firefox 113+). */
+export async function gzipText(text: string): Promise<Blob | null> {
+  if (typeof CompressionStream === "undefined") return null;
+  const stream = new Blob([text]).stream().pipeThrough(new CompressionStream("gzip"));
+  return new Response(stream).blob();
+}
+
+export function canGzip(): boolean {
+  return typeof CompressionStream !== "undefined";
 }

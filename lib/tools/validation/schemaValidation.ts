@@ -39,7 +39,7 @@ const rulesByType: { [K in SchemaType]: RuleBuilder<SchemaFormData[K]> } = {
         label: "Genuine site FAQ content",
         weight: "recommended",
         passed: valid.length > 0,
-        hint: "Google narrowed FAQ rich results in 2023 to well-known/government sites — most others won't get the visual snippet even with valid markup, but it still helps AI answer engines.",
+        hint: "Google stopped showing FAQ rich results on May 7, 2026 (after limiting them to government and health sites in 2023). Valid markup still helps AI answer engines read your Q&A.",
       },
     ];
   },
@@ -179,6 +179,14 @@ export type SchemaScore = {
   score: number;
   rules: FieldRule[];
   eligible: boolean;
+  /** Set when Google no longer shows a rich result for this type (the markup is still valid). */
+  notice?: string;
+};
+
+/** Types whose Google rich result has been retired. Checked against Search Central on 2026-10-13. */
+export const RETIRED_RICH_RESULTS: Partial<Record<SchemaType, string>> = {
+  faq: "Google stopped showing FAQ rich results on May 7, 2026. The markup is still valid and helps AI answer engines.",
+  howTo: "Google removed How-to rich results in September 2023. The markup is still valid schema.org.",
 };
 
 /**
@@ -197,5 +205,6 @@ export function scoreSchema<T extends SchemaType>(type: T, data: SchemaFormData[
 
   const eligible = rules.filter((r) => r.weight === "required").every((r) => r.passed);
 
-  return { score, rules, eligible };
+  const notice = RETIRED_RICH_RESULTS[type];
+  return notice ? { score, rules, eligible, notice } : { score, rules, eligible };
 }

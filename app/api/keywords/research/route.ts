@@ -1,79 +1,54 @@
-import { NextRequest, NextResponse } from "next/server";
+import { after, NextRequest, NextResponse } from "next/server";
 import { consumeQuota, getViewer } from "@/lib/usage";
-import { expandSeed } from "@/lib/keywords/suggest";
-import { classifyIntent } from "@/lib/keywords/intent";
-import { clusterKeywords } from "@/lib/keywords/cluster";
-import { dataforseoConfigured, enrichKeywords } from "@/lib/keywords/dataforseo";
-import { COUNTRIES, type KeywordRow, type ResearchResponse } from "@/lib/keywords/types";
+import { cacheKey, readCache, writeCache } from "@/lib/keywords/cache";
+import { runResearch } from "@/lib/keywords/research";
+import { normalizeKeyword } from "@/lib/keywords/text";
+import { COUNTRIES, DEFAULT_SOURCES, LANGUAGES, SOURCES, type SuggestSource } from "@/lib/keywords/types";
 
 export const maxDuration = 60;
 
-const MAX_KEYWORDS = 600;
-
 export async function POST(req: NextRequest) {
-  let body: { seed?: unknown; country?: unknown; language?: unknown };
+  let body: { seed?: unknown; country?: unknown; language?: unknown; sources?: unknown; fresh?: unknown };
   try {
     body = await req.json();
   } catch {
     return NextResponse.json({ error: "Invalid request." }, { status: 400 });
   }
 
-  const seed = typeof body.seed === "string" ? body.seed.trim().toLowerCase().replace(/\s+/g, " ") : "";
+  const country = COUNTRIES.find((c) => c.code === body.country) ?? COUNTRIES[0];
+  const language = LANGUAGES.find((l) => l.code === body.language)?.code ?? country.lang;
+  const seed = normalizeKeyword(typeof body.seed === "string" ? body.seed : "", language);
   if (seed.length < 2 || seed.length > 80) {
     return NextResponse.json({ error: "Enter a seed keyword between 2 and 80 characters." }, { status: 400 });
   }
-  const country = COUNTRIES.some((c) => c.code === body.country) ? (body.country as string) : "us";
-  const language = typeof body.language === "string" && /^[a-z]{2}$/.test(body.language) ? body.language : "en";
+  const valid = new Set(SOURCES.map((s) => s.id));
+  const requested = Array.isArray(body.sources) ? body.sources.filter((s): s is SuggestSource => valid.has(s as SuggestSource)) : [];
+  const sources = SOURCES.map((s) => s.id).filter((id) => (requested.length ? requested : DEFAULT_SOURCES).includes(id));
 
-  // Daily cap (per IP when anonymous): protects the data provider and Google autocomplete from abuse.
+  // Cache first: a hit returns instantly and does not use a run.
+  const key = cacheKey(seed, country.code, language, sources);
+  if (body.fresh !== true) {
+    const hit = await readCache(key);
+    if (hit) return NextResponse.json(hit);
+  }
+
+  // Daily cap (per IP when anonymous): protects the data provider and the autocomplete endpoints from abuse.
   const viewer = await getViewer();
   const usage = await consumeQuota(req, "keywords", viewer);
   if (!usage.ok) return NextResponse.json({ error: usage.message, quota: usage.quota, limited: true }, { status: 429 });
 
-  const started = Date.now();
-  const { suggestions, requests } = await expandSeed(seed, country, language);
+  const result = await runResearch({ seed, country: country.code, language, sources });
 
-  const merged = new Map<string, "seed" | "autocomplete" | "question">();
-  merged.set(seed, "seed");
-  for (const s of suggestions) if (!merged.has(s.keyword)) merged.set(s.keyword, s.from);
-  const keywordList = [...merged.keys()].slice(0, MAX_KEYWORDS);
-
-  if (keywordList.length <= 1) {
+  if (result.keywords.length <= 1) {
     return NextResponse.json(
-      { error: "No suggestions came back for that seed. Try a broader or differently worded keyword." },
+      { error: "No suggestions came back for that seed. Try a broader or differently worded keyword, or add more sources." },
       { status: 404 },
     );
   }
 
-  const clusters = clusterKeywords(keywordList, seed);
-  let rows: KeywordRow[] = keywordList.map((keyword) => ({
-    keyword,
-    source: merged.get(keyword) ?? "autocomplete",
-    intent: classifyIntent(keyword),
-    cluster: clusters.get(keyword) ?? keyword,
-    words: keyword.split(" ").length,
-  }));
+  // Only cache complete-enough results: a provider error or a mostly failed run should be retried next time.
+  const failedSources = Object.values(result.stats.perSource).filter((s) => s && s.ok === 0).length;
+  if (!result.provider.error && failedSources < sources.length) after(() => writeCache(key, result));
 
-  const provider: ResearchResponse["provider"] = { volume: false, name: null };
-  if (dataforseoConfigured()) {
-    try {
-      const enriched = await enrichKeywords(keywordList, country, language);
-      rows = rows.map((r) => ({ ...r, ...(enriched.get(r.keyword) ?? {}) }));
-      provider.volume = true;
-      provider.name = "DataForSEO";
-    } catch (err) {
-      provider.error = err instanceof Error ? err.message : "Data provider failed";
-    }
-  }
-
-  const response: ResearchResponse & { quota: typeof usage.quota } = {
-    quota: usage.quota,
-    seed,
-    country,
-    language,
-    keywords: rows,
-    provider,
-    stats: { suggestRequests: requests, elapsedMs: Date.now() - started },
-  };
-  return NextResponse.json(response);
+  return NextResponse.json({ ...result, quota: usage.quota });
 }

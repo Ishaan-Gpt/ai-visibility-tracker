@@ -22,7 +22,17 @@ import { PrintFooter, PrintHeader } from "@/components/tools/shell/Bits";
 import { useViewer } from "@/components/viewer/useViewer";
 import { toolBySlug } from "@/lib/tools/registry";
 
-/** Frame for browser-only tools: a glass toolbar with PDF export, the workspace on a glass pane. */
+/** What still runs on our servers for each browser tool, so the banner never claims "nothing uploaded" wrongly. */
+const SERVER_NOTE: Record<string, string> = {
+  "schema-generator": "Testing a live URL uses your free daily URL imports",
+  "meta-tag-preview": "Loading a live URL uses your free daily URL imports",
+  "keyword-density-checker": "Analyzing a live URL uses your free daily URL imports",
+  "sitemap-xml-generator": "Site crawls and sitemap checks run on our servers, within daily limits",
+  "sitemap-html-generator": "Site crawls run on our servers, within daily limits",
+  "llms-txt-generator": "Importing your live robots.txt uses one AI crawler check",
+};
+
+/** Frame for browser tools: a glass toolbar with PDF export, the workspace on a glass pane. */
 function ClientToolFrame({ slug, children }: { slug: string; children: React.ReactNode }) {
   const tool = toolBySlug(slug)!;
   return (
@@ -34,7 +44,8 @@ function ClientToolFrame({ slug, children }: { slug: string; children: React.Rea
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#5c7c68]/50" />
             <span className="relative inline-flex h-2 w-2 rounded-full bg-[#5c7c68]" />
           </span>
-          Runs in your browser · nothing uploaded · <span className="font-serif text-[16px] italic text-ds-ink">unlimited</span>
+          Generating runs in your browser · <span className="font-serif text-[16px] italic text-ds-ink">unlimited</span>
+          {SERVER_NOTE[slug] && <span className="text-ds-ink-3">· {SERVER_NOTE[slug]}</span>}
         </p>
         <button
           type="button"

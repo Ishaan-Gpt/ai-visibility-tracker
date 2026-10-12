@@ -9,9 +9,27 @@ import { Rise } from "@/components/studio/Views";
 
 const PERKS = ["Up to 12× higher daily limits on every fetch tool", "Full saved history of every report", "AI Visibility: 10 prompts, 2 competitors, checked daily"];
 
-export function Ticket({ isPaid, billingConfigured }: { isPaid: boolean; billingConfigured: boolean }) {
+export function Ticket({ isPaid, billingConfigured, billingStatus = null }: { isPaid: boolean; billingConfigured: boolean; billingStatus?: string | null }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [confirming, setConfirming] = useState(false);
+  const [cancelled, setCancelled] = useState(billingStatus === "cancel_scheduled");
+
+  async function cancel() {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/billing/cancel", { method: "POST" });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error ?? "Could not cancel.");
+      setCancelled(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not cancel.");
+    } finally {
+      setLoading(false);
+      setConfirming(false);
+    }
+  }
 
   async function upgrade() {
     setLoading(true);
@@ -65,7 +83,27 @@ export function Ticket({ isPaid, billingConfigured }: { isPaid: boolean; billing
               <span className="flex h-14 w-14 items-center justify-center rounded-full bg-[#5c7c68]/15 text-[#5c7c68]">
                 <IcCheck className="h-7 w-7" />
               </span>
-              <p className="font-serif text-[26px] italic">Active</p>
+              <p className="font-serif text-[26px] italic">{cancelled ? "Ending" : "Active"}</p>
+              {cancelled ? (
+                <p className="text-center text-[11.5px] leading-4 text-ds-ink-3">Pro stays on until the end of the period you paid for</p>
+              ) : billingConfigured && confirming ? (
+                <div className="flex flex-col items-center gap-2">
+                  <p className="text-center text-[12px] leading-4 text-ds-ink-2">Cancel at the end of this billing period?</p>
+                  <div className="flex gap-2">
+                    <button type="button" onClick={cancel} disabled={loading} className="inline-flex h-9 items-center gap-1.5 rounded-[10px] bg-ds-ink px-3.5 text-[13px] font-medium text-white disabled:opacity-60">
+                      {loading && <IconSpinner className="h-3.5 w-3.5 animate-spin" />}
+                      Yes, cancel
+                    </button>
+                    <button type="button" onClick={() => setConfirming(false)} className="h-9 rounded-[10px] px-3 text-[13px] text-ds-ink-2 hover:text-ds-ink">
+                      Keep Pro
+                    </button>
+                  </div>
+                </div>
+              ) : billingConfigured ? (
+                <button type="button" onClick={() => setConfirming(true)} className="text-[12.5px] text-ds-ink-3 underline-offset-4 hover:text-ds-ink hover:underline">
+                  Cancel subscription
+                </button>
+              ) : null}
             </>
           ) : (
             <>
@@ -105,10 +143,10 @@ export function BillingView({
         crumb="Plan & billing"
         title="You're on"
         italic={isPaid ? "Pro." : "Free."}
-        lede={isPaid ? `Subscription status: ${billingStatus ?? "active"}.` : "Pro raises every limit and keeps the full history of your reports."}
+        lede={isPaid ? (billingStatus === "cancel_scheduled" ? "Your subscription is cancelled and ends with the current billing period." : `Subscription status: ${billingStatus ?? "active"}.`) : "Pro raises every limit and keeps the full history of your reports."}
       />
       <Rise>
-        <Ticket isPaid={isPaid} billingConfigured={billingConfigured} />
+        <Ticket isPaid={isPaid} billingConfigured={billingConfigured} billingStatus={billingStatus} />
       </Rise>
       <Rise i={2} className="mt-8">
         <Glass className="overflow-hidden">

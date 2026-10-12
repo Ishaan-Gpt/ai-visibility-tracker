@@ -11,6 +11,8 @@ type PreviewModel = {
   price?: string;
   faqRows?: { question: string; answer: string }[];
   breadcrumb?: string[];
+  /** Shown under the preview when Google no longer renders this rich result. */
+  note?: string;
 };
 
 function buildPreview<T extends SchemaType>(type: T, data: SchemaFormData[T]): PreviewModel {
@@ -43,12 +45,12 @@ function buildPreview<T extends SchemaType>(type: T, data: SchemaFormData[T]): P
     }
     case "faq": {
       const d = data as SchemaFormData["faq"];
-      const rows = d.faqs.filter((f) => f.question.trim() !== "").slice(0, 3);
+      const first = d.faqs.find((f) => f.question.trim() !== "");
       return {
         title: "Your Page",
         url: "yourbrand.com",
-        description: "Frequently asked questions appear as an expandable list.",
-        faqRows: rows.map((f) => ({ question: f.question, answer: f.answer })),
+        description: first ? `${first.question} ${first.answer}`.slice(0, 160) : "Your page's normal snippet appears here.",
+        note: "Google stopped showing FAQ rich results on May 7, 2026, so the page appears as a normal result. The markup still helps AI answer engines read your Q&A.",
       };
     }
     case "breadcrumb": {
@@ -88,6 +90,15 @@ function buildPreview<T extends SchemaType>(type: T, data: SchemaFormData[T]): P
     case "course": {
       const d = data as SchemaFormData["course"];
       return { title: d.name || "Your Course", url: "yourbrand.com › courses", description: d.providerName || "Course provider appears here." };
+    }
+    case "howTo": {
+      const d = data as SchemaFormData["howTo"];
+      return {
+        title: d.name || "Your How-to",
+        url: "yourbrand.com",
+        description: d.description || "Your page's normal snippet appears here.",
+        note: "How-to rich results were removed from Google Search in September 2023, so this shows as a normal result.",
+      };
     }
     default: {
       const generic = data as { name?: string; description?: string };
@@ -136,6 +147,8 @@ export function RichResultPreview<T extends SchemaType>({ type, data }: { type: 
           ))}
         </div>
       ) : null}
+
+      {preview.note ? <p className="mt-3 border-t border-foreground/10 pt-3 font-body text-xs leading-5 text-foreground/60">{preview.note}</p> : null}
     </div>
   );
 }

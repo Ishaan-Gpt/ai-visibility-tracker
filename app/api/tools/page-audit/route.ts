@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { consumeQuota, getViewer } from "@/lib/usage";
+import { consumeQuota, getViewer, refundQuota } from "@/lib/usage";
 import { SafeFetchError } from "@/lib/net/safeFetch";
 import { auditPage } from "@/lib/tools/pageAudit/audit";
 
-export const maxDuration = 30;
+export const maxDuration = 60;
 
 export async function POST(req: NextRequest) {
   const body = (await req.json().catch(() => ({}))) as { url?: unknown };
@@ -17,11 +17,13 @@ export async function POST(req: NextRequest) {
   try {
     return NextResponse.json({ ...(await auditPage(url)), quota: usage.quota });
   } catch (err) {
-    if (err instanceof SafeFetchError) return NextResponse.json({ error: err.message, quota: usage.quota }, { status: 400 });
+    // The run produced nothing for the user, so it doesn't count against their daily limit.
+    const quota = await refundQuota(req, "page-audit", viewer, usage.quota);
+    if (err instanceof SafeFetchError) return NextResponse.json({ error: err.message, quota }, { status: 400 });
     const code = (err as { code?: string })?.code;
-    if (code === "ENOTFOUND" || code === "EAI_AGAIN") return NextResponse.json({ error: "We couldn't find that domain. Check the spelling.", quota: usage.quota }, { status: 400 });
-    if (code === "ECONNREFUSED" || code === "ECONNRESET" || code === "ETIMEDOUT") return NextResponse.json({ error: "That site didn't respond. It may be down or blocking automated requests.", quota: usage.quota }, { status: 502 });
+    if (code === "ENOTFOUND" || code === "EAI_AGAIN") return NextResponse.json({ error: "We couldn't find that domain. Check the spelling.", quota }, { status: 400 });
+    if (code === "ECONNREFUSED" || code === "ECONNRESET" || code === "ETIMEDOUT") return NextResponse.json({ error: "That site didn't respond. It may be down or blocking automated requests.", quota }, { status: 502 });
     console.error("[page-audit]", err);
-    return NextResponse.json({ error: "Something went wrong auditing that page.", quota: usage.quota }, { status: 500 });
+    return NextResponse.json({ error: "Something went wrong auditing that page.", quota }, { status: 500 });
   }
 }

@@ -1,4 +1,7 @@
-/** Common English stop words, filtered out of the 1-word frequency table by default (not from 2/3-word phrases, which rarely start or end on one anyway). */
+/**
+ * Common English function words. Excluded from the 1-word table by default, and a 2-4 word phrase
+ * may not start or end with one ("of the green" is not a phrase; "cup of tea" is).
+ */
 export const STOP_WORDS = new Set([
   "a", "about", "above", "after", "again", "against", "all", "am", "an", "and", "any", "are", "aren't", "as", "at",
   "be", "because", "been", "before", "being", "below", "between", "both", "but", "by",
@@ -22,4 +25,31 @@ export const STOP_WORDS = new Set([
   "where", "where's", "which", "while", "who", "who's", "whom", "why", "why's", "with", "won't", "would",
   "wouldn't",
   "you", "you'd", "you'll", "you're", "you've", "your", "yours", "yourself", "yourselves",
+  // Extra function words / auxiliaries that never make a useful phrase edge.
+  "also", "although", "among", "an", "another", "anyone", "anything", "around", "away", "can", "could've", "either", "else", "even", "ever",
+  "every", "however", "just", "less", "may", "might", "must", "neither", "often", "per", "rather", "shall", "should've", "since",
+  "still", "though", "thus", "toward", "towards", "upon", "us", "via", "whether", "will", "within", "without", "would've", "yet",
+  "s", "t", "d", "ll", "m", "re", "ve", "isnt", "dont", "doesnt", "didnt", "cant", "wont", "im", "ive", "youre", "thats", "theres",
 ]);
+
+const isNumeric = (w: string) => /^[\d.,'-]+$/.test(w);
+
+/** Stop word or bare number: never a 1-word keyword, never the first/last word of a phrase. */
+export const isStopToken = (w: string) => STOP_WORDS.has(w) || isNumeric(w);
+
+/** Reference-list and page-chrome tokens (citations, edit links) that say nothing about the topic. */
+const NOISE = new Set([
+  "retrieved", "archived", "edit", "pmid", "pmc", "doi", "isbn", "issn", "s2cid", "jstor", "bibcode", "arxiv", "oclc", "lccn", "cite", "citation",
+  "et", "al", "ibid", "vol", "pp", "eds", "url", "http", "https", "www", "com", "html", "accessed", "wayback",
+  "jan", "feb", "mar", "apr", "jun", "jul", "aug", "sep", "sept", "oct", "nov", "dec",
+]);
+
+/**
+ * True for terms that shouldn't be suggested as topical gaps or distinctive terms: citation boilerplate,
+ * phrases containing bare numbers, and phrases that just repeat one word ("heiss heiss").
+ */
+export function isNoiseTerm(phrase: string): boolean {
+  const parts = phrase.split(" ");
+  if (parts.some((p) => NOISE.has(p) || isNumeric(p))) return true;
+  return parts.length > 1 && parts.every((p) => p === parts[0]);
+}

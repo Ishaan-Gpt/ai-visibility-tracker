@@ -11,10 +11,15 @@ import { ErrorNote, PrintFooter, PrintHeader, QuotaNote, RunningStages } from "@
 import { ResultActions } from "@/components/tools/shell/ResultActions";
 import { ToolInputBar } from "@/components/tools/shell/ToolInputBar";
 import { useToolRun } from "@/components/tools/shell/useToolRun";
-import type { AuditCheck, PageAuditReport, Severity } from "@/lib/tools/pageAudit/audit";
+import type { AuditCheck, PageAuditReport, Severity } from "@/lib/tools/pageAudit/types";
+import { AiAccessPanel, CategoryBars, HeadingsPanel, ImagesPanel, LinksPanel, SitemapPanel, StructuredDataPanel } from "./DeepPanels";
+import { EvidenceList } from "./Evidence";
+import { SiteProgress, SiteReportView, useSiteAudit } from "./SiteAudit";
+import { SpeedPanel } from "./SpeedPanel";
 
-const STAGES = ["Fetching the live page", "Reading robots.txt and llms.txt", "Checking 20+ on-page signals", "Scoring AI readiness"];
-const CATEGORY_ORDER: AuditCheck["category"][] = ["Indexability", "Content", "Structured data", "Social & Sharing", "Technical"];
+const STAGES = ["Fetching the live page", "Reading robots.txt, llms.txt and sitemaps", "Running 70+ checks on content, schema and images", "Testing links and AI crawler access"];
+const CATEGORY_ORDER: AuditCheck["category"][] = ["Indexability", "Content", "Performance", "Technical", "Links", "Structured data", "Social & Sharing"];
+type Mode = "page" | "site";
 const SEV_RANK: Record<Severity, number> = { error: 0, warning: 1, info: 2, pass: 3 };
 const EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -28,31 +33,74 @@ function hostOf(u: string) {
 
 export function PageAuditWorkspace({ initialUrl = "" }: { initialUrl?: string } = {}) {
   const [url, setUrl] = useState(initialUrl);
+  const [mode, setMode] = useState<Mode>("page");
   const { data: report, loading, step, error, quota, run, boot, savedId } = useToolRun<PageAuditReport>("/api/tools/page-audit", STAGES.length);
+  const site = useSiteAudit();
   const reduce = useReducedMotion();
 
   useEffect(() => boot(setUrl), [boot]);
 
+  const auditOnePage = (u: string) => {
+    setMode("page");
+    setUrl(u);
+    window.scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" });
+    run(u);
+  };
+
   return (
     <div className="space-y-8">
       <div className="space-y-3">
+        <div className="no-print glass inline-flex rounded-[14px] p-1 text-[13.5px]" role="tablist" aria-label="Audit scope" data-print-hide>
+          {(
+            [
+              ["page", "Single page"],
+              ["site", "Whole site"],
+            ] as const
+          ).map(([id, label]) => (
+            <button
+              key={id}
+              type="button"
+              role="tab"
+              aria-selected={mode === id}
+              onClick={() => setMode(id)}
+              className={`rounded-[10px] px-3.5 py-1.5 transition-colors ${mode === id ? "bg-white/85 text-ds-ink shadow-[0_4px_12px_-6px_rgba(43,41,39,.3)]" : "text-ds-ink-2 hover:text-ds-ink"}`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
         <ToolInputBar
           value={url}
           onChange={setUrl}
-          onSubmit={() => run(url)}
-          loading={loading}
-          placeholder="https://yoursite.com/page"
-          label="Page URL"
-          cta="Audit page"
+          onSubmit={() => (mode === "site" ? site.run(url) : run(url))}
+          loading={mode === "site" ? site.loading : loading}
+          placeholder={mode === "site" ? "yoursite.com" : "https://yoursite.com/page"}
+          label={mode === "site" ? "Website" : "Page URL"}
+          cta={mode === "site" ? "Audit site" : "Audit page"}
           slug="page-audit"
-          examples={report ? undefined : ["stripe.com", "linear.app/pricing", "en.wikipedia.org/wiki/SEO"]}
+          examples={(mode === "site" ? site.report : report) ? undefined : ["stripe.com", "linear.app/pricing", "en.wikipedia.org/wiki/SEO"]}
         />
-        <QuotaNote quota={quota} noun="audits" />
+        {mode === "site" ? (
+          <>
+            <QuotaNote quota={site.quota} noun="site crawls" />
+            <p className="text-[12.5px] text-ds-ink-3">Crawls your sitemaps and internal links (robots.txt respected) and audits every page it finds, up to your plan&apos;s page limit.</p>
+          </>
+        ) : (
+          <QuotaNote quota={quota} noun="audits" />
+        )}
       </div>
 
-      {error && <ErrorNote message={error.message} limited={error.limited} />}
+      {mode === "site" && (
+        <>
+          {site.error && <ErrorNote message={site.error.message} limited={site.error.limited} />}
+          {site.loading && <SiteProgress progress={site.progress} onCancel={site.cancel} />}
+          {site.report && !site.loading && <SiteReportView report={site.report} onAuditPage={auditOnePage} />}
+        </>
+      )}
 
-      {loading && (
+      {mode === "page" && error && <ErrorNote message={error.message} limited={error.limited} />}
+
+      {mode === "page" && loading && (
         <div className="glass grid gap-6 rounded-[24px] p-6 sm:p-8 md:grid-cols-[1fr_1.2fr]">
           <RunningStages stages={STAGES} step={step} />
           <div className="hidden space-y-3 md:block" aria-hidden>
@@ -63,7 +111,7 @@ export function PageAuditWorkspace({ initialUrl = "" }: { initialUrl?: string } 
         </div>
       )}
 
-      {report && !loading && (
+      {mode === "page" && report && !loading && (
         <motion.div
           key={report.checkedAt}
           initial={reduce ? false : { opacity: 0, y: 18 }}
@@ -74,8 +122,18 @@ export function PageAuditWorkspace({ initialUrl = "" }: { initialUrl?: string } 
           <PrintHeader title="Page audit" subject={report.finalUrl} when={report.checkedAt} />
           <Verdict report={report} savedId={savedId} onRerun={() => run(report.finalUrl)} />
           <TopFixes report={report} />
+          <CategoryBars categories={report.categories} />
+          <SpeedPanel report={report} />
           <AiLens report={report} />
           <FullAudit report={report} />
+          <div className="space-y-3">
+            <StructuredDataPanel sd={report.structuredData} />
+            <ImagesPanel images={report.images} />
+            <LinksPanel links={report.links} />
+            <AiAccessPanel access={report.aiAccess} />
+            <SitemapPanel sitemap={report.sitemap} />
+            <HeadingsPanel headings={report.facts.headings} />
+          </div>
           <Facts report={report} />
           <PrintFooter />
         </motion.div>
@@ -228,6 +286,13 @@ export function AiLens({ report }: { report: PageAuditReport }) {
             <div className="min-w-0">
               <p className="text-[15px] font-medium text-ds-ink">{c.title}</p>
               <p className="text-[14px] leading-5 text-ds-ink-2">{c.detail}</p>
+              {c.fix && c.severity !== "pass" && (
+                <p className="mt-1 text-[14px] leading-5 text-ds-ink">
+                  <span className="font-medium text-ds-accent-ink">Fix · </span>
+                  {c.fix}
+                </p>
+              )}
+              {c.severity !== "pass" && <EvidenceList items={c.items} initial={6} />}
             </div>
             <div className="col-span-2 flex items-center gap-2 sm:col-span-1" title={`Worth ${c.weight} of ${max} points`}>
               <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-ds-muted">
@@ -290,7 +355,7 @@ function FullAudit({ report }: { report: PageAuditReport }) {
               </summary>
               <ul className="divide-y divide-white/60 border-t border-white/60">
                 {items.map((c) => (
-                  <li key={c.id} className="flex gap-3 px-5 py-4">
+                  <li key={`${c.id}-${c.title}`} className="flex gap-3 px-5 py-4">
                     <SeverityIcon severity={c.severity} />
                     <div className="min-w-0">
                       <p className="text-[15px] font-medium text-ds-ink">{c.title}</p>
@@ -301,6 +366,7 @@ function FullAudit({ report }: { report: PageAuditReport }) {
                           {c.fix}
                         </p>
                       )}
+                      <EvidenceList items={c.items} />
                     </div>
                   </li>
                 ))}
@@ -322,9 +388,11 @@ function Facts({ report }: { report: PageAuditReport }) {
     ["Canonical", f.canonical ?? "—"],
     ["H1", f.h1.length ? f.h1.join(" | ") : "—"],
     ["Language", f.lang ?? "—"],
-    ["Images", `${f.images.total} total, ${f.images.missingAlt} missing alt`],
+    ["Images", `${f.images.total} total, ${f.images.missingAlt} missing or empty alt`],
     ["Links", `${f.links.internal} internal, ${f.links.external} external`],
     ["Schema types", f.schemaTypes.length ? f.schemaTypes.join(", ") : "—"],
+    ...(f.robotsDirectives?.length ? [["Robots directives", f.robotsDirectives.map((d) => `${d.source}: ${d.value}`).join(" · ")] as [string, string]] : []),
+    ...(f.serverHeaders && Object.keys(f.serverHeaders).length ? [["Server headers", Object.entries(f.serverHeaders).map(([k, v]) => `${k}: ${v}`).join(" · ")] as [string, string]] : []),
     ["Redirects", report.redirects.length ? report.redirects.join(" → ") : "None"],
     ["HTML size", `${Math.round(report.htmlBytes / 1024)} KB${report.truncated ? " (truncated)" : ""}`],
   ];

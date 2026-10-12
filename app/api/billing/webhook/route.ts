@@ -34,7 +34,8 @@ export async function POST(req: NextRequest) {
   const known = snap.data()?.pendingSubscriptionId ?? snap.data()?.subscriptionId;
   if (!snap.exists || known !== entity.id) return NextResponse.json({ ok: true, ignored: "unknown subscription" });
 
-  if (ACTIVATE.has(evt.event)) {
+  // Events can arrive out of order (a late "charged" after "cancelled"): only upgrade while Razorpay says it is live.
+  if (ACTIVATE.has(evt.event) && (!entity.status || entity.status === "active" || entity.status === "authenticated")) {
     await ref.set({ plan: "paid", subscriptionId: entity.id, billingStatus: entity.status ?? "active", paidAt: Date.now() }, { merge: true });
   } else if (DEACTIVATE.has(evt.event)) {
     await ref.set({ plan: "free", billingStatus: entity.status ?? evt.event.replace("subscription.", "") }, { merge: true });

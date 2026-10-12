@@ -2,7 +2,7 @@
  * Sample data for showing the real product UI on marketing pages. Fictional `.example` domains only.
  * Crawler verdicts are computed with the real robots.txt evaluator, not hand-written.
  */
-import type { PageAuditReport } from "@/lib/tools/pageAudit/audit";
+import type { PageAuditReport } from "@/lib/tools/pageAudit/types";
 import type { BotResult } from "@/lib/tools/aiCrawlers/check";
 import { AI_BOTS } from "@/lib/tools/aiCrawlers/bots";
 import { evaluateAgent, parseRobots } from "@/lib/tools/aiCrawlers/robots";

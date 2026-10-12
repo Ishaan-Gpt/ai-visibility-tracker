@@ -1,38 +1,23 @@
+import { docFromPaste, isHeading } from "@/lib/tools/keywordDensity/document";
+
 export type ParsedContent = {
   body: string;
   headings: string[];
 };
 
 /**
- * Detects and extracts HTML `<h1-6>` tags and Markdown `#`-style headings
- * into a separate list, then strips markup from the remainder — so heading
- * placement checks work correctly and heading text doesn't get double-
- * counted in the body's word/sentence analysis.
+ * Splits pasted text (plain, Markdown or HTML) into heading texts and body text, so heading
+ * placement checks work and heading text isn't double-counted in body-only measures.
+ * Thin wrapper over `docFromPaste`, kept for existing callers.
  */
 export function parseContent(raw: string): ParsedContent {
-  const headings: string[] = [];
-  let text = raw;
-
-  text = text.replace(/<h[1-6][^>]*>([\s\S]*?)<\/h[1-6]>/gi, (_match, inner: string) => {
-    const clean = inner.replace(/<[^>]+>/g, "").trim();
-    if (clean) headings.push(clean);
-    return " ";
-  });
-
-  if (/<[a-z][\s\S]*>/i.test(text)) {
-    text = text.replace(/<[^>]+>/g, " ");
-  }
-
-  const bodyLines: string[] = [];
-  for (const line of text.split("\n")) {
-    const mdHeadingMatch = line.match(/^\s{0,3}#{1,6}\s+(.*)$/);
-    if (mdHeadingMatch) {
-      const headingText = mdHeadingMatch[1].trim();
-      if (headingText) headings.push(headingText);
-      continue;
-    }
-    bodyLines.push(line);
-  }
-
-  return { body: bodyLines.join("\n"), headings };
+  const doc = docFromPaste(raw);
+  // A first line promoted to H1 by the heuristic stays in the body here (legacy behaviour: only explicit markup is a heading).
+  const inferred = doc.h1Origin === "first-line" ? doc.blocks[0] : null;
+  const headings = doc.blocks.filter((b) => isHeading(b.type) && b !== inferred).map((b) => b.text);
+  const body = doc.blocks
+    .filter((b) => !isHeading(b.type) || b === inferred)
+    .map((b) => b.text)
+    .join("\n\n");
+  return { body, headings };
 }

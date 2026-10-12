@@ -9,6 +9,8 @@ import { Backdrop } from "@/components/studio/Backdrop";
 import { ArchWindow } from "@/components/studio/Pieces";
 
 export const metadata: Metadata = { title: "Set up AI Visibility" };
+// The prompt-suggestion server action calls Gemini.
+export const maxDuration = 60;
 
 export default async function OnboardingPage({ searchParams }: { searchParams: Promise<{ domain?: string }> }) {
   const { domain } = await searchParams;
@@ -38,7 +40,7 @@ export default async function OnboardingPage({ searchParams }: { searchParams: P
             <p className="font-serif text-[38px] leading-[1]">
               Be the <span className="italic">answer</span>
             </p>
-            <p className="mt-2 max-w-[260px] text-[13.5px] leading-5 text-white/85">We ask Gemini, with live Google Search grounding, whether it names you, on a schedule.</p>
+            <p className="mt-2 max-w-[260px] text-[13.5px] leading-5 text-white/85">We ask AI engines with live web search whether they name you. First results in about a minute, then on a schedule.</p>
           </ArchWindow>
           <div className="p-5 sm:p-8">
             <OnboardingWizard maxPrompts={limits.maxPrompts} defaultDomain={domain?.slice(0, 253)} />

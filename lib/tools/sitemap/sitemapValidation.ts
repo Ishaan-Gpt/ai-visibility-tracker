@@ -1,4 +1,4 @@
-import { SITEMAP_LIMITS, type SitemapUrlEntry } from "@/lib/tools/sitemap/sitemapTypes";
+import { type SitemapUrlEntry } from "@/lib/tools/sitemap/sitemapTypes";
 import { WEIGHT_POINTS, type FieldRule } from "@/lib/tools/validation/googleRichResultRules";
 import { generateSitemap } from "@/lib/tools/sitemap/sitemapGenerator";
 

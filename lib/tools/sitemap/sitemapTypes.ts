@@ -5,6 +5,10 @@ export interface SitemapUrlEntry {
   lastmod: string;
   changefreq: ChangeFreq;
   priority: string;
+  /** Image URLs for <image:image> entries (Google image sitemap extension). */
+  images?: string[];
+  /** hreflang alternates for <xhtml:link rel="alternate"> entries. */
+  alternates?: { hreflang: string; href: string }[];
 }
 
 export function createEmptyEntry(): SitemapUrlEntry {

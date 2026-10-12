@@ -1,166 +1,214 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import { IconCopy as Copy, IconTick as Check } from "@/components/icons/Icons";
-import { Card, buttonClass } from "@/components/ds/primitives";
+import { useEffect, useMemo, useState } from "react";
+import { motion, useReducedMotion } from "framer-motion";
+import { ModeSwitch } from "@/components/tools/schema-generator/workspace/ModeSwitch";
+import { ToolInputBar } from "@/components/tools/shell/ToolInputBar";
+import { ErrorNote, QuotaNote, RunningStages } from "@/components/tools/shell/Bits";
+import { IconRerun } from "@/components/icons/Icons";
+import { useFetchPage } from "@/lib/tools/pageExtract/useFetchPage";
+import type { PageExtract } from "@/lib/tools/pageExtract/types";
+import { GoogleSection } from "./GooglePreview";
+import { SocialSection } from "./SocialPreviews";
+import { IssuesPanel } from "./IssuesPanel";
+import { TagOutput } from "./TagOutput";
+import { measureText, useHydrated, useImageFacts } from "./hooks";
+import { layoutSnippet, serpDate } from "./serpMetrics";
+import { bareHost, canonicalUrl, defaultFields, derivedTags, fieldsFromPage, hostOf, isAbsoluteHttp, literalTags, loadDraft, saveDraft, type FieldKey, type MetaFields } from "./fields";
+import { resolveCards } from "./socialRules";
+import { computeIssues } from "./issues";
+import { buildTagLines } from "./tagBlock";
+import { Chip } from "./ui";
 
-const TITLE_PX = 600; // Google desktop title container is ~600px
-const DESC_CHARS = 160;
+type Mode = "manual" | "url";
 
-function usePixelWidth() {
-  const ctx = useRef<CanvasRenderingContext2D | null>(null);
-  useEffect(() => {
-    ctx.current = document.createElement("canvas").getContext("2d");
-  }, []);
-  return (text: string, font: string) => {
-    if (!ctx.current) return text.length * 9.5;
-    ctx.current.font = font;
-    return ctx.current.measureText(text).width;
-  };
+const STAGES = ["Fetching the live page", "Reading title, meta and social tags", "Checking the share image"];
+const EASE = [0.22, 1, 0.36, 1] as const;
+
+/**
+ * Meta & SERP preview. Two ways in: write tags by hand, or load a live page and edit from there.
+ * Renders nothing measured until hydrated, because widths come from the browser's canvas.
+ */
+export function SerpPreviewWorkspace({ brandName, domain }: { brandName: string; domain: string }) {
+  const hydrated = useHydrated();
+  if (!hydrated) return <div className="skeleton h-[560px] rounded-[22px]" aria-busy />;
+  return <Workspace brandName={brandName} domain={domain} />;
 }
 
-function Bar({ value, max, warnAt }: { value: number; max: number; warnAt?: number }) {
-  const pct = Math.min(100, (value / max) * 100);
-  const over = value > max;
-  const low = warnAt !== undefined && value < warnAt;
+function Workspace({ brandName, domain }: { brandName: string; domain: string }) {
+  const [mode, setMode] = useState<Mode>("manual");
+  const [draft, setDraft] = useState<MetaFields>(() => loadDraft(domain) ?? defaultFields(brandName, domain));
+  const [urlFields, setUrlFields] = useState<MetaFields | null>(null);
+  const [urlInput, setUrlInput] = useState("");
+  const fetcher = useFetchPage();
+  const page = mode === "url" ? fetcher.page : null;
+  const reduce = useReducedMotion();
+
+  // Persist the hand-written draft only (never fetched pages).
+  useEffect(() => {
+    const t = window.setTimeout(() => saveDraft(domain, draft), 250);
+    return () => window.clearTimeout(t);
+  }, [domain, draft]);
+
+  const fields = mode === "manual" ? draft : urlFields;
+
+  const set = <K extends FieldKey>(k: K, v: MetaFields[K]) => {
+    if (mode === "manual") setDraft((f) => ({ ...f, [k]: v }));
+    else setUrlFields((f) => (f ? { ...f, [k]: v } : f));
+  };
+
+  const load = async (raw: string) => {
+    const p = await fetcher.load(raw.trim(), { probeImages: true });
+    if (p) setUrlFields((prev) => fieldsFromPage(p, { keyword: prev?.keyword ?? draft.keyword }));
+  };
+
   return (
-    <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/40">
-      <div className={`h-full rounded-full transition-all ${over ? "bg-ds-danger" : low ? "bg-ds-warning" : "bg-ds-success"}`} style={{ width: `${pct}%` }} />
+    <div className="space-y-6">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <ModeSwitch<Mode>
+          value={mode}
+          onChange={setMode}
+          label="How to start"
+          options={[
+            { value: "manual", label: "Write tags", hint: "Type a title, description and image" },
+            { value: "url", label: "Load from URL", hint: "Read the tags from a live page" },
+          ]}
+        />
+        {mode === "manual" && (
+          <button
+            type="button"
+            onClick={() => setDraft(defaultFields(brandName, domain))}
+            className="inline-flex h-9 items-center gap-1.5 rounded-[10px] px-3 text-[13.5px] text-ds-ink-2 transition hover:bg-white/50 hover:text-ds-ink"
+          >
+            <IconRerun className="h-4 w-4" /> Start over
+          </button>
+        )}
+      </div>
+
+      {mode === "url" && (
+        <div className="space-y-3">
+          <ToolInputBar
+            value={urlInput}
+            onChange={setUrlInput}
+            onSubmit={() => load(urlInput)}
+            loading={fetcher.loading}
+            placeholder="https://yoursite.com/page"
+            label="Page URL"
+            cta="Load tags"
+            slug="meta-tag-preview"
+            examples={fetcher.page ? undefined : ["allbirds.com/products/mens-wool-runners", "healthline.com/nutrition/green-tea-and-weight-loss", "stripe.com"]}
+          />
+          <QuotaNote quota={fetcher.quota} noun="page loads" />
+          {fetcher.error && <ErrorNote message={fetcher.error.message} limited={fetcher.error.limited} />}
+          {fetcher.loading && <Loading />}
+          {fetcher.page && urlFields && !fetcher.loading && (
+            <LoadedBar
+              page={fetcher.page}
+              fields={urlFields}
+              keyword={urlFields.keyword}
+              onReset={() => setUrlFields(fieldsFromPage(fetcher.page!, { keyword: urlFields.keyword }))}
+              onReload={() => load(fetcher.page!.requestedUrl)}
+            />
+          )}
+        </div>
+      )}
+
+      {fields ? (
+        <motion.div key={mode === "url" ? `url-${fetcher.page?.fetchedAt}` : "manual"} initial={reduce ? false : { opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55, ease: EASE }}>
+          <Results fields={fields} set={set} mode={mode} page={page} />
+        </motion.div>
+      ) : (
+        !fetcher.loading && <EmptyUrlState />
+      )}
     </div>
   );
 }
 
-const field =
-  "w-full rounded-[12px] border border-white/70 bg-white/55 px-3 py-2 text-[15px] text-ds-ink outline-none placeholder:text-ds-ink-3 focus:ring-2 focus:ring-ds-accent/60";
+function Results({ fields, set, mode, page }: { fields: MetaFields; set: <K extends FieldKey>(k: K, v: MetaFields[K]) => void; mode: Mode; page: PageExtract | null }) {
+  const tags = useMemo(() => (mode === "manual" ? derivedTags(fields) : literalTags(fields)), [fields, mode]);
+  const outputTags = useMemo(() => derivedTags(fields), [fields]);
+  const pageUrl = canonicalUrl(fields.url || page?.finalUrl || "");
 
-export function SerpPreviewWorkspace({ brandName, domain }: { brandName: string; domain: string }) {
-  const [title, setTitle] = useState(`${brandName} | Your main value proposition`);
-  const [description, setDescription] = useState("");
-  const [path, setPath] = useState("");
-  const [ogImage, setOgImage] = useState("");
-  const [device, setDevice] = useState<"desktop" | "mobile">("desktop");
-  const [copied, setCopied] = useState(false);
-  const measure = usePixelWidth();
+  const ogAbs = isAbsoluteHttp(tags.ogImage) ? tags.ogImage : "";
+  const xImg = tags.twitterImage || tags.ogImage;
+  const xAbs = isAbsoluteHttp(xImg) ? xImg : "";
+  const lookup = useImageFacts([ogAbs, xAbs, isAbsoluteHttp(tags.twitterImage) ? tags.twitterImage : ""], page?.imageProbes);
+  const ogFacts = ogAbs ? lookup(ogAbs) : undefined;
+  const xFacts = xAbs ? lookup(xAbs) : undefined;
 
-  const titlePx = Math.round(measure(title, "20px Arial, sans-serif"));
-  const titleOver = titlePx > TITLE_PX;
-  const shownTitle = useMemo(() => {
-    if (!titleOver) return title;
-    let t = title;
-    while (t.length > 1 && measure(`${t}…`, "20px Arial, sans-serif") > TITLE_PX) t = t.slice(0, -1);
-    return `${t.trimEnd()}…`;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [title, titleOver]);
-  const shownDesc = description.length > DESC_CHARS ? `${description.slice(0, DESC_CHARS - 1).trimEnd()}…` : description;
+  const date = fields.showDate ? serpDate(fields.published) : null;
+  const { title, description, keyword } = fields;
+  const desktop = useMemo(() => layoutSnippet({ title, description, url: pageUrl, keyword, date }, "desktop", measureText), [title, description, pageUrl, keyword, date]);
+  const mobile = useMemo(() => layoutSnippet({ title, description, url: pageUrl, keyword, date }, "mobile", measureText), [title, description, pageUrl, keyword, date]);
 
-  const url = `https://${domain}${path ? (path.startsWith("/") ? path : `/${path}`) : ""}`;
-  const crumb = `${domain}${path ? ` › ${path.replace(/^\//, "").split("/").filter(Boolean).join(" › ")}` : ""}`;
-
-  const tags = useMemo(() => {
-    const e = (s: string) => s.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
-    const lines = [`<title>${e(title)}</title>`, `<meta name="description" content="${e(description)}">`, `<link rel="canonical" href="${e(url)}">`];
-    lines.push(`<meta property="og:type" content="website">`, `<meta property="og:title" content="${e(title)}">`, `<meta property="og:description" content="${e(description)}">`, `<meta property="og:url" content="${e(url)}">`);
-    if (ogImage) lines.push(`<meta property="og:image" content="${e(ogImage)}">`);
-    lines.push(`<meta name="twitter:card" content="${ogImage ? "summary_large_image" : "summary"}">`, `<meta name="twitter:title" content="${e(title)}">`, `<meta name="twitter:description" content="${e(description)}">`);
-    if (ogImage) lines.push(`<meta name="twitter:image" content="${e(ogImage)}">`);
-    return lines.join("\n");
-  }, [title, description, url, ogImage]);
+  const siteName = fields.siteName.trim() || page?.siteName || bareHost(pageUrl) || "yoursite.com";
+  const cards = useMemo(() => resolveCards(tags, pageUrl, lookup), [tags, pageUrl, lookup]);
+  const issues = useMemo(() => computeIssues({ mode, tags, page, ogFacts, xFacts, desktop, mobile }), [mode, tags, page, ogFacts, xFacts, desktop, mobile]);
+  const tagLines = useMemo(() => buildTagLines(outputTags, { ogFacts, page }), [outputTags, ogFacts, page]);
 
   return (
-    <div className="grid gap-6 xl:grid-cols-[1fr_1fr]">
-      <Card className="space-y-4">
-        <label className="block">
-          <div className="mb-1 flex justify-between text-[14px] text-ds-ink-2">
-            <span>Title tag</span>
-            <span className={titleOver ? "text-ds-danger" : ""}>{title.length} chars · {titlePx}px / {TITLE_PX}px</span>
-          </div>
-          <input value={title} onChange={(e) => setTitle(e.target.value)} className={field} />
-          <div className="mt-2"><Bar value={titlePx} max={TITLE_PX} warnAt={300} /></div>
-        </label>
-        <label className="block">
-          <div className="mb-1 flex justify-between text-[14px] text-ds-ink-2">
-            <span>Meta description</span>
-            <span className={description.length > DESC_CHARS ? "text-ds-danger" : ""}>{description.length} / {DESC_CHARS}</span>
-          </div>
-          <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} placeholder="Describe the page in 70–160 characters and invite the click." className={field} />
-          <div className="mt-2"><Bar value={description.length} max={DESC_CHARS} warnAt={70} /></div>
-        </label>
-        <label className="block">
-          <span className="mb-1 block text-[14px] text-ds-ink-2">Page path</span>
-          <div className="flex items-center rounded-[12px] border border-white/70 bg-white/55 focus-within:ring-2 focus-within:ring-ds-accent/60">
-            <span className="pl-3 font-mono text-[13px] text-ds-ink-3">{domain}</span>
-            <input value={path} onChange={(e) => setPath(e.target.value)} placeholder="/pricing" className="h-10 flex-1 bg-transparent px-1 font-mono text-[13px] outline-none" />
-          </div>
-        </label>
-        <label className="block">
-          <span className="mb-1 block text-[14px] text-ds-ink-2">Social image URL (1200×630)</span>
-          <input value={ogImage} onChange={(e) => setOgImage(e.target.value)} placeholder="https://…/og.png" className={`${field} font-mono text-[13px]`} />
-        </label>
-      </Card>
+    <div className="space-y-6">
+      <GoogleSection fields={fields} set={set} desktop={desktop} mobile={mobile} siteName={siteName} mode={mode} />
+      <SocialSection fields={fields} set={set} cards={cards} mode={mode} ogFacts={ogFacts} pageUrl={pageUrl} />
+      <IssuesPanel issues={issues} subject={mode === "url" && page ? `Live page plus your edits · ${hostOf(page.finalUrl)}` : "Based on the tags you wrote (the tag block fills in every social tag)"} />
+      <TagOutput lines={tagLines} live={mode === "url" && !!page} />
+    </div>
+  );
+}
 
-      <div className="space-y-4">
-        <Card>
-          <div className="mb-3 flex items-center justify-between">
-            <h3 className="text-[14px] text-ds-ink-2">Google preview (approximate)</h3>
-            <div className="inline-flex rounded-[12px] bg-white/40 p-0.5 text-[13px]">
-              {(["desktop", "mobile"] as const).map((d) => (
-                <button key={d} type="button" onClick={() => setDevice(d)} className={`rounded-[9px] px-3 py-1 capitalize ${device === d ? "bg-white/55 text-ds-ink" : "text-ds-ink-2"}`}>{d}</button>
-              ))}
-            </div>
-          </div>
-          <div className={`mx-auto rounded-[12px] border border-white/70 bg-white p-4 font-[Arial,sans-serif] ${device === "mobile" ? "max-w-[360px]" : ""}`}>
-            <div className="flex items-center gap-2 text-[12px] text-[#202124]">
-              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#f1f3f4] text-[12px] font-medium uppercase">{domain[0]}</span>
-              <div className="min-w-0">
-                <div className="truncate text-[14px] leading-4">{brandName}</div>
-                <div className="truncate text-[12px] leading-4 text-[#4d5156]">{crumb}</div>
-              </div>
-            </div>
-            <div className="mt-2 text-[20px] leading-6 text-[#1a0dab]" style={{ wordBreak: "break-word" }}>{shownTitle || "Your title appears here"}</div>
-            <div className="mt-1 text-[14px] leading-[22px] text-[#4d5156]">{shownDesc || "Your meta description appears here."}</div>
-          </div>
-          <p className="mt-3 text-[12px] text-ds-ink-3">
-            Pixel widths use Arial 20px in your browser. Google can rewrite titles and descriptions, so this is guidance, not a guarantee.
-          </p>
-        </Card>
-
-        <Card>
-          <h3 className="mb-3 text-[14px] text-ds-ink-2">Social share card</h3>
-          <div className="overflow-hidden rounded-[12px] border border-white/70 bg-white">
-            <div className="flex aspect-[1.91/1] items-center justify-center bg-white/40 text-[13px] text-ds-ink-3">
-              {ogImage ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={ogImage} alt="" className="h-full w-full object-cover" />
-              ) : (
-                "No social image set"
-              )}
-            </div>
-            <div className="border-t border-white/70 p-3">
-              <div className="text-[12px] uppercase text-ds-ink-3">{domain}</div>
-              <div className="truncate text-[15px] font-medium text-ds-ink">{title}</div>
-              <div className="line-clamp-2 text-[13px] text-ds-ink-2">{description}</div>
-            </div>
-          </div>
-        </Card>
-
-        <Card className="p-0">
-          <div className="flex items-center justify-between border-b border-white/70 px-4 py-2.5">
-            <span className="font-mono text-[13px] text-ds-ink-2">&lt;head&gt; tags</span>
-            <button
-              type="button"
-              className={buttonClass("secondary")}
-              onClick={async () => {
-                await navigator.clipboard.writeText(tags);
-                setCopied(true);
-                setTimeout(() => setCopied(false), 1500);
-              }}
-            >
-              {copied ? <Check className="h-4 w-4 text-ds-success" /> : <Copy className="h-4 w-4" />} {copied ? "Copied" : "Copy"}
-            </button>
-          </div>
-          <pre className="max-h-64 overflow-auto whitespace-pre-wrap break-words p-4 font-mono text-[12px] leading-5 text-ds-ink">{tags}</pre>
-        </Card>
+function LoadedBar({ page, fields, keyword, onReset, onReload }: { page: PageExtract; fields: MetaFields; keyword: string; onReset: () => void; onReload: () => void }) {
+  const original = useMemo(() => fieldsFromPage(page, { keyword }), [page, keyword]);
+  const edits = (Object.keys(original) as FieldKey[]).filter((k) => k !== "keyword" && original[k] !== fields[k]).length;
+  const time = new Date(page.fetchedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  return (
+    <div className="glass flex flex-wrap items-center justify-between gap-3 rounded-[18px] py-2 pl-4 pr-2">
+      <p className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-[14px] text-ds-ink-2">
+        <span>
+          Loaded from <span className="font-medium text-ds-ink">{hostOf(page.finalUrl)}</span> at {time}
+        </span>
+        <Chip tone={page.status === 200 ? "good" : "bad"}>HTTP {page.status}</Chip>
+        {page.redirects.length > 0 && <Chip>{page.redirects.length} redirect{page.redirects.length > 1 ? "s" : ""}</Chip>}
+        {edits > 0 && <Chip tone="accent">{edits} edit{edits > 1 ? "s" : ""}</Chip>}
+      </p>
+      <div className="flex items-center gap-1">
+        <button type="button" onClick={onReset} disabled={!edits} className="inline-flex h-9 items-center rounded-[10px] px-3 text-[13.5px] text-ds-ink-2 transition hover:bg-white/50 hover:text-ds-ink disabled:opacity-40">
+          Reset edits
+        </button>
+        <button type="button" onClick={onReload} className="inline-flex h-9 items-center gap-1.5 rounded-[10px] px-3 text-[13.5px] text-ds-ink-2 transition hover:bg-white/50 hover:text-ds-ink" title="Fetch the page again (uses one page load)">
+          <IconRerun className="h-4 w-4" /> Reload
+        </button>
       </div>
+    </div>
+  );
+}
+
+function Loading() {
+  const [step, setStep] = useState(0);
+  useEffect(() => {
+    const id = window.setInterval(() => setStep((s) => Math.min(s + 1, STAGES.length - 1)), 1100);
+    return () => window.clearInterval(id);
+  }, []);
+  return (
+    <div className="glass grid gap-6 rounded-[24px] p-6 sm:p-8 md:grid-cols-[1fr_1.2fr]">
+      <RunningStages stages={STAGES} step={step} />
+      <div className="hidden space-y-3 md:block" aria-hidden>
+        <div className="skeleton h-28 rounded-ds-lg" />
+        <div className="skeleton h-14 rounded-ds-md" />
+        <div className="skeleton h-14 rounded-ds-md" />
+      </div>
+    </div>
+  );
+}
+
+function EmptyUrlState() {
+  return (
+    <div className="glass rounded-[24px] p-6 sm:p-8">
+      <h3 className="font-serif text-[30px] leading-[1.05] text-ds-ink sm:text-[36px]">
+        See any page the way <span className="italic">Google and feeds</span> do.
+      </h3>
+      <p className="mt-3 max-w-[620px] text-[15.5px] leading-6 text-ds-ink-2">
+        We read the live title, description, canonical, Open Graph and X tags, check the share image from our server, then fill every field so you can rewrite and compare before you ship.
+      </p>
     </div>
   );
 }
