@@ -3,7 +3,7 @@ import type { PageAuditReport } from "../types";
 import { rankFixes, scoreAi, scoreSeo } from "../scoring";
 import { aiLens } from "./ai";
 import { content, mainRoot } from "./content";
-import type { Ctx, PageInput } from "./context";
+import { add, type Ctx, type PageInput } from "./context";
 import { headings } from "./headings";
 import { hreflang } from "./hreflang";
 import { images } from "./images";
@@ -54,6 +54,9 @@ export function analyzePage(input: PageInput): { report: PageAuditReport; ctx: C
   const index = indexability(ctx);
   const c = content(ctx);
   const outline = headings(ctx);
+  if (c.title && c.h1[0] && c.title.trim().toLowerCase() === c.h1[0].trim().toLowerCase()) {
+    add(ctx, { id: "h1-title-same", category: "Content", impact: 1, severity: "info", title: "H1 is identical to the title", detail: c.title, fix: "Fine to keep, but a slightly different H1 lets the page cover a second phrasing (title for the search result, H1 for the reader)." });
+  }
   const imgs = images(ctx, mainRoot(ctx));
   const links = linksStatic(ctx);
   const tech = technical(ctx);

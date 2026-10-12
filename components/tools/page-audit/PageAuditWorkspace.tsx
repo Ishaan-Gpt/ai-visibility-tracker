@@ -14,7 +14,7 @@ import { useToolRun } from "@/components/tools/shell/useToolRun";
 import type { AuditCheck, PageAuditReport, Severity } from "@/lib/tools/pageAudit/types";
 import { AiAccessPanel, CategoryBars, HeadingsPanel, ImagesPanel, LinksPanel, SitemapPanel, StructuredDataPanel } from "./DeepPanels";
 import { EvidenceList } from "./Evidence";
-import { SiteProgress, SiteReportView, useSiteAudit } from "./SiteAudit";
+import { SiteProgress, SiteReportView, SiteScopePicker, useSiteAudit, type SiteScope } from "./SiteAudit";
 import { SpeedPanel } from "./SpeedPanel";
 
 const STAGES = ["Fetching the live page", "Reading robots.txt, llms.txt and sitemaps", "Running 70+ checks on content, schema and images", "Testing links and AI crawler access"];
@@ -34,6 +34,7 @@ function hostOf(u: string) {
 export function PageAuditWorkspace({ initialUrl = "" }: { initialUrl?: string } = {}) {
   const [url, setUrl] = useState(initialUrl);
   const [mode, setMode] = useState<Mode>("page");
+  const [siteScope, setSiteScope] = useState<SiteScope>({ mode: "site" });
   const { data: report, loading, step, error, quota, run, boot, savedId } = useToolRun<PageAuditReport>("/api/tools/page-audit", STAGES.length);
   const site = useSiteAudit();
   const reduce = useReducedMotion();
@@ -72,7 +73,7 @@ export function PageAuditWorkspace({ initialUrl = "" }: { initialUrl?: string } 
         <ToolInputBar
           value={url}
           onChange={setUrl}
-          onSubmit={() => (mode === "site" ? site.run(url) : run(url))}
+          onSubmit={() => (mode === "site" ? site.run(url, siteScope) : run(url))}
           loading={mode === "site" ? site.loading : loading}
           placeholder={mode === "site" ? "yoursite.com" : "https://yoursite.com/page"}
           label={mode === "site" ? "Website" : "Page URL"}
@@ -82,8 +83,15 @@ export function PageAuditWorkspace({ initialUrl = "" }: { initialUrl?: string } 
         />
         {mode === "site" ? (
           <>
+            <SiteScopePicker
+              value={siteScope}
+              onChange={(s) => {
+                setSiteScope(s);
+                // The Audit button needs a value; a pasted list supplies its first URL.
+                if (s.mode === "list" && s.urls?.[0] && !url.trim()) setUrl(s.urls[0]);
+              }}
+            />
             <QuotaNote quota={site.quota} noun="site crawls" />
-            <p className="text-[12.5px] text-ds-ink-3">Crawls your sitemaps and internal links (robots.txt respected) and audits every page it finds, up to your plan&apos;s page limit.</p>
           </>
         ) : (
           <QuotaNote quota={quota} noun="audits" />

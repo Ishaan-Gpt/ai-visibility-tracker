@@ -7,7 +7,79 @@ import { IconChevron as ChevronDown } from "@/components/icons/Icons";
 import { PrintFooter, PrintHeader, type QuotaInfo } from "@/components/tools/shell/Bits";
 import { exportPdf } from "@/components/tools/shell/ResultActions";
 import type { CrawlProgress } from "@/lib/crawl/types";
-import type { SiteAuditReport, SiteIssueGroup, SitePage } from "@/lib/tools/pageAudit/siteTypes";
+import type { SiteAuditMode, SiteAuditReport, SiteIssueGroup, SitePage } from "@/lib/tools/pageAudit/siteTypes";
+import { downloadSiteCsv, downloadSiteXlsx } from "./exportXlsx";
+
+export interface SiteScope {
+  mode: SiteAuditMode;
+  scope?: string;
+  urls?: string[];
+}
+
+const MODES: { id: SiteAuditMode; label: string; hint: string }[] = [
+  { id: "site", label: "Whole site", hint: "Sitemaps + every internal link" },
+  { id: "folder", label: "One folder", hint: "Only URLs under a path, e.g. /blog/" },
+  { id: "sitemap", label: "Sitemap only", hint: "Exactly the URLs your sitemap lists" },
+  { id: "list", label: "URL list", hint: "Paste the pages to audit" },
+];
+
+/** Crawl scope picker shown under the input in whole-site mode. */
+export function SiteScopePicker({ value, onChange }: { value: SiteScope; onChange: (s: SiteScope) => void }) {
+  const [listText, setListText] = useState(value.urls?.join("\n") ?? "");
+  return (
+    <div className="space-y-2.5">
+      <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="What to crawl">
+        {MODES.map((m) => (
+          <button
+            key={m.id}
+            type="button"
+            role="radio"
+            aria-checked={value.mode === m.id}
+            onClick={() => onChange({ mode: m.id, scope: m.id === value.mode ? value.scope : undefined, urls: m.id === "list" ? value.urls : undefined })}
+            className={`rounded-[12px] px-3 py-1.5 text-left text-[13px] transition-colors ${value.mode === m.id ? "bg-white/85 text-ds-ink shadow-[0_4px_12px_-6px_rgba(43,41,39,.3)]" : "glass-inset text-ds-ink-2 hover:text-ds-ink"}`}
+          >
+            {m.label}
+          </button>
+        ))}
+      </div>
+      {value.mode === "folder" && (
+        <input
+          value={value.scope ?? ""}
+          onChange={(e) => onChange({ ...value, scope: e.target.value })}
+          placeholder="/blog/  (leave empty to use the path in the URL above)"
+          aria-label="Folder to crawl"
+          className="glass-inset h-10 w-full rounded-[12px] px-3 text-[13.5px] outline-none"
+        />
+      )}
+      {value.mode === "sitemap" && (
+        <input
+          value={value.scope ?? ""}
+          onChange={(e) => onChange({ ...value, scope: e.target.value })}
+          placeholder="https://yoursite.com/sitemap.xml  (leave empty to find it automatically)"
+          aria-label="Sitemap URL"
+          className="glass-inset h-10 w-full rounded-[12px] px-3 text-[13.5px] outline-none"
+        />
+      )}
+      {value.mode === "list" && (
+        <textarea
+          value={listText}
+          onChange={(e) => {
+            setListText(e.target.value);
+            onChange({ ...value, urls: [...new Set(e.target.value.split(/[\s,]+/).map((u) => u.trim()).filter(Boolean))] });
+          }}
+          rows={5}
+          placeholder={"One URL per line, all on the same site\nhttps://yoursite.com/pricing\nhttps://yoursite.com/blog/post"}
+          aria-label="URLs to audit"
+          className="glass-inset w-full rounded-[12px] px-3 py-2.5 font-mono text-[12.5px] leading-5 outline-none"
+        />
+      )}
+      <p className="text-[12.5px] text-ds-ink-3">
+        {MODES.find((m) => m.id === value.mode)?.hint}. robots.txt is always respected.
+        {value.mode === "list" && value.urls?.length ? ` ${value.urls.length} URL${value.urls.length > 1 ? "s" : ""} ready.` : ""}
+      </p>
+    </div>
+  );
+}
 import { CategoryBars, Panel } from "./DeepPanels";
 import { CountPill, EvidenceList } from "./Evidence";
 
@@ -22,8 +94,8 @@ export function useSiteAudit() {
   const [loading, setLoading] = useState(false);
   const ac = useRef<AbortController | null>(null);
 
-  const run = useCallback(async (url: string) => {
-    if (!url.trim()) return;
+  const run = useCallback(async (url: string, scope: SiteScope = { mode: "site" }) => {
+    if (scope.mode === "list" ? !scope.urls?.length : !url.trim()) return;
     ac.current?.abort();
     const ctrl = new AbortController();
     ac.current = ctrl;
@@ -32,7 +104,7 @@ export function useSiteAudit() {
     setProgress(null);
     setReport(null);
     try {
-      const res = await fetch("/api/tools/page-audit/site", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url }), signal: ctrl.signal });
+      const res = await fetch("/api/tools/page-audit/site", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url, mode: scope.mode, scope: scope.scope, urls: scope.urls }), signal: ctrl.signal });
       if (!res.ok || !res.body) {
         const body = await res.json().catch(() => ({ error: "Something went wrong." }));
         if (body.quota) setQuota(body.quota);
@@ -150,19 +222,23 @@ export function SiteReportView({ report, onAuditPage }: { report: SiteAuditRepor
                 <span key={p} className="glass-inset rounded-[10px] px-2.5 py-1 tabular-nums text-ds-ink-2">{p}</span>
               ))}
             </div>
-            <button
-              type="button"
-              onClick={() => exportPdf(`seowise site audit - ${report.host}`)}
-              className="no-print mt-6 inline-flex h-10 items-center rounded-[12px] bg-ds-ink px-4 text-[14px] font-medium text-white"
-              data-print-hide
-            >
-              Export PDF
-            </button>
+            <div className="no-print mt-6 flex flex-wrap gap-2" data-print-hide>
+              <button type="button" onClick={() => exportPdf(`seowise site audit - ${report.host}`)} className="inline-flex h-10 items-center rounded-[12px] bg-ds-ink px-4 text-[14px] font-medium text-white">
+                Export PDF
+              </button>
+              <button type="button" onClick={() => downloadSiteXlsx(report)} className="glass-inset inline-flex h-10 items-center rounded-[12px] px-4 text-[14px] font-medium text-ds-ink hover:bg-white/70" title="9 sheets: summary, issues, issue URLs, pages, page issues, broken links, redirects, images, duplicates">
+                Excel (.xlsx)
+              </button>
+              <button type="button" onClick={() => downloadSiteCsv(report)} className="glass-inset inline-flex h-10 items-center rounded-[12px] px-4 text-[14px] font-medium text-ds-ink hover:bg-white/70">
+                Pages (.csv)
+              </button>
+            </div>
           </div>
         </div>
       </section>
 
       <CategoryBars categories={report.categories} />
+      <Distributions pages={report.pages} />
       <IssueList issues={report.issues} crawlIssues={report.crawlIssues} />
       <PageTable pages={report.pages} onAuditPage={onAuditPage} />
       <Panel title="Sitemaps" italic="& robots.txt" badge={<CountPill tone={report.sitemaps.found ? "good" : "accent"}>{report.sitemaps.found ? `${report.sitemaps.urlCount} URLs` : "None found"}</CountPill>}>
@@ -175,6 +251,68 @@ export function SiteReportView({ report, onAuditPage }: { report: SiteAuditRepor
       </Panel>
       <PrintFooter />
     </div>
+  );
+}
+
+/** Where the crawl ended up: HTTP status classes and click depth (how far pages sit from the start page). */
+function Distributions({ pages }: { pages: SitePage[] }) {
+  const status = [
+    { label: "2xx OK", n: pages.filter((p) => p.status !== null && p.status >= 200 && p.status < 300).length, cls: "bg-ds-success" },
+    { label: "3xx Redirect", n: pages.filter((p) => p.status !== null && p.status >= 300 && p.status < 400).length, cls: "bg-ds-warning" },
+    { label: "4xx Client error", n: pages.filter((p) => p.status !== null && p.status >= 400 && p.status < 500).length, cls: "bg-ds-danger" },
+    { label: "5xx Server error", n: pages.filter((p) => p.status !== null && p.status >= 500).length, cls: "bg-ds-danger" },
+    { label: "No response", n: pages.filter((p) => p.status === 0).length, cls: "bg-ds-ink-3" },
+    { label: "Not fetched", n: pages.filter((p) => p.status === null).length, cls: "bg-ds-muted" },
+  ].filter((s) => s.n > 0);
+  const depthMax = Math.max(0, ...pages.map((p) => p.depth ?? 0));
+  const depth = Array.from({ length: Math.min(depthMax, 9) + 1 }, (_, d) => ({
+    label: d === 9 && depthMax > 9 ? "9+" : String(d),
+    n: pages.filter((p) => p.depth !== null && (d === 9 ? p.depth >= 9 : p.depth === d)).length,
+  }));
+  const unlinked = pages.filter((p) => p.depth === null).length;
+  const total = Math.max(1, pages.length);
+  const dmax = Math.max(1, ...depth.map((d) => d.n));
+  return (
+    <section data-print-card className="glass grid gap-8 rounded-[24px] p-5 sm:p-7 lg:grid-cols-2">
+      <div>
+        <h3 className="font-serif text-[24px] leading-none">
+          Response <span className="italic">codes</span>
+        </h3>
+        <div className="mt-4 flex h-3 overflow-hidden rounded-full bg-ds-muted">
+          {status.map((s) => (
+            <div key={s.label} className={s.cls} style={{ width: `${(s.n / total) * 100}%` }} title={`${s.label}: ${s.n}`} />
+          ))}
+        </div>
+        <ul className="mt-3 grid grid-cols-2 gap-x-6 gap-y-1.5 text-[13px]">
+          {status.map((s) => (
+            <li key={s.label} className="flex items-center justify-between gap-2">
+              <span className="flex items-center gap-2 text-ds-ink-2">
+                <span className={`h-2 w-2 rounded-full ${s.cls}`} />
+                {s.label}
+              </span>
+              <span className="tabular-nums text-ds-ink">{s.n}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+      <div>
+        <h3 className="font-serif text-[24px] leading-none">
+          Click <span className="italic">depth</span>
+        </h3>
+        <div className="mt-4 flex h-[96px] items-end gap-1.5" role="img" aria-label="Pages by number of clicks from the start page">
+          {depth.map((d) => (
+            <div key={d.label} className="flex flex-1 flex-col items-center gap-1">
+              <span className="text-[11px] tabular-nums text-ds-ink-3">{d.n || ""}</span>
+              <div className={`w-full rounded-t-[6px] ${Number(d.label) > 3 || d.label === "9+" ? "bg-ds-warning" : "bg-ds-accent"}`} style={{ height: `${Math.max(2, (d.n / dmax) * 64)}px` }} />
+              <span className="text-[11px] text-ds-ink-3">{d.label}</span>
+            </div>
+          ))}
+        </div>
+        <p className="mt-2 text-[12.5px] text-ds-ink-3">
+          Clicks from the start page. Pages deeper than 3 get crawled less often.{unlinked ? ` ${unlinked} URL${unlinked > 1 ? "s were" : " was"} only found in the sitemap or your list.` : ""}
+        </p>
+      </div>
+    </section>
   );
 }
 

@@ -11,7 +11,8 @@ export type ExcludeReason =
   | "non-html"
   | "blocked-robots"
   | "trap"
-  | "pattern";
+  | "pattern"
+  | "off-site";
 
 export const EXCLUDE_LABEL: Record<ExcludeReason, string> = {
   noindex: "noindex",
@@ -24,6 +25,7 @@ export const EXCLUDE_LABEL: Record<ExcludeReason, string> = {
   "blocked-robots": "Blocked by robots.txt",
   trap: "Crawl trap skipped",
   pattern: "Matched your exclude pattern",
+  "off-site": "On a different site",
 };
 
 export interface Hreflang {
@@ -152,6 +154,14 @@ export interface CrawlOptions {
   maxDepth?: number;
   /** Max bytes read per page. Default 1.5 MB. */
   maxPageBytes?: number;
+  /** Only crawl URLs whose path starts with this prefix (e.g. "/blog/"). Links elsewhere on the site are not followed. */
+  scopePath?: string;
+  /** Follow links found on pages (default true). False = only fetch the start URL, `seedUrls` and sitemap URLs. */
+  followLinks?: boolean;
+  /** Sitemap files to read instead of robots.txt Sitemap: lines and the default paths. */
+  sitemapUrls?: string[];
+  /** Extra URLs to fetch at depth 0 (URL-list mode). Must be on the same site as `url`. */
+  seedUrls?: string[];
   signal?: AbortSignal;
 }
 

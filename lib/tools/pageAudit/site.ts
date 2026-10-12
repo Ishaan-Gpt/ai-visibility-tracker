@@ -3,7 +3,24 @@ import { crawlSite, EXCLUDE_LABEL, loadRobots, type CrawlProgress, type FetchedP
 import { normalizeUrl } from "@/lib/net/safeFetch";
 import { analyzePage } from "./analyze";
 import { CATEGORY_ORDER } from "./scoring";
-import type { SiteAuditReport, SiteIssueGroup, SitePage, SitePageIssue } from "./siteTypes";
+import type { SiteAuditMode, SiteAuditReport, SiteIssueGroup, SitePage, SitePageIssue } from "./siteTypes";
+import type { CrawlOptions } from "@/lib/crawl/types";
+
+/** Crawler options for each audit mode. */
+function modeOptions(base: URL, mode: SiteAuditMode, scope?: string, urls?: string[]): Partial<CrawlOptions> {
+  switch (mode) {
+    case "folder": {
+      const path = scope?.trim() || base.pathname;
+      return { scopePath: path.endsWith("/") || /\.[a-z0-9]+$/i.test(path) ? path : `${path}/` };
+    }
+    case "sitemap":
+      return { followLinks: false, sitemapUrls: scope ? [scope] : undefined };
+    case "list":
+      return { followLinks: false, useSitemaps: false, seedUrls: urls ?? [] };
+    default:
+      return {};
+  }
+}
 import type { AuditCheck, PageAuditReport, Severity } from "./types";
 
 /*
@@ -64,7 +81,17 @@ interface Analysed {
 
 export async function auditSite(
   input: string,
-  opts: { maxPages: number; timeBudgetMs: number; signal?: AbortSignal; onProgress?: (p: CrawlProgress) => void },
+  opts: {
+    maxPages: number;
+    timeBudgetMs: number;
+    signal?: AbortSignal;
+    onProgress?: (p: CrawlProgress) => void;
+    mode?: SiteAuditMode;
+    /** Folder prefix ("folder" mode), sitemap URL ("sitemap" mode). */
+    scope?: string;
+    /** Page URLs ("list" mode). */
+    urls?: string[];
+  },
 ): Promise<SiteAuditReport> {
   const started = Date.now();
   const base = normalizeUrl(input);
@@ -72,7 +99,7 @@ export async function auditSite(
   const analysed = new Map<string, Analysed>();
 
   const crawl = await crawlSite(
-    { url: base.href, maxPages: opts.maxPages, timeBudgetMs: opts.timeBudgetMs, signal: opts.signal },
+    { url: base.href, maxPages: opts.maxPages, timeBudgetMs: opts.timeBudgetMs, signal: opts.signal, ...modeOptions(base, opts.mode ?? "site", opts.scope, opts.urls) },
     {
       onProgress: opts.onProgress,
       onPage: (p) => {
@@ -140,6 +167,8 @@ export async function auditSite(
   const score = Math.max(0, avg(scored.map((p) => p.score!)) - siteErrors * 3);
 
   return {
+    mode: opts.mode ?? "site",
+    scope: opts.mode === "list" ? `${opts.urls?.length ?? 0} URLs` : opts.scope,
     startUrl: crawl.startUrl,
     resolvedUrl: crawl.resolvedUrl,
     host: crawl.host,

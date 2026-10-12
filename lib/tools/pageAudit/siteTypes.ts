@@ -43,7 +43,13 @@ export interface SiteIssueGroup {
   pages: { url: string; note?: string; items?: string[] }[];
 }
 
+/** How pages are found: the whole site, one folder, only the URLs in a sitemap, or a pasted list. */
+export type SiteAuditMode = "site" | "folder" | "sitemap" | "list";
+
 export interface SiteAuditReport {
+  /** Absent on reports from before crawl modes existed (= "site"). */
+  mode?: SiteAuditMode;
+  scope?: string;
   startUrl: string;
   resolvedUrl: string;
   host: string;

@@ -51,6 +51,17 @@ export async function crawlSite(options: CrawlOptions, hooks: CrawlHooks = {}): 
   const includeSubdomains = !!options.includeSubdomains;
   const exclude = compilePatterns(options.excludePatterns ?? []);
   const signal = options.signal;
+  const followLinks = options.followLinks !== false;
+  const scopePath = options.scopePath ? `/${options.scopePath.trim().replace(/^\/+/, "")}` : null;
+  /** Inside the requested folder (always true without a scopePath). */
+  const inPath = (u: string) => {
+    if (!scopePath) return true;
+    try {
+      return new URL(u).pathname.startsWith(scopePath);
+    } catch {
+      return false;
+    }
+  };
 
   const startUrl = normalizeCrawlUrl(normalizeUrl(options.url).href);
   if (!startUrl) throw new SafeFetchError("That doesn't look like a valid URL.");
@@ -249,7 +260,7 @@ export async function crawlSite(options: CrawlOptions, hooks: CrawlHooks = {}): 
           p.reason = "canonicalised";
           p.detail = p.canonical;
         }
-        if (p.canonical && inScope(p.canonical, baseHost, includeSubdomains) && !isAssetUrl(p.canonical)) discover(p.canonical, depth, null);
+        if (followLinks && p.canonical && inScope(p.canonical, baseHost, includeSubdomains) && inPath(p.canonical) && !isAssetUrl(p.canonical)) discover(p.canonical, depth, null);
 
         const seenTargets = new Set<string>();
         for (const href of f.links) {
@@ -262,6 +273,16 @@ export async function crawlSite(options: CrawlOptions, hooks: CrawlHooks = {}): 
           }
           if (isAssetUrl(t)) {
             assetsSkipped++;
+            continue;
+          }
+          if (!inPath(t)) continue;
+          if (!followLinks) {
+            // Still count the link so inlinks stay meaningful, but never queue new URLs.
+            const known = nodes.get(t);
+            if (known && t !== p.url) {
+              known.page.inlinks++;
+              known.page.foundOn ??= p.url;
+            }
             continue;
           }
           if (t !== p.url) discover(t, depth + 1, p);
@@ -400,6 +421,7 @@ export async function crawlSite(options: CrawlOptions, hooks: CrawlHooks = {}): 
         offsiteUrls++;
         continue;
       }
+      if (!inPath(u)) continue;
       if (inSitemapSet.has(u)) continue;
       inSitemapSet.add(u);
       const lastmod = rec.lastmod && isW3cDatetime(rec.lastmod) ? toW3cDate(rec.lastmod) : undefined;
@@ -434,7 +456,7 @@ export async function crawlSite(options: CrawlOptions, hooks: CrawlHooks = {}): 
   if (options.useSitemaps !== false && !stopped) {
     sitemapsPending = true;
     const smDeadline = Math.min(deadline - 2_000, Date.now() + budgetMs * 0.7);
-    const declared = siteRobots.sitemaps.length ? siteRobots.sitemaps : robots0.sitemaps;
+    const declared = options.sitemapUrls?.length ? options.sitemapUrls : siteRobots.sitemaps.length ? siteRobots.sitemaps : robots0.sitemaps;
     const guesses = DEFAULT_SITEMAP_PATHS.map((p) => resolvedOrigin + p);
     const onFile = (f: SitemapFileInfo, _total: number, recs: { loc: string; lastmod?: string }[]) => {
       if (finalized) return;
@@ -460,6 +482,23 @@ export async function crawlSite(options: CrawlOptions, hooks: CrawlHooks = {}): 
         sitemapsPending = false;
         notify();
       });
+  }
+
+  /* ---------- URL list: extra depth-0 seeds on the same site ---------- */
+  for (const raw of options.seedUrls ?? []) {
+    let u: string | null = null;
+    try {
+      u = normalizeCrawlUrl(normalizeUrl(raw).href);
+    } catch {
+      u = null;
+    }
+    if (!u || nodes.has(u)) continue;
+    if (!inScope(u, baseHost, includeSubdomains)) {
+      nodes.set(u, { page: { url: u, status: null, reason: null, depth: 0, inlinks: 0, inSitemap: false }, state: "queued", inLinkQ: false, inSitemapQ: false });
+      skip(nodes.get(u)!, "off-site", "URL lists audit one site at a time (the site of the first URL)");
+      continue;
+    }
+    discover(u, 0, null);
   }
 
   /* ---------- 3. BFS crawl ---------- */
@@ -564,7 +603,8 @@ export async function crawlSite(options: CrawlOptions, hooks: CrawlHooks = {}): 
   // Anything still "fetching" when time ran out goes back to "not crawled".
   for (const n of nodes.values()) if (n.state === "fetching") n.state = "queued";
   const remainingQueued = [...nodes.values()].filter((n) => n.state === "queued");
-  const linkCrawlComplete = !remainingQueued.some((n) => n.inLinkQ);
+  // Orphan claims need a full link crawl; list and sitemap-only modes never follow links.
+  const linkCrawlComplete = followLinks && !scopePath && !remainingQueued.some((n) => n.inLinkQ);
   if (stoppedBy === "complete" && remainingQueued.length > 0) stoppedBy = started >= cap ? "page-cap" : Date.now() >= deadline ? "time-budget" : "page-cap";
   emit(true);
 
