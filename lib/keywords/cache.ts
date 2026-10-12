@@ -17,8 +17,9 @@ const TTL_MS = 7 * 86_400_000;
 const VERSION = 2;
 const MAX_BYTES = 900_000;
 
-export function cacheKey(seed: string, country: string, language: string, sources: SuggestSource[]): string {
-  const raw = JSON.stringify([VERSION, seed, country, language, [...sources].sort()]);
+/** `providerLimit` is part of the key: a result without paid data must never be served to a plan that gets it. */
+export function cacheKey(seed: string, country: string, language: string, sources: SuggestSource[], providerLimit = 0): string {
+  const raw = JSON.stringify([VERSION, seed, country, language, [...sources].sort(), providerLimit]);
   return crypto.createHash("sha256").update(raw).digest("hex").slice(0, 40);
 }
 

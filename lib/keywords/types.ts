@@ -103,6 +103,10 @@ export interface ResearchResponse {
     name: string | null;
     /** Set when the provider is configured but a call failed (fully or partly), so the UI can say why. */
     error?: string;
+    /** How many of the strongest keywords were enriched (plan limit). */
+    limit?: number;
+    /** Provider is connected but this plan gets no paid data (anonymous visitors). */
+    locked?: boolean;
   };
   ai: { used: boolean; error?: string };
   stats: {

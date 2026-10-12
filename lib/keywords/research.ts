@@ -21,6 +21,8 @@ export interface RunOptions {
   budgetMs?: number;
   /** Skip the optional AI pass (tests). */
   skipAi?: boolean;
+  /** Keywords (strongest first) that get paid provider data. 0 = none. */
+  providerLimit?: number;
 }
 
 /** Full pipeline: expand -> rank -> group -> cluster -> optional AI labels -> optional provider data. */
@@ -97,8 +99,8 @@ export async function runResearch(opts: RunOptions): Promise<ResearchResponse> {
           keywords: rows.slice(0, AI_TOP_KEYWORDS).map((r) => r.keyword),
         }, aiBudget)
       : Promise.resolve(null),
-    dataforseoConfigured()
-      ? enrichKeywords(rows.map((r) => r.keyword), country, language).catch((err: unknown) => (err instanceof Error ? err : new Error("Data provider failed")))
+    dataforseoConfigured() && (opts.providerLimit ?? 0) > 0
+      ? enrichKeywords(rows.slice(0, opts.providerLimit).map((r) => r.keyword), country, language).catch((err: unknown) => (err instanceof Error ? err : new Error("Data provider failed")))
       : Promise.resolve(null),
   ]);
 
@@ -124,6 +126,7 @@ export async function runResearch(opts: RunOptions): Promise<ResearchResponse> {
   }
 
   const provider: ResearchResponse["provider"] = { volume: false, name: null };
+  if (dataforseoConfigured() && !(opts.providerLimit ?? 0)) provider.locked = true;
   if (enriched instanceof Error) {
     provider.error = enriched.message;
   } else if (enriched) {
@@ -133,6 +136,7 @@ export async function runResearch(opts: RunOptions): Promise<ResearchResponse> {
     });
     provider.volume = true;
     provider.name = "DataForSEO";
+    provider.limit = Math.min(opts.providerLimit ?? 0, rows.length);
     if (enriched.errors.length) provider.error = `Partial data: ${enriched.errors.join("; ")}`;
   }
 

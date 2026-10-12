@@ -1,5 +1,6 @@
 import { after, NextRequest, NextResponse } from "next/server";
 import { consumeQuota, getViewer } from "@/lib/usage";
+import { PROVIDER_KEYWORDS } from "@/lib/limits";
 import { cacheKey, readCache, writeCache } from "@/lib/keywords/cache";
 import { runResearch } from "@/lib/keywords/research";
 import { normalizeKeyword } from "@/lib/keywords/text";
@@ -25,19 +26,21 @@ export async function POST(req: NextRequest) {
   const requested = Array.isArray(body.sources) ? body.sources.filter((s): s is SuggestSource => valid.has(s as SuggestSource)) : [];
   const sources = SOURCES.map((s) => s.id).filter((id) => (requested.length ? requested : DEFAULT_SOURCES).includes(id));
 
-  // Cache first: a hit returns instantly and does not use a run.
-  const key = cacheKey(seed, country.code, language, sources);
+  const viewer = await getViewer();
+  const providerLimit = PROVIDER_KEYWORDS[viewer.tier];
+
+  // Cache first: a hit returns instantly and does not use a run (or any paid provider credit).
+  const key = cacheKey(seed, country.code, language, sources, providerLimit);
   if (body.fresh !== true) {
     const hit = await readCache(key);
     if (hit) return NextResponse.json(hit);
   }
 
   // Daily cap (per IP when anonymous): protects the data provider and the autocomplete endpoints from abuse.
-  const viewer = await getViewer();
   const usage = await consumeQuota(req, "keywords", viewer);
   if (!usage.ok) return NextResponse.json({ error: usage.message, quota: usage.quota, limited: true }, { status: 429 });
 
-  const result = await runResearch({ seed, country: country.code, language, sources });
+  const result = await runResearch({ seed, country: country.code, language, sources, providerLimit });
 
   if (result.keywords.length <= 1) {
     return NextResponse.json(

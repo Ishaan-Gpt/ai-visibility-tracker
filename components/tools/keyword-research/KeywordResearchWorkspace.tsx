@@ -31,6 +31,7 @@ import {
 } from "@/lib/keywords/types";
 import { downloadCsv } from "./csv";
 import { AiMark, Chip, ClusterGrid, GroupBoard, INTENT_STYLE, SignalBar, SourceBadges, SourceMark, Sparkline } from "./parts";
+import { PROVIDER_KEYWORDS } from "@/lib/limits";
 
 const ArrowUp = (p: { className?: string }) => <IconCaret {...p} />;
 const ArrowDown = (p: { className?: string }) => <IconCaret {...p} style={{ transform: "rotate(180deg)" }} />;
@@ -502,15 +503,22 @@ export function KeywordResearchWorkspace() {
               <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-ds-warning" />
               <div>
                 <p className="font-medium text-ds-ink">
-                  {result.provider.error ? "Volume data provider returned an error" : "Search volume and difficulty are not connected"}
+                  {result.provider.error ? "Volume data provider returned an error" : result.provider.locked ? "Sign in for search volume and difficulty" : "Search volume and difficulty are not connected"}
                 </p>
                 <p className="mt-1">
                   {result.provider.error
                     ? `${result.provider.error}. Keyword ideas below are still real.`
-                    : "Add DATAFORSEO_LOGIN and DATAFORSEO_PASSWORD to unlock monthly volume, trend, keyword difficulty and CPC. Until then the Signal column ranks ideas by how prominently and how often autocomplete suggests them. It is relative to this research, not a search volume."}
+                    : result.provider.locked
+                      ? `A free account adds real monthly volume, trend, difficulty and CPC for your top ${PROVIDER_KEYWORDS.free} ideas (Pro: top ${PROVIDER_KEYWORDS.pro}). The Signal column below ranks ideas by how prominently autocomplete suggests them; it is not a search volume.`
+                      : "Add DATAFORSEO_LOGIN and DATAFORSEO_PASSWORD to unlock monthly volume, trend, keyword difficulty and CPC. Until then the Signal column ranks ideas by how prominently and how often autocomplete suggests them. It is relative to this research, not a search volume."}
                 </p>
               </div>
             </div>
+          )}
+          {hasVolume && !result.provider.error && result.provider.limit !== undefined && result.provider.limit < result.keywords.length && (
+            <p className="text-[13px] text-ds-ink-3">
+              Volume, difficulty and CPC are shown for the {result.provider.limit} strongest ideas on your plan; the rest are ranked by Signal.
+            </p>
           )}
           {hasVolume && result.provider.error && (
             <div className="flex items-start gap-3 rounded-[18px] border border-white/70 bg-white/55 p-4 text-[14px] text-ds-ink-2">

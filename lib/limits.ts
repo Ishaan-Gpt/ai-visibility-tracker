@@ -14,6 +14,12 @@ export const DAILY_LIMITS: Record<QuotaTool, Record<Tier, number>> = {
   visibility: { anon: 0, free: 2, pro: 20 },
 };
 
+/**
+ * Keywords per research that get paid provider data (DataForSEO volume / difficulty / CPC), by tier. Each research
+ * costs real money per keyword, so anonymous visitors get none and the strongest ideas are enriched first.
+ */
+export const PROVIDER_KEYWORDS: Record<Tier, number> = { anon: 0, free: 50, pro: 500 };
+
 /** Pages a single crawl may discover, by tier. */
 export const CRAWL_PAGE_LIMITS: Record<Tier, number> = { anon: 150, free: 500, pro: 2500 };
 
