@@ -94,6 +94,14 @@ const GLYPHS: Record<string, (p: P) => React.ReactElement> = {
       <path d="M3.4 19.8h17.2" />
     </G>
   ),
+  "rank-tracker": (p) => (
+    <G {...p}>
+      <path d="M4.6 19.4V14.8h4.4v4.6M9.8 19.4V9.4h4.4v10M15 19.4v-6.6h4.4v6.6" fill={W} fillOpacity=".45" />
+      <path d="M4.6 19.4V14.8h4.4v4.6M9.8 19.4V9.4h4.4v10M15 19.4v-6.6h4.4v6.6" />
+      <path d="M3.4 19.8h17.2" />
+      <path d="M12 9.4V4.2l3 1.3-3 1.4" />
+    </G>
+  ),
   "ai-visibility-tracker": (p) => (
     <G {...p}>
       <path d="M4 7.4c0-1.2 1-2.2 2.2-2.2h11.6c1.2 0 2.2 1 2.2 2.2v6.8c0 1.2-1 2.2-2.2 2.2H11l-4.4 3.4v-3.4h-.4A2.2 2.2 0 0 1 4 14.2z" fill={W} fillOpacity=".45" />

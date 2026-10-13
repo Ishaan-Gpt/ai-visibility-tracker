@@ -1,4 +1,4 @@
-import { CRAWL_PAGE_LIMITS, DAILY_LIMITS } from "@/lib/limits";
+import { CRAWL_PAGE_LIMITS, DAILY_LIMITS, DOMAIN_ROWS, RANK_LIMITS } from "@/lib/limits";
 import { HISTORY_LIMITS } from "@/lib/history";
 import { PLAN_LIMITS } from "@/lib/types";
 
@@ -15,6 +15,11 @@ export function planRows() {
     { label: "AI Visibility prompts", free: String(PLAN_LIMITS.free.maxPrompts), pro: String(PLAN_LIMITS.paid.maxPrompts) },
     { label: "AI Visibility checks", free: "Weekly", pro: "Daily" },
     { label: "On-demand visibility runs / day", free: String(DAILY_LIMITS.visibility.free), pro: String(DAILY_LIMITS.visibility.pro) },
+    { label: "Rank Tracker keywords", free: String(RANK_LIMITS.free.keywords), pro: String(RANK_LIMITS.pro.keywords) },
+    { label: "Rank checks", free: "Weekly", pro: "Daily" },
+    { label: "On-demand rank checks / day", free: String(DAILY_LIMITS["rank-check"].free), pro: String(DAILY_LIMITS["rank-check"].pro) },
+    { label: "Domain keyword lookups / day", free: String(DAILY_LIMITS["domain-keywords"].free), pro: String(DAILY_LIMITS["domain-keywords"].pro) },
+    { label: "Rows per domain lookup", free: String(DOMAIN_ROWS.free), pro: String(DOMAIN_ROWS.pro) },
     { label: "Browser tools + PDF", free: "∞", pro: "∞" },
   ];
 }

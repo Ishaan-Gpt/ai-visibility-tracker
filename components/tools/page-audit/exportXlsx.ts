@@ -5,8 +5,8 @@ import type { SiteAuditReport } from "@/lib/tools/pageAudit/siteTypes";
  * uncompressed ("stored") zip by hand so no library is needed. Inline strings avoid a shared-strings table.
  */
 
-type Cell = string | number | boolean | null | undefined;
-interface Sheet {
+export type Cell = string | number | boolean | null | undefined;
+export interface Sheet {
   name: string;
   rows: Cell[][];
   widths: number[];
@@ -112,7 +112,7 @@ function sheetXml(sheet: Sheet): string {
 <worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews><cols>${cols}</cols><sheetData>${rows}</sheetData>${sheet.rows.length > 1 ? `<autoFilter ref="A1:${last}"/>` : ""}</worksheet>`;
 }
 
-function workbook(sheets: Sheet[]): Blob {
+export function workbook(sheets: Sheet[]): Blob {
   const enc = new TextEncoder();
   const names = sheets.map((s) => xml(s.name.replace(/[\\/?*[\]:]/g, " ").slice(0, 31)));
   const files: { name: string; data: string }[] = [
@@ -250,7 +250,7 @@ export function siteAuditSheets(r: SiteAuditReport): Sheet[] {
   return [summary, issues, issueUrls, pages, pageIssues, brokenSheet, redirectSheet, imageSheet, dupes];
 }
 
-function download(blob: Blob, filename: string) {
+export function download(blob: Blob, filename: string) {
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
   a.download = filename;

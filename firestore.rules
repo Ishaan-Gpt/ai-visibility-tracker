@@ -6,6 +6,8 @@ rules_version = '2';
 // access. These rules are therefore a defense-in-depth backstop: deny everything,
 // so that if a future change ever adds direct client reads/writes by mistake, it
 // fails closed instead of silently exposing other users' brands/prompts/runs.
+// This also covers the Rank Tracker collections (rtProjects, rtKeywords, rtSnapshots, rtTasks,
+// rtAlerts, rtDomainCache) and the DataForSEO spend ledger (dfsSpend, dfsMeta): server-only.
 service cloud.firestore {
   match /databases/{database}/documents {
     match /{document=**} {

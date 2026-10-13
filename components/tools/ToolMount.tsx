@@ -91,6 +91,47 @@ function VisibilityCta() {
   );
 }
 
+/** A drawn position trace (illustration only, no data). */
+function ClimbSketch() {
+  return (
+    <svg viewBox="0 0 320 170" className="h-auto w-full max-w-[360px]" aria-hidden>
+      {[30, 70, 110, 150].map((y) => (
+        <line key={y} x1="24" x2="304" y1={y} y2={y} stroke="rgba(255,255,255,.55)" strokeWidth="1" strokeDasharray="2 6" />
+      ))}
+      <path d="M24 140 C 70 136, 82 112, 118 108 S 168 70, 196 74 S 250 40, 300 28" fill="none" stroke="#fff" strokeWidth="2.4" strokeLinecap="round" />
+      <path d="M24 152 C 80 150, 110 132, 150 128 S 230 112, 300 96" fill="none" stroke="rgba(255,255,255,.6)" strokeWidth="1.6" strokeDasharray="4 5" strokeLinecap="round" />
+      <circle cx="300" cy="28" r="6" fill="#f2a97f" stroke="#fff" strokeWidth="2" />
+    </svg>
+  );
+}
+
+function RankTrackerCta() {
+  const viewer = useViewer();
+  const href = viewer?.signedIn ? "/app/rank-tracker" : `/signup?next=${encodeURIComponent("/app/rank-tracker")}`;
+  return (
+    <div className="glass-strong grid gap-3 rounded-[28px] p-3 md:grid-cols-[1fr_0.9fr]">
+      <div className="flex flex-col justify-center p-5 sm:p-9">
+        <p className="inline-flex w-fit items-center gap-2 rounded-md bg-[#e9e3d5] px-2.5 py-1 text-[12.5px] text-ds-ink-2">
+          <Lock className="h-3.5 w-3.5" /> Needs a free account
+        </p>
+        <h2 className="mt-5 font-serif text-[44px] leading-[1] sm:text-[56px]">
+          Watch your keywords <span className="italic">climb</span>
+        </h2>
+        <p className="mt-4 max-w-[480px] text-[15.5px] leading-7 text-ds-ink-2">
+          Rankings are checked on a schedule and keep their history, so they live in your account. The free plan tracks 10 keywords and a competitor, checked weekly. Pro checks 200 daily.
+        </p>
+        <Link href={href} className="group mt-7 inline-flex h-12 w-fit items-center gap-2 rounded-[12px] bg-ds-accent px-6 text-[15px] font-medium text-ds-ink shadow-[inset_0_1px_0_rgba(255,255,255,.4)] transition hover:bg-[var(--ds-accent-hover)]">
+          {viewer?.signedIn ? "Open the tracker" : "Start tracking free"}
+          <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5" />
+        </Link>
+      </div>
+      <ArchWindow className="min-h-[340px]">
+        <ClimbSketch />
+      </ArchWindow>
+    </div>
+  );
+}
+
 export function ToolMount({ slug }: { slug: string }) {
   switch (slug) {
     case "page-audit":
@@ -147,6 +188,8 @@ export function ToolMount({ slug }: { slug: string }) {
       );
     case "ai-visibility-tracker":
       return <VisibilityCta />;
+    case "rank-tracker":
+      return <RankTrackerCta />;
     default:
       return null;
   }

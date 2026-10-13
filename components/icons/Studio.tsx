@@ -50,6 +50,17 @@ export const IcDossier = (p: P) => (
   </Svg>
 );
 
+/** Rank tracker: three rungs of a podium, a pennant planted on the tallest, a climbing trace behind. */
+export const IcLadder = (p: P) => (
+  <Svg {...p}>
+    <path className={wash} d="M9.4 9.8h5.2v10.4H9.4z" />
+    <path d="M3.8 20.2V14h5.6v6.2M9.4 20.2V9.8h5.2v10.4M14.6 20.2v-7.6h5.6v7.6" />
+    <path d="M3 20.4h18" />
+    <path d="M12 9.8V3.6l3.4 1.5L12 6.6" />
+    <path d="M5.2 11.2c1.6-.7 2.6-1.8 3.4-3.2" strokeDasharray="1.4 1.8" />
+  </Svg>
+);
+
 /** AI visibility: an eye inside a loupe, with a spark. */
 export const IcSeer = (p: P) => (
   <Svg {...p}>

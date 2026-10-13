@@ -32,6 +32,7 @@ import {
 import { downloadCsv } from "./csv";
 import { AiMark, Chip, ClusterGrid, GroupBoard, INTENT_STYLE, SignalBar, SourceBadges, SourceMark, Sparkline } from "./parts";
 import { PROVIDER_KEYWORDS } from "@/lib/limits";
+import { TrackButton } from "@/components/rank-tracker/TrackButton";
 
 const ArrowUp = (p: { className?: string }) => <IconCaret {...p} />;
 const ArrowDown = (p: { className?: string }) => <IconCaret {...p} style={{ transform: "rotate(180deg)" }} />;
@@ -659,6 +660,11 @@ export function KeywordResearchWorkspace() {
                   <button type="button" onClick={() => downloadCsv(activeRows(), result.seed)} className={buttonClass("secondary", "sm")}>
                     <Download className="h-4 w-4" /> CSV
                   </button>
+                  <TrackButton
+                    keywords={filtered.filter((r) => selected.has(r.keyword)).map((r) => ({ keyword: r.keyword, volume: r.volume ?? null }))}
+                    country={result.country}
+                    label={selected.size ? `Track ${selected.size}` : "Track (select rows)"}
+                  />
                   <button type="button" onClick={save} className={buttonClass("primary", "sm")}>
                     <Bookmark className="h-4 w-4" /> Save list
                   </button>

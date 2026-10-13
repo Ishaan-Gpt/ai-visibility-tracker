@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { LogoMark } from "@/components/brand/Logo";
-import { IcCompass, IcDoor, IcDossier, IcSeer, IcTicket, IcWindow } from "@/components/icons/Studio";
+import { IcCompass, IcDoor, IcDossier, IcLadder, IcSeer, IcTicket, IcWindow } from "@/components/icons/Studio";
 import { ToolGlyph } from "@/components/icons/ToolGlyphs";
 import { IconSpinner } from "@/components/icons/Icons";
 import { Backdrop } from "@/components/studio/Backdrop";
@@ -19,6 +19,7 @@ const NAV = [
   { href: "/app", label: "Overview", Icon: IcWindow },
   { href: "/app/history", label: "Saved reports", Icon: IcDossier },
   { href: "/app/visibility", label: "AI Visibility", Icon: IcSeer },
+  { href: "/app/rank-tracker", label: "Rank Tracker", Icon: IcLadder },
   { href: "/app/billing", label: "Plan & billing", Icon: IcTicket },
 ];
 

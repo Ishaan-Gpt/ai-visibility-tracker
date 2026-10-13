@@ -1,4 +1,7 @@
 import "server-only";
+import { dfsCall, dfsConfigured, DfsError, envelopeCost } from "@/lib/dataforseo/client";
+import { noteProviderError, reserveSpend, settleSpend } from "@/lib/dataforseo/guard";
+import { DFS_PRICES, labsCost } from "@/lib/dataforseo/prices";
 import { COUNTRIES, LANGUAGES } from "./types";
 
 /**
@@ -16,7 +19,9 @@ import { COUNTRIES, LANGUAGES } from "./types";
  * Each endpoint is called independently, so one failing (e.g. an unsupported location for Labs) still returns
  * the other's data; per-task status codes are checked, and failures are reported, never papered over.
  *
- * NOTE: written against the documented request/response shapes; not yet exercised against a live account.
+ * Spend: every enrichment first reserves its worst-case price with the global spend guard
+ * (lib/dataforseo/guard.ts). When the daily budget is used up or the balance is low it throws, and research
+ * falls back to keywords without volume.
  */
 
 export interface Enrichment {
@@ -38,37 +43,16 @@ const MAX_CHARS = 80;
 const MAX_WORDS = 10;
 
 export function dataforseoConfigured(): boolean {
-  return Boolean(process.env.DATAFORSEO_LOGIN && process.env.DATAFORSEO_PASSWORD);
+  return dfsConfigured();
 }
 
-function authHeader(): string {
-  const raw = `${process.env.DATAFORSEO_LOGIN}:${process.env.DATAFORSEO_PASSWORD}`;
-  return `Basic ${Buffer.from(raw).toString("base64")}`;
-}
-
-interface Envelope<R> {
-  status_code?: number;
-  status_message?: string;
-  tasks?: { status_code?: number; status_message?: string; result?: R[] | null }[];
-}
-
-async function post<R>(path: string, task: Record<string, unknown>, timeoutMs: number): Promise<R[]> {
-  const res = await fetch(`https://api.dataforseo.com/v3${path}`, {
-    method: "POST",
-    headers: { Authorization: authHeader(), "Content-Type": "application/json" },
-    body: JSON.stringify([task]),
-    signal: AbortSignal.timeout(timeoutMs),
-    cache: "no-store",
-  });
-  if (res.status === 401) throw new Error("DataForSEO rejected the credentials");
-  if (res.status === 402) throw new Error("DataForSEO account balance is too low");
-  if (!res.ok) throw new Error(`DataForSEO HTTP ${res.status}`);
-  const json = (await res.json()) as Envelope<R>;
-  if (json.status_code !== 20000) throw new Error(`DataForSEO: ${json.status_message ?? json.status_code}`);
+/** One task per call through the shared client; returns the task's results and what DataForSEO charged. */
+async function post<R>(path: string, task: Record<string, unknown>, timeoutMs: number): Promise<{ result: R[]; cost: number }> {
+  const json = await dfsCall<R>("POST", path, [task], timeoutMs);
   const t = json.tasks?.[0];
   if (!t) throw new Error("DataForSEO returned no task");
-  if (t.status_code !== 20000) throw new Error(`DataForSEO: ${t.status_message ?? t.status_code}`);
-  return t.result ?? [];
+  if (t.status_code !== 20000) throw new DfsError(`DataForSEO: ${t.status_message ?? t.status_code}`, t.status_code);
+  return { result: t.result ?? [], cost: envelopeCost(json) };
 }
 
 /**
@@ -117,13 +101,25 @@ export async function enrichKeywords(keywords: string[], country: string, langua
     for (const original of back.get(submitted.toLowerCase()) ?? []) data.set(original, { ...(data.get(original) ?? blank()), ...patch });
   };
 
+  if (!list.length) return { data, errors };
+  const estimate = batches.length * DFS_PRICES.adsLivePerTask + batches.reduce((sum, b) => sum + labsCost(b.length), 0);
+  const budget = await reserveSpend("keywords", estimate, 1);
+  if (!budget.granted) throw new Error(`Search volume is paused: ${budget.reason ?? "daily data budget reached"}`);
+
   const volumeJobs = batches.map((b) =>
     post<VolumeItem>("/keywords_data/google_ads/search_volume/live", { keywords: b, location_code: location, language_code: lang }, timeoutMs),
   );
   const kdJobs = batches.map((b) =>
     post<KdResult>("/dataforseo_labs/google/bulk_keyword_difficulty/live", { keywords: b, location_code: location, language_code: lang }, timeoutMs),
   );
-  const [vol, kd] = await Promise.all([Promise.allSettled(volumeJobs), Promise.allSettled(kdJobs)]);
+  const [volRaw, kdRaw] = await Promise.all([Promise.allSettled(volumeJobs), Promise.allSettled(kdJobs)]);
+  const settled = [...volRaw, ...kdRaw];
+  await settleSpend("keywords", budget.reserved, settled.reduce((sum, r) => sum + (r.status === "fulfilled" ? r.value.cost : 0), 0));
+  for (const r of settled) if (r.status === "rejected") await noteProviderError(r.reason);
+  const unwrap = <T,>(rs: PromiseSettledResult<{ result: T[]; cost: number }>[]): PromiseSettledResult<T[]>[] =>
+    rs.map((r) => (r.status === "fulfilled" ? { status: "fulfilled" as const, value: r.value.result } : r));
+  const vol = unwrap(volRaw);
+  const kd = unwrap(kdRaw);
 
   vol.forEach((r) => {
     if (r.status === "rejected") return errors.push(`Volume: ${r.reason instanceof Error ? r.reason.message : "failed"}`);

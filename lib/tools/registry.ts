@@ -225,6 +225,31 @@ export const TOOLS: ToolDef[] = [
       { q: "How is a mention counted?", a: "Whole-word matches of your name, aliases or domain, ignoring accents, so 'Apple' never matches 'pineapple'. Citations count when your domain is among the answer's sources." },
     ],
   },
+  {
+    slug: "rank-tracker",
+    name: "Rank Tracker",
+    headline: "Know where you {rank}, every day.",
+    tagline: "Track your Google positions for the keywords that matter, against your competitors, with daily history and alerts.",
+    description:
+      "Google rank tracker: daily or weekly positions in the top 100 for your keywords, by country or city, desktop or mobile. Visibility score, average position, movers, SERP features including AI Overviews, competitor positions, alerts and CSV / Excel export. Plus every keyword a domain ranks for.",
+    tier: "more",
+    kind: "account",
+    aiLens: [
+      "Records when an AI Overview on the results page cites your domain, alongside your organic position.",
+      "Shows which SERP features (AI Overview, featured snippet, People also ask, local pack) appear for each keyword, so you know where clicks go.",
+      "Domain keywords lists what a site ranks for, including AI Overview references, from the DataForSEO Labs database.",
+    ],
+    explainer: [
+      { title: "How positions are checked", body: "Each keyword is searched on Google for your location, language and device through DataForSEO's SERP API, scanning the top 100. Free accounts are checked weekly, Pro daily, and you can run a check on demand." },
+      { title: "What counts as your position", body: "Your best organic result for the domain you track (optionally including subdomains). If you hold the featured snippet without an organic listing, that counts as #1 and is labelled. Not found in the top 100 is shown as such, never estimated." },
+      { title: "Domain keywords are estimates", body: "The Domain keywords tab reads DataForSEO Labs, a database refreshed about weekly. Its positions and traffic are estimates, not a live Google check, and are labelled that way." },
+    ],
+    faq: [
+      { q: "Why does this one need an account?", a: "Tracking runs on a schedule and keeps history, so it lives in your account with your projects and keywords." },
+      { q: "How is the visibility score calculated?", a: "Each keyword's position is weighted by a typical click-through rate for that position (from a public study of Google results), then averaged and scaled so #1 for every keyword is 100%. It is a weighting, not a traffic forecast." },
+      { q: "Why might a competitor show as not found?", a: "To keep checks affordable, a check stops once your own domain is found. A competitor ranking below that point shows as not found within the results scanned, and the table says how far it looked." },
+    ],
+  },
 ];
 
 export const HERO_TOOLS = TOOLS.filter((t) => t.tier === "hero");

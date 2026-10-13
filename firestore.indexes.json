@@ -57,5 +57,41 @@
       ]
     }
   ],
-  "fieldOverrides": []
+  "fieldOverrides": [
+    {
+      "collectionGroup": "rtKeywords",
+      "fieldPath": "history",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "rtKeywords",
+      "fieldPath": "last",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "rtSnapshots",
+      "fieldPath": "top",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "rtSnapshots",
+      "fieldPath": "competitors",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "rtSnapshots",
+      "fieldPath": "features",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "rtSnapshots",
+      "fieldPath": "ourFeatures",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "rtDomainCache",
+      "fieldPath": "payload",
+      "indexes": []
+    }
+  ]
 }
