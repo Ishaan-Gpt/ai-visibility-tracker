@@ -92,6 +92,11 @@
       "collectionGroup": "rtDomainCache",
       "fieldPath": "payload",
       "indexes": []
+    },
+    {
+      "collectionGroup": "blCache",
+      "fieldPath": "payload",
+      "indexes": []
     }
   ]
 }
