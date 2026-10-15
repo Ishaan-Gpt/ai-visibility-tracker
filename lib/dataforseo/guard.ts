@@ -15,7 +15,7 @@ import { serpTaskMaxCost } from "./prices";
  * hour, only in production builds (never in development or fixture mode) unless DATAFORSEO_BALANCE_CHECK=off.
  */
 
-export type SpendCategory = "serp" | "labs" | "keywords";
+export type SpendCategory = "serp" | "labs" | "keywords" | "backlinks";
 
 const SPEND = "dfsSpend";
 const META = "dfsMeta";

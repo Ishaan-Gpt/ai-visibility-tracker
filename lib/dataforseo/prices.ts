@@ -9,6 +9,8 @@
  *      + $0.00012 / returned item.
  *  - https://dataforseo.com/pricing/keywords-data/google-ads
  *      Google Ads endpoints (search_volume): Live $0.09 / task (up to 1000 keywords), Standard $0.06 / task.
+ *  - https://dataforseo.com/pricing/backlinks/backlinks (separate subscription): about $0.02 / task + $0.00002 / row.
+ *      We reserve a conservative $0.024 + $0.000036 per row (the figure OpenSEO meters against) and record the real cost.
  * A live check on 2026-10-13 matched these: SERP live advanced, depth 20 = $0.004 (2 x $0.002);
  * ranked_keywords limit 20 = $0.0144 ($0.012 + 20 x $0.00012).
  *
@@ -23,6 +25,8 @@ export const DFS_PRICES = {
   labsPerTask: 0.012,
   labsPerItem: 0.00012,
   adsLivePerTask: 0.09,
+  backlinksPerTask: 0.024,
+  backlinksPerRow: 0.000036,
 } as const;
 
 /** Pages billed for a SERP depth (10 results per page, rounded up). */
@@ -32,3 +36,5 @@ export const serpPages = (depth: number) => Math.max(1, Math.ceil(depth / 10));
 export const serpTaskMaxCost = (depth: number) => serpPages(depth) * DFS_PRICES.serpStandardPerPage;
 
 export const labsCost = (items: number) => DFS_PRICES.labsPerTask + items * DFS_PRICES.labsPerItem;
+
+export const backlinksCost = (rows: number) => DFS_PRICES.backlinksPerTask + rows * DFS_PRICES.backlinksPerRow;

@@ -12,6 +12,8 @@ import { ArchWindow, InkWell, QuickAudit } from "@/components/studio/Pieces";
 import { Glass, Masthead } from "@/components/studio/Glass";
 import { HERO_TOOLS, toolHref } from "@/lib/tools/registry";
 import type { HistoryItem } from "@/lib/history";
+import type { FeatureState } from "@/lib/features-shared";
+import { SoonMark } from "@/components/studio/SoonMark";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 const USAGE_LABEL: Record<string, string> = QUOTA_LABELS;
@@ -33,13 +35,15 @@ function greeting(h: number | null) {
 
 export interface OverviewData {
   name: string;
+  /** Features that aren't live yet, listed as on the way. */
+  upcoming?: FeatureState[];
   usage: { tool: string; used: number; limit: number }[];
   reports: HistoryItem[];
   reportLimit: number;
   brand: { name: string; domain: string } | null;
 }
 
-export function OverviewView({ name, usage, reports, reportLimit, brand }: OverviewData) {
+export function OverviewView({ name, usage, reports, reportLimit, brand, upcoming = [] }: OverviewData) {
   // Local hour is only known in the browser; start neutral to keep SSR and hydration identical.
   const [hour, setHour] = useState<number | null>(null);
   useEffect(() => {
@@ -124,6 +128,25 @@ export function OverviewView({ name, usage, reports, reportLimit, brand }: Overv
           ))}
         </div>
       </Rise>
+
+      {upcoming.length > 0 && (
+        <Rise i={5} className="mt-12">
+          <h2 className="mb-4 font-serif text-[32px] leading-none">
+            On the <span className="italic">way</span>
+          </h2>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {upcoming.map((f) => (
+              <div key={f.key} className="glass-inset flex items-start gap-4 rounded-[20px] p-5">
+                <SoonMark className="h-8 w-8 shrink-0 opacity-70" />
+                <span className="min-w-0">
+                  <span className="block text-[15px] font-medium">{f.name}</span>
+                  <span className="mt-0.5 block text-[13px] leading-5 text-ds-ink-2">{f.summary}</span>
+                </span>
+              </div>
+            ))}
+          </div>
+        </Rise>
+      )}
     </>
   );
 }

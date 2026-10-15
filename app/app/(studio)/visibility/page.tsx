@@ -13,7 +13,9 @@ import { Glass, Masthead } from "@/components/studio/Glass";
 import { ArchWindow } from "@/components/studio/Pieces";
 import { Rise } from "@/components/studio/Views";
 import { IconArrow } from "@/components/icons/Icons";
+import { ComingSoonPage } from "@/components/studio/ComingSoon";
 import { getAccount } from "@/lib/app-context";
+import { featureState } from "@/lib/features";
 import { getPrompts, getRecentRuns, getRollups } from "@/lib/data";
 import { adminDb } from "@/lib/firebase/admin";
 import { DAILY_LIMITS } from "@/lib/limits";
@@ -67,6 +69,8 @@ function toFull(r: RunDoc): FullRun {
 
 export default async function VisibilityPage({ searchParams }: { searchParams: Promise<{ first?: string }> }) {
   const { brand, limits, user, tier, isPaid } = await getAccount();
+  const feature = featureState("visibility");
+  if (!feature.live) return <ComingSoonPage feature={feature} title="AI" italic="Visibility" />;
 
   if (!brand) {
     return (

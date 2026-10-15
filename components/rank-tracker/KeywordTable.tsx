@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { IconCaret, IconDownload, IconSpinner } from "@/components/icons/Icons";
 import { IcBin, IcPlus } from "@/components/icons/Studio";
 import { Glass } from "@/components/studio/Glass";
+import { readKeywordFile, type ImportResult } from "@/lib/rank-tracker/importFile";
 import { bucketOf, moveOf, type Bucket } from "@/lib/rank-tracker/metrics";
 import { featureLabel, type RtKeyword, type RtProject } from "@/lib/rank-tracker/types";
 import { Chip, Delta, FeatureTag, Position, PositionSpark, smallField, softButton } from "./bits";
@@ -39,6 +40,7 @@ export function KeywordTable({
   const [tagText, setTagText] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
   const [note, setNote] = useState<{ ok: boolean; text: string } | null>(null);
+  const [imported, setImported] = useState<(ImportResult & { file: string }) | null>(null);
   const [query, setQuery] = useState("");
   const [tag, setTag] = useState<string | null>(null);
   const [filter, setFilter] = useState<Filter>("all");
@@ -128,6 +130,68 @@ export function KeywordTable({
     }
   }
 
+  async function pickFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    setNote(null);
+    try {
+      const parsed = await readKeywordFile(file);
+      if (!parsed.rows.length) setNote({ ok: false, text: "No keywords found in that file." });
+      else setImported({ ...parsed, file: file.name });
+    } catch (err) {
+      setNote({ ok: false, text: err instanceof Error ? err.message : "Couldn't read that file." });
+    }
+  }
+
+  /** Sends the parsed file in request-sized chunks and reports one combined result. */
+  async function runImport() {
+    if (!imported) return;
+    setBusy("import");
+    setNote(null);
+    const extra = tagText.split(",").map((t) => t.trim()).filter(Boolean);
+    const totals = { added: 0, duplicates: 0, invalid: 0, overLimit: 0 };
+    try {
+      for (let i = 0; i < imported.rows.length; i += 500) {
+        const chunk = imported.rows.slice(i, i + 500);
+        const res = await fetch(`/api/rank-tracker/projects/${project.id}/keywords`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ keywords: chunk, tags: extra }),
+        });
+        const data = (await res.json().catch(() => ({}))) as { error?: string; added?: string[]; duplicates?: string[]; invalid?: unknown[]; overLimit?: string[] };
+        if (!res.ok) {
+          setNote({ ok: false, text: data.error ?? "The import stopped part way. Try again; keywords already added are skipped." });
+          break;
+        }
+        totals.added += data.added?.length ?? 0;
+        totals.duplicates += data.duplicates?.length ?? 0;
+        totals.invalid += data.invalid?.length ?? 0;
+        totals.overLimit += data.overLimit?.length ?? 0;
+        // Once the plan is full every later chunk would be over the limit too.
+        if ((data.overLimit?.length ?? 0) > 0) {
+          totals.overLimit += Math.max(0, imported.rows.length - (i + chunk.length));
+          break;
+        }
+      }
+      const msg = [
+        `Imported ${totals.added} keyword${totals.added === 1 ? "" : "s"}.`,
+        totals.duplicates ? `${totals.duplicates} already tracked.` : "",
+        totals.invalid ? `${totals.invalid} skipped as invalid.` : "",
+        totals.overLimit ? `${totals.overLimit} over your plan's ${keywordLimit}-keyword limit.` : "",
+      ]
+        .filter(Boolean)
+        .join(" ");
+      setNote((n) => n ?? { ok: totals.added > 0, text: msg });
+      setImported(null);
+      onChanged(msg);
+    } catch {
+      setNote({ ok: false, text: "Network error. Try again; keywords already added are skipped." });
+    } finally {
+      setBusy(null);
+    }
+  }
+
   async function add(e: React.FormEvent) {
     e.preventDefault();
     const tagsList = tagText.split(",").map((t) => t.trim()).filter(Boolean);
@@ -187,6 +251,34 @@ export function KeywordTable({
                 {busy === "add" && <IconSpinner className="h-4 w-4 animate-spin" />}
                 Add {lines ? lines : ""} keyword{lines === 1 ? "" : "s"}
               </button>
+            </div>
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-2 border-t border-white/60 pt-3 sm:col-span-2">
+              <label className={`${softButton} cursor-pointer`}>
+                <IconDownload className="h-4 w-4 rotate-180" /> Import a file
+                <input type="file" accept=".csv,.tsv,.txt,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" onChange={pickFile} className="sr-only" />
+              </label>
+              {imported ? (
+                <>
+                  <p className="min-w-0 flex-1 text-[13px] leading-5 text-ds-ink-2">
+                    <span className="text-ds-ink">{imported.rows.length.toLocaleString()} keywords</span> in {imported.file}
+                    {imported.source ? ` (${imported.source} export)` : ""}. Keyword column: {imported.columns.keyword}
+                    {imported.columns.tags ? `; ${imported.columns.tags} becomes tags` : ""}
+                    {imported.columns.volume ? `; ${imported.columns.volume} kept as volume` : ""}.
+                    {imported.rows.length > room ? ` Only ${room} fit on your plan.` : ""}
+                  </p>
+                  <button type="button" onClick={() => setImported(null)} className={softButton} disabled={busy === "import"}>
+                    Cancel
+                  </button>
+                  <button type="button" onClick={runImport} disabled={busy === "import" || room === 0} className="inline-flex h-10 items-center justify-center gap-2 rounded-[12px] bg-ds-ink px-4 text-[14px] font-medium text-[#faf8f2] transition hover:bg-[#3a3633] disabled:opacity-40">
+                    {busy === "import" && <IconSpinner className="h-4 w-4 animate-spin" />}
+                    Import {Math.min(imported.rows.length, room).toLocaleString()}
+                  </button>
+                </>
+              ) : (
+                <p className="min-w-0 flex-1 text-[12.5px] leading-5 text-ds-ink-2">
+                  Moving from SE Ranking, Semrush, Ahrefs, AccuRanker or Search Console? Drop in their CSV or Excel export. Groups and tags come across as tags.
+                </p>
+              )}
             </div>
           </form>
         )}

@@ -61,6 +61,17 @@ export const IcLadder = (p: P) => (
   </Svg>
 );
 
+/** Backlinks: two interlocked rings of a chain, with a thread running to a distant page. */
+export const IcChain = (p: P) => (
+  <Svg {...p}>
+    <rect className={wash} x="4.4" y="10.6" width="8.6" height="5.4" rx="2.7" transform="rotate(-38 8.7 13.3)" />
+    <rect x="3.6" y="10.4" width="9.6" height="5.6" rx="2.8" transform="rotate(-38 8.4 13.2)" />
+    <rect x="9.6" y="6" width="9.6" height="5.6" rx="2.8" transform="rotate(-38 14.4 8.8)" />
+    <path d="M15.6 15.8c1.4 1.2 2.6 2.1 4.6 2.4" strokeDasharray="1.2 1.8" />
+    <path d="M18.6 19.8h2.8v-2.8" />
+  </Svg>
+);
+
 /** AI visibility: an eye inside a loupe, with a spark. */
 export const IcSeer = (p: P) => (
   <Svg {...p}>

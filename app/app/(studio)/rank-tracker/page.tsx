@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import { Masthead } from "@/components/studio/Glass";
 import { Rise } from "@/components/studio/Views";
 import { RankTrackerApp } from "@/components/rank-tracker/RankTrackerApp";
+import { ComingSoonPage } from "@/components/studio/ComingSoon";
 import { getAccount } from "@/lib/app-context";
+import { featureState } from "@/lib/features";
 import { DOMAIN_ROWS } from "@/lib/limits";
 import { dashboardData } from "@/lib/rank-tracker/view";
 
@@ -12,6 +14,8 @@ export const maxDuration = 60;
 
 export default async function RankTrackerPage({ searchParams }: { searchParams: Promise<{ project?: string; tab?: string }> }) {
   const { user, tier } = await getAccount();
+  const feature = featureState("rank-tracker");
+  if (!feature.live) return <ComingSoonPage feature={feature} title="Rank" italic="Tracker" />;
   const { project, tab } = await searchParams;
   const data = await dashboardData(user.uid, tier, typeof project === "string" ? project : null);
   const cadence = data.plan.cadenceDays === 1 ? "daily" : "weekly";

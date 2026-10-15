@@ -1,4 +1,4 @@
-export type QuotaTool = "page-audit" | "ai-crawlers" | "keywords" | "fetch-page" | "crawl" | "visibility" | "rank-check" | "domain-keywords";
+export type QuotaTool = "page-audit" | "ai-crawlers" | "keywords" | "fetch-page" | "crawl" | "visibility" | "rank-check" | "domain-keywords" | "backlinks";
 export type Tier = "anon" | "free" | "pro";
 
 /** Daily runs per tool. Anonymous = per IP. Browser-only tools are unlimited and never metered. */
@@ -16,7 +16,12 @@ export const DAILY_LIMITS: Record<QuotaTool, Record<Tier, number>> = {
   "rank-check": { anon: 0, free: 1, pro: 10 },
   /** Domain keyword lookups (DataForSEO Labs, paid per row). Cached lookups are free. Accounts only. */
   "domain-keywords": { anon: 0, free: 2, pro: 10 },
+  /** Backlink profile lookups (DataForSEO Backlinks API, 5 calls each, ~$0.13). Cached lookups are free. Accounts only. */
+  backlinks: { anon: 0, free: 2, pro: 25 },
 };
+
+/** Rows per list (referring domains, backlinks, anchors) in one Backlinks lookup. */
+export const BACKLINK_ROWS: Record<Tier, number> = { anon: 0, free: 100, pro: 1000 };
 
 /**
  * Rank Tracker plan limits. Each check of one keyword is one DataForSEO Standard-queue SERP task: at most
@@ -48,4 +53,5 @@ export const QUOTA_LABELS: Record<QuotaTool, string> = {
   visibility: "AI visibility checks",
   "rank-check": "Rank checks",
   "domain-keywords": "Domain lookups",
+  backlinks: "Backlink lookups",
 };

@@ -5,21 +5,24 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { LogoMark } from "@/components/brand/Logo";
-import { IcCompass, IcDoor, IcDossier, IcLadder, IcSeer, IcTicket, IcWindow } from "@/components/icons/Studio";
+import { IcChain, IcCompass, IcDoor, IcDossier, IcLadder, IcSeer, IcTicket, IcWindow } from "@/components/icons/Studio";
 import { ToolGlyph } from "@/components/icons/ToolGlyphs";
 import { IconSpinner } from "@/components/icons/Icons";
 import { Backdrop } from "@/components/studio/Backdrop";
 import { signOutEverywhere } from "@/components/viewer/signOut";
+import type { FeatureState } from "@/lib/features-shared";
 import { TOOLS, toolHref } from "@/lib/tools/registry";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 const SPRING = { type: "spring", stiffness: 520, damping: 38 } as const;
 
-const NAV = [
+/** `feature` ties an item to lib/features.ts: when that feature isn't live the item is marked as coming soon. */
+const NAV: { href: string; label: string; Icon: typeof IcWindow; feature?: string }[] = [
   { href: "/app", label: "Overview", Icon: IcWindow },
   { href: "/app/history", label: "Saved reports", Icon: IcDossier },
-  { href: "/app/visibility", label: "AI Visibility", Icon: IcSeer },
-  { href: "/app/rank-tracker", label: "Rank Tracker", Icon: IcLadder },
+  { href: "/app/visibility", label: "AI Visibility", Icon: IcSeer, feature: "visibility" },
+  { href: "/app/rank-tracker", label: "Rank Tracker", Icon: IcLadder, feature: "rank-tracker" },
+  { href: "/app/backlinks", label: "Backlinks", Icon: IcChain, feature: "backlinks" },
   { href: "/app/billing", label: "Plan & billing", Icon: IcTicket },
 ];
 
@@ -40,15 +43,17 @@ function useOutside(open: boolean, close: () => void) {
 }
 
 /** A dock button: soft bead behind the active item, a glass name-tag that springs out on hover. */
-function DockItem({ href, label, Icon, active, vertical }: { href: string; label: string; Icon: typeof IcWindow; active: boolean; vertical: boolean }) {
+function DockItem({ href, label, Icon, active, vertical, soon }: { href: string; label: string; Icon: typeof IcWindow; active: boolean; vertical: boolean; soon?: boolean }) {
   return (
-    <Link href={href} aria-label={label} aria-current={active ? "page" : undefined} className="group relative flex h-12 w-12 items-center justify-center rounded-[16px] text-ds-ink outline-none">
+    <Link href={href} aria-label={soon ? `${label} (coming soon)` : label} aria-current={active ? "page" : undefined} className="group relative flex h-12 w-12 items-center justify-center rounded-[16px] text-ds-ink outline-none">
       {active && <motion.span layoutId="dock-bead" transition={SPRING} className="absolute inset-0 rounded-[16px] bg-white/85 shadow-[0_6px_16px_-8px_rgba(43,41,39,0.35),inset_0_1px_0_#fff]" />}
       <span className="absolute inset-0 rounded-[16px] bg-white/0 transition-colors duration-300 group-hover:bg-white/45 group-focus-visible:ring-2 group-focus-visible:ring-ds-accent-ink" />
-      <Icon active={active} className="relative h-[22px] w-[22px] transition-transform duration-500 ease-[var(--ds-spring)] group-hover:-translate-y-[1px] group-hover:scale-110" />
+      <Icon active={active} className={`relative h-[22px] w-[22px] transition-transform duration-500 ease-[var(--ds-spring)] group-hover:-translate-y-[1px] group-hover:scale-110 ${soon ? "opacity-45" : ""}`} />
+      {soon && <span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-ds-accent ring-2 ring-white/70" />}
       {vertical && (
         <span className="glass-strong pointer-events-none absolute left-[calc(100%+14px)] top-1/2 -translate-y-1/2 translate-x-[-6px] whitespace-nowrap rounded-[10px] px-2.5 py-1.5 text-[13px] text-ds-ink opacity-0 transition-[opacity,transform] duration-300 ease-[var(--ds-ease)] group-hover:translate-x-0 group-hover:opacity-100">
           {label}
+          {soon && <span className="ml-1.5 text-ds-ink-3">soon</span>}
         </span>
       )}
     </Link>
@@ -133,10 +138,11 @@ function Account({ email, planLabel, vertical, onSignOut, signingOut }: { email:
   );
 }
 
-export function AppShell({ email, planLabel, children, previewPath }: { email: string; planLabel: string; isPaid?: boolean; children: ReactNode; previewPath?: string }) {
+export function AppShell({ email, planLabel, children, previewPath, features = [] }: { email: string; planLabel: string; isPaid?: boolean; children: ReactNode; previewPath?: string; features?: FeatureState[] }) {
   const realPath = usePathname();
   const pathname = previewPath ?? realPath;
   const isActive = (href: string) => (href === "/app" ? pathname === "/app" : pathname.startsWith(href));
+  const soon = (key?: string) => Boolean(key && features.some((f) => f.key === key && !f.live));
 
   const [signingOut, setSigningOut] = useState(false);
   async function logout() {
@@ -164,7 +170,7 @@ export function AppShell({ email, planLabel, children, previewPath }: { email: s
           </span>
         </Link>
         {NAV.map((n) => (
-          <DockItem key={n.href} {...n} active={isActive(n.href)} vertical />
+          <DockItem key={n.href} {...n} active={isActive(n.href)} soon={soon(n.feature)} vertical />
         ))}
         <span className="my-1.5 h-px w-7 bg-ds-ink/10" />
         <ToolsPopover vertical />
@@ -183,7 +189,7 @@ export function AppShell({ email, planLabel, children, previewPath }: { email: s
       </div>
       <nav aria-label="Studio" className="no-print glass fixed bottom-4 left-1/2 z-40 flex -translate-x-1/2 items-center gap-1 rounded-[24px] p-2 lg:hidden" data-print-hide>
         {NAV.map((n) => (
-          <DockItem key={n.href} {...n} active={isActive(n.href)} vertical={false} />
+          <DockItem key={n.href} {...n} active={isActive(n.href)} soon={soon(n.feature)} vertical={false} />
         ))}
         <span className="mx-0.5 h-7 w-px bg-ds-ink/10" />
         <ToolsPopover vertical={false} />

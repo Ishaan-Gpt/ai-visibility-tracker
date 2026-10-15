@@ -17,7 +17,7 @@ async function owned(ctx: RouteContext<"/api/rank-tracker/projects/[id]/keywords
 const strings = (v: unknown, max: number): string[] => (Array.isArray(v) ? v.filter((x): x is string => typeof x === "string").slice(0, max) : []);
 
 /**
- * Add keywords. Body: { keywords: string[] | {keyword, volume?}[], tags?: string[] } or { text: "one per line" }.
+ * Add keywords. Body: { keywords: string[] | {keyword, volume?, tags?}[], tags?: string[] } or { text: "one per line" }.
  * New keywords are checked at the next scheduler tick (or now, with an on-demand check).
  */
 export async function POST(req: NextRequest, ctx: RouteContext<"/api/rank-tracker/projects/[id]/keywords">) {
@@ -34,7 +34,9 @@ export async function POST(req: NextRequest, ctx: RouteContext<"/api/rank-tracke
       if (typeof k === "string") items.push({ keyword: k, tags });
       else if (k && typeof k === "object" && typeof (k as { keyword?: unknown }).keyword === "string") {
         const vol = (k as { volume?: unknown }).volume;
-        items.push({ keyword: (k as { keyword: string }).keyword, tags, volume: typeof vol === "number" && Number.isFinite(vol) && vol >= 0 ? Math.round(vol) : null });
+        // Per-keyword tags carry groups/folders over from another tool's export.
+        const own = strings((k as { tags?: unknown }).tags, 8);
+        items.push({ keyword: (k as { keyword: string }).keyword, tags: own.length ? [...new Set([...tags, ...own])].slice(0, 8) : tags, volume: typeof vol === "number" && Number.isFinite(vol) && vol >= 0 ? Math.round(vol) : null });
       }
     }
   }
